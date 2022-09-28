@@ -1,0 +1,29 @@
+{
+  "name": "@cmdruid/bton",
+  "version": "0.1.0",
+  "description": "A basic library for working with Bitcoin Transactions.",
+  "main": "index.js",
+  "scripts": {
+    "test": "exit 0"
+  },
+  "keywords": [
+    "bitcoin",
+    "transaction",
+    "psbt",
+    "serialize",
+    "encode",
+    "decode"
+  ],
+  "author": "Christopher Scott",
+  "license": "CC-BY-1.0",
+  "repository": "https://github.com/cmdruid/bton.git",
+  "publishConfig": {
+    "@cmdruid:registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {},
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ]
+}

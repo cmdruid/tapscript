@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nostr-Psbt Demo</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header>
+    <h1 class="title">Nostr-Psbt Demo</h1>
+    <h4>A simple demo of coordinating PSBTs over Nostr.</h4>
+  </header>
+  <main>
+    <form>
+      <!-- Enter public key, request private convo. -->
+      <p>Step 1: Send an invitation.</p>
+      <pre>
+        * Send invitation to your pubkey to start a conversation.
+        * Past conversation should be stored and viewable.
+        * Conversations should be selectable and deletable.
+        * Conversations should display a shared status.
+        * Conversations should have labels for local organizing.
+        * Conversations should be searchable by their attributes.
+        * Nostr is a free place to store conversations (and fetch them later).
+        
+        * Two message types: chat messages and updates to the PSBT.
+        * Diablo 2 style trade confirmations: All parties must check green,
+          any changes to the contract cancels all agreements.
+        * Once all parties agree, check is replaced by sign button.
+        * Once enough parties sign (and fund), any party can broadcast.
+
+      </pre>
+      <label>To:</label>
+      <label>Subject:</label>
+      <label>Message:</label>
+      <p>Open a live session.</p>
+      <p>Live collaboration on a PBST.</p>
+      <p>Easy confirmation signalling.</p>
+      <p>Signature button after confirmation.</p>
+      <p>Think of Diablo 2 trading windows.</p>
+      <p>Also include a chat window.</p>
+      <p>Once enough signed funds are collected, anyone can broadcast.</p>
+    </form>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
