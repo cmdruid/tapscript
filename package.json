@@ -1,10 +1,12 @@
 {
   "name": "@cmdruid/bton",
   "version": "0.1.0",
-  "description": "A basic library for working with Bitcoin Transactions.",
+  "description": "A basic library for working with Bitcoin Transaction data",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "exit 0"
+    "test": "exit 0",
+    "scratch": "node tests/scratch.js"
   },
   "keywords": [
     "bitcoin",
@@ -12,7 +14,8 @@
     "psbt",
     "serialize",
     "encode",
-    "decode"
+    "decode",
+    "validate"
   ],
   "author": "Christopher Scott",
   "license": "CC-BY-1.0",
