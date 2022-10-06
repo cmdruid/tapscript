@@ -77,7 +77,7 @@ BTON.digest = {
 ```
 
 ## Tentative Features
-* More calculated fields (txid, size, weight, etc.)
+* More calculated fields (txid, size, weight, etc).
 * Commitment hash for metadata field.
 * Linting and validation of scripts / transactions.
 * More support for script templates and metadata.
@@ -87,4 +87,4 @@ BTON.digest = {
 Feel free to fork and make contributions. Issue suggestions are also welcome!
 
 ## License
-Do whatever you want. Just attribute me please.
+Use this library however you want!
