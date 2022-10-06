@@ -105,3 +105,5 @@ dist
 
 # NPM config
 .npmrc
+
+.env*

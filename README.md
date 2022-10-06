@@ -3,10 +3,10 @@ A basic library for working with Bitcoin transaction data.
 
 ## How to Import
 ```html
-<script src="https://unpkg.com/bton"></script>
+<script src="https://unpkg.com/bton-lib"></script>
 ```
 ```js
-import BTON from 'bton'
+import BTON from 'bton-lib'
 ```
 
 ## How to Use

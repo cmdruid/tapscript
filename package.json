@@ -1,7 +1,8 @@
 {
-  "name": "@cmdruid/bton",
-  "version": "0.1.1",
-  "description": "A basic library for working with Bitcoin Transaction data",
+  "name": "bton-lib",
+  "version": "0.1.5",
+  "description": "A basic library for working with Bitcoin Transaction data.",
+  "private": false,
   "main": "index.js",
   "unpkg": "dist/bton.js",
   "type": "module",
@@ -24,9 +25,13 @@
   ],
   "author": "Christopher Scott",
   "license": "CC-BY-1.0",
-  "repository": "https://github.com/cmdruid/bton.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cmdruid/bton.git"
+  },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
   },
   "files": [
     "README.md",
