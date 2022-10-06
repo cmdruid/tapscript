@@ -1,35 +1,74 @@
 import { encodeTx, encodeScript, getSigHash } from './lib/encoder.js'
+import { decodeTx } from './lib/decoder.js'
+import { decodeScript, getScriptHash, getTemplateHash } from './lib/script.js'
 
 export default class BTON {
-  static encodeTx(tx, opt) {
-    return encodeTx(tx, opt)
+
+  constructor(data, opt={}) {
+    if (typeof(data) === 'string') {
+      data = BTON.decode.tx(data, opt)
+    } else {
+      data = BTON.convert(data, opt)
+    }
+
+    this.data = data
+    this.opt  = opt
+    
+    return this
   }
 
-  static decodeTx(hex, opt) {
-    throw new Error('Interface not implemented.')
+  static encode = {
+    tx       : encodeTx,
+    script   : encodeScript,
   }
 
-  static encodeScript(script, opt) {
-    return encodeScript(script, opt)
+  static decode = {
+    tx       : decodeTx,
+    script   : decodeScript
   }
 
-  static decodeScript(hex, opt) {
-    throw new Error('Interface not implemented.')
+  static convert = (tx, opt) => {
+    return decodeTx(encodeTx(tx, opt), opt)
   }
 
-  static sighash(tx, opt) {
-    return getSigHash(tx, opt)
+  static digest = {
+    sigHash      : getSigHash,
+    scriptHash   : getScriptHash,
+    templateHash : getTemplateHash,
+    metahash     : null
   }
 
-  static validateTx(tx, opt) {
-    throw new Error('Interface not implemented.')
+  static validate = {
+    tx     : null,
+    script : null
   }
 
-  static validateScript(script, opt) {
-    throw new Error('Interface not implemented.')
+  static crypto = {
+    generate : null,
+    sign     : null,
+    sign     : null,
+    verify   : null,
+    hash256  : null,
+    ripe160  : null
   }
 
-  static validateSighash(hex, opt) {
-    throw new Error('Interface not implemented.')
+  encode(opt) {
+    return BTON.encode.tx(this.tx, opt)
   }
+
+  // static validate = {
+  //   tx      : validateTx,
+  //   script  : validateScript,
+  //   sighash : validateSighash,
+  //   address : validateAddress
+  // }
+
+  // static calc = {
+  //   sighash: getSigHash,
+  //   txid,
+  //   address,
+  //   size,
+  //   weight,
+  //   vsize
+  // }
 }
