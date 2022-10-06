@@ -1,6 +1,6 @@
 {
   "name": "bton-lib",
-  "version": "0.1.5",
+  "version": "0.1.8",
   "description": "A basic library for working with Bitcoin Transaction data.",
   "private": false,
   "main": "index.js",
@@ -40,10 +40,12 @@
     "src",
     "index.js"
   ],
-  "dependencies": {},
   "devDependencies": {
+    "@babel/core": "^7.19.3",
+    "@babel/preset-env": "^7.19.3",
     "@types/jest": "*",
     "@typescript-eslint/eslint-plugin": "*",
+    "babel-loader": "^8.2.5",
     "eslint": "*",
     "eslint-config-standard-with-typescript": "*",
     "eslint-plugin-import": "*",

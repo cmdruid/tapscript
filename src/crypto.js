@@ -1,6 +1,9 @@
 import { Bytes } from './bytes.js'
+import { webcrypto } from 'crypto'
 
-import { webcrypto as crypto } from 'crypto'
+const crypto = (typeof window !== 'undefined')
+  ? window.crypto
+  : webcrypto
 
 export async function sha256 (data, rounds = 1) {
   if (!(data instanceof Uint8Array)) {

@@ -64,9 +64,9 @@ function encodeSequence (seq) {
 function encodeInputs (arr) {
   const raw = [Bytes.varInt(arr.length)]
   for (const vin of arr) {
-    const { txid, prevout, scriptSig, sequence } = vin
-    raw.push(encodeTxid(txid))
-    raw.push(encodePrevOut(prevout))
+    const { prevTxid, prevOut, scriptSig, sequence } = vin
+    raw.push(encodeTxid(prevTxid))
+    raw.push(encodePrevOut(prevOut))
     raw.push(encodeScript(scriptSig))
     raw.push(encodeSequence(sequence))
   }

@@ -138,16 +138,12 @@ export function getWitScriptMeta (witness, meta = {}) {
   const { scriptType } = meta
   if (witness.length > 2) {
     const redeemScript = witness.at(-1)
-    meta.scriptType = (scriptType.startsWith('p2sh'))
-      ? 'p2sh-p2wsh'
-      : 'p2wsh'
+    if (!scriptType) meta.scriptType = 'p2wsh'
     meta.redeemAsm = decodeScript(redeemScript)
     meta.redeemHash = getScriptHash(redeemScript)
     meta.templateHash = getTemplateHash(redeemScript)
   } else {
-    meta.scriptType = (scriptType.startsWith('p2sh'))
-      ? 'p2sh-p2wpkh'
-      : 'p2wpkh'
+    if (!scriptType) meta.scriptType = 'p2wpkh'
     meta.validSig = checkScriptSig(witness)
   }
   return meta
