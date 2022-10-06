@@ -26,12 +26,13 @@
   "license": "CC-BY-1.0",
   "repository": "https://github.com/cmdruid/bton.git",
   "publishConfig": {
-    "@cmdruid:registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com"
   },
   "files": [
     "README.md",
     "LICENSE",
     "dist",
+    "src",
     "index.js"
   ],
   "dependencies": {},

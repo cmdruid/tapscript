@@ -1,8 +1,8 @@
 import BTON from '../index.js'
-import { bytesToHex } from '../lib/convert.js'
-import { Bech32 } from '../lib/format/bech32.js'
+import { bytesToHex } from '../src/lib/convert.js'
+import { Bech32 } from '../src/lib/format/bech32.js'
 
-let test_tx = {
+const testTx = {
   version: 1,
   vin: [
     {
@@ -30,11 +30,11 @@ let test_tx = {
   vout: [
     {
       value: 1250000000,
-      scriptPubkey: [ 0, '9094a9bb2e62972048368ed8a6770f5c8516a0f6' ]
+      scriptPubkey: [0, '9094a9bb2e62972048368ed8a6770f5c8516a0f6']
     },
     {
       value: 1249999000,
-      scriptPubkey: [ 0, 'c021f50982f8901e92ea7f92b3a3d546568fb9e7']
+      scriptPubkey: [0, 'c021f50982f8901e92ea7f92b3a3d546568fb9e7']
     }
   ],
   locktime: 0,
@@ -43,7 +43,7 @@ let test_tx = {
   }
 }
 
-const encoded = BTON.encode.tx(test_tx)
+const encoded = BTON.encode.tx(testTx)
 
 console.log(encoded)
 
@@ -63,4 +63,3 @@ console.log('address:', payAddress)
 const data = Bech32.decode(payAddress)
 
 console.log('pubkey:', bytesToHex(data))
-
