@@ -7,7 +7,7 @@ import {
   getWitScriptMeta
 } from './script.js'
 
-export function decodeTx(raw, opt={}) {
+export function decodeTx (raw, opt = {}) {
   /** Decode a raw bitcoin transaction.
    * */
 
@@ -23,17 +23,17 @@ export function decodeTx(raw, opt={}) {
   // Parse our inputs and outputs.
   tx.vin = readInputs(stream)
   tx.vout = readOutputs(stream)
-  
+
   // If witness flag is set, parse witness data.
   if (opt?.hasWitness) {
     console.log(tx)
-    for (let vin of tx.vin) {
+    for (const vin of tx.vin) {
       const witness = readWitness(stream)
-      vin['txWitness'] = witness
+      vin.txWitness = witness
       vin.meta = getWitScriptMeta(witness, vin.meta)
     }
   }
-  
+
   // Parse locktime.
   tx.locktime = readLocktime(stream)
 
@@ -44,12 +44,12 @@ export function decodeTx(raw, opt={}) {
   return tx
 }
 
-function readVersion(stream) {
+function readVersion (stream) {
   return stream.read(4, { format: 'number' })
 }
 
-function checkFlags(stream, opt) {
-  const [ marker, flag ] = stream.peek(2)
+function checkFlags (stream, opt) {
+  const [marker, flag] = stream.peek(2)
   console.log(marker, flag)
   if (marker === 0) {
     stream.read(2)
@@ -58,14 +58,13 @@ function checkFlags(stream, opt) {
     }
     if (flag > 0) {
       opt.hasWitness = true
-    }
-    else {
+    } else {
       throw new Error(`Invalid flag: ${flag}`)
     }
   }
 }
 
-function readInputs(stream, opt) {
+function readInputs (stream, opt) {
   const inputs = []
   const vinCount = stream.readVarint()
   for (let i = 0; i < vinCount; i++) {
@@ -74,13 +73,12 @@ function readInputs(stream, opt) {
   return inputs
 }
 
-function readInput(stream) {
- 
+function readInput (stream) {
   const txin = {
-    prevTxid  : stream.read(32, { format: 'hex' , reverse: true }),
-    prevOut   : stream.read(4, { format: 'number' }),
-    scriptSig : readData(stream, { format: 'hex' }),
-    sequence  : stream.read(4, { format: 'number' })
+    prevTxid: stream.read(32, { format: 'hex', reverse: true }),
+    prevOut: stream.read(4, { format: 'number' }),
+    scriptSig: readData(stream, { format: 'hex' }),
+    sequence: stream.read(4, { format: 'number' })
   }
 
   txin.meta = getScriptSigMeta(txin.scriptSig)
@@ -88,7 +86,7 @@ function readInput(stream) {
   return txin
 }
 
-function readOutputs(stream) {
+function readOutputs (stream) {
   const outputs = []
   const voutCount = stream.readVarint()
   for (let i = 0; i < voutCount; i++) {
@@ -97,10 +95,10 @@ function readOutputs(stream) {
   return outputs
 }
 
-function readOutput(stream) {
+function readOutput (stream) {
   const txout = {
     value: stream.read(8, { format: 'number' }),
-    scriptPubkey: readData(stream, { format: 'hex' }),
+    scriptPubkey: readData(stream, { format: 'hex' })
   }
 
   txout.meta = getScriptPubMeta(txout.scriptPubkey)
@@ -108,7 +106,7 @@ function readOutput(stream) {
   return txout
 }
 
-function readWitness(stream) {
+function readWitness (stream) {
   const stack = []
   const count = stream.readVarint()
   for (let i = 0; i < count; i++) {
@@ -118,7 +116,7 @@ function readWitness(stream) {
   return stack
 }
 
-function readData(stream, opt={}) {
+function readData (stream, opt = {}) {
   const { varint = true } = opt
 
   const size = (varint)
@@ -130,11 +128,11 @@ function readData(stream, opt={}) {
     : 0
 }
 
-function readLocktime(stream) {
+function readLocktime (stream) {
   return stream.read(4, { format: 'number' })
 }
 
-function readMetaData(stream) {
+function readMetaData (stream) {
   const size = stream.readVarint()
   const bytes = stream.read(size)
   return bytesToJSON(bytes)

@@ -1,7 +1,8 @@
-import { webcrypto as crypto } from 'crypto'
 import { Bytes } from './bytes.js'
 
-export async function sha256(data, rounds=1) {
+import { webcrypto as crypto } from 'crypto'
+
+export async function sha256 (data, rounds = 1) {
   if (!(data instanceof Uint8Array)) {
     data = Bytes.from(data)
   }

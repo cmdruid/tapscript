@@ -1,11 +1,16 @@
 {
   "name": "@cmdruid/bton",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A basic library for working with Bitcoin Transaction data",
   "main": "index.js",
+  "unpkg": "dist/bton.js",
   "type": "module",
   "scripts": {
-    "test": "exit 0",
+    "build": "tsc",
+    "pack": "webpack",
+    "test": "echo \"No test specified\"",
+    "dev": "export TS_JEST_DISABLE_VER_CHECKER=true && jest",
+    "lint": "eslint . --ext .ts",
     "scratch": "node tests/scratch.js"
   },
   "keywords": [
@@ -23,10 +28,30 @@
   "publishConfig": {
     "@cmdruid:registry": "https://npm.pkg.github.com"
   },
-  "dependencies": {},
   "files": [
-    "index.js",
     "README.md",
-    "LICENSE"
-  ]
+    "LICENSE",
+    "dist",
+    "index.js"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "*",
+    "@typescript-eslint/eslint-plugin": "*",
+    "eslint": "*",
+    "eslint-config-standard-with-typescript": "*",
+    "eslint-plugin-import": "*",
+    "eslint-plugin-n": "*",
+    "eslint-plugin-promise": "*",
+    "jest": "*",
+    "ts-jest": "*",
+    "ts-node": "*",
+    "tsconfig-paths": "*",
+    "typescript": "*",
+    "webpack": "^5.74.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "browser": {
+    "crypto": false
+  }
 }

@@ -1,4 +1,4 @@
-import { 
+import {
   strToBytes,
   hexToBytes,
   numToBytes,
@@ -7,16 +7,15 @@ import {
   bytesToHex,
   bytesToNum,
   bytesToBigInt
-} from "./convert.js"
+} from './convert.js'
 
 export class Bytes {
-
-  static from(data, size, opt={}) {
+  static from (data, size, opt = {}) {
     /** Create a byte-array from the presented data. */
-    const { 
-      varint=false, 
-      reverse=false,
-      format=false
+    const {
+      varint = false,
+      reverse = false,
+      format = false
     } = opt
 
     if (size && data === 0) {
@@ -25,7 +24,7 @@ export class Bytes {
 
     let bytes
 
-    switch(format || typeof(data)) {
+    switch (format || typeof (data)) {
       case 'str':
         bytes = strToBytes(data)
         break
@@ -42,7 +41,7 @@ export class Bytes {
         bytes = bigIntToBytes(data)
         break
       default:
-        throw new Error('Unsupported data type:', typeof(data))
+        throw new Error('Unsupported data type:', typeof (data))
     }
 
     if (reverse) {
@@ -58,7 +57,7 @@ export class Bytes {
       // If specified, prepend a varint that
       // provides the length of the byte-array.
       const varbyte = Bytes.varInt(size)
-      bytes = [ ...varbyte, ...bytes ]
+      bytes = [...varbyte, ...bytes]
       size = bytes.length
     }
 
@@ -69,16 +68,16 @@ export class Bytes {
     return typedArray
   }
 
-  static to(bytes, format, opt={}) {
+  static to (bytes, format, opt = {}) {
     /** Convert a byte-array into the specified format. */
-    const { reverse=false } = opt
+    const { reverse = false } = opt
 
     if (reverse) {
       // Reverse the byte-array.
       bytes.reverse()
     }
 
-    switch(format) {
+    switch (format) {
       case 'str':
         return bytesToStr(bytes)
       case 'hex':
@@ -90,11 +89,11 @@ export class Bytes {
     }
   }
 
-  static join(arr) {
+  static join (arr) {
     let idx = 0
-    let totalSize = arr.reduce((prev, curr) => prev + curr.length, 0)
-    let totalBytes = new Uint8Array(totalSize)
-    for (let bytes of arr) {
+    const totalSize = arr.reduce((prev, curr) => prev + curr.length, 0)
+    const totalBytes = new Uint8Array(totalSize)
+    for (const bytes of arr) {
       for (let i = 0; i < bytes.length; idx++, i++) {
         totalBytes[idx] = bytes[i]
       }
@@ -102,7 +101,7 @@ export class Bytes {
     return totalBytes
   }
 
-  static varInt(num) {
+  static varInt (num) {
     if (num < 0xfd) {
       return Bytes.from(num, 1)
     } else if (num < 0x10000) {
@@ -118,7 +117,7 @@ export class Bytes {
 }
 
 export class Stream {
-  constructor(data, size, opt={}) {
+  constructor (data, size, opt = {}) {
     if (Array.isArray(data)) {
       data = Uint8Array.from(data)
     } else {
@@ -126,25 +125,25 @@ export class Stream {
     }
 
     if (!(data instanceof Uint8Array)) {
-      throw new Error('Unsupported type:', typeof(data))
+      throw new Error('Unsupported type:', typeof (data))
     }
 
-    this.data   = data
+    this.data = data
     this.length = this.data.length
     this.buffer = this.data.buffer
-    this.name   = this.data.name
+    this.name = this.data.name
 
     return this
   }
 
-  peek(size, opt={}) {
-    const { reverse=false, format='bytes' } = opt
+  peek (size, opt = {}) {
+    const { reverse = false, format = 'bytes' } = opt
 
-    if (size > this.length ) {
+    if (size > this.length) {
       throw new Error('Size greater than array:', `${size} > ${this.length}`)
     }
 
-    const bytes = (reverse) 
+    const bytes = (reverse)
       ? this.data.slice(0, size).reverse()
       : this.data.slice(0, size)
 
@@ -164,17 +163,17 @@ export class Stream {
     }
   }
 
-  read(size, opt={}) {
+  read (size, opt = {}) {
     size = size || this.readVarint()
     const data = this.peek(size, opt)
     this.data = this.data.slice(size)
     return data
   }
 
-  readVarint() {
+  readVarint () {
     const num = this.read(1, { format: 'number' })
     switch (true) {
-      case (0 <= num && num < 253):
+      case (num >= 0 && num < 253):
         return num
       case (num === 253):
         return this.read(2, { format: 'number' })

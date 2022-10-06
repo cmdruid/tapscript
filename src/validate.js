@@ -1,13 +1,13 @@
-export const isNumber = x => typeof(x) === 'number'
+export const isNumber = x => typeof (x) === 'number'
 
-export const isString = x => typeof(x) === 'string'
+export const isString = x => typeof (x) === 'string'
 
-export function isValidCode(num) {
-  /** Check if the provided value 
+export function isValidCode (num) {
+  /** Check if the provided value
    * is a valid script opcode.
    * */
-  const MIN_RANGE = 75, 
-        MAX_RANGE = 186
+  const MIN_RANGE = 75
+  const MAX_RANGE = 186
 
   const DISABLED_OPCODES = [
     126, 127, 128, 129, 131, 132, 133, 134,
@@ -15,7 +15,7 @@ export function isValidCode(num) {
   ]
 
   switch (true) {
-    case (typeof(num) !== 'number'):
+    case (typeof (num) !== 'number'):
       return false
     case (num === 0):
       return true

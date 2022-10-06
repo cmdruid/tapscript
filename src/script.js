@@ -7,20 +7,19 @@ import { sha256 } from './crypto.js'
 import { Bech32 } from './format/bech32.js'
 
 const scriptRegex = {
-  'p2pkh'  : /^76a914(?<hash>\w{40})88ac$/,
-  'p2sh'   : /^a914(?<hash>\w{40})87$/,
-  'p2wpkh' : /^0014(?<hash>\w{40})$/,
-  'p2wsh'  : /^0020(?<hash>\w{64})$/,
-  'p2tr'   : /^0120(?<hash>\w{64})$/,
+  p2pkh: /^76a914(?<hash>\w{40})88ac$/,
+  p2sh: /^a914(?<hash>\w{40})87$/,
+  p2wpkh: /^0014(?<hash>\w{40})$/,
+  p2wsh: /^0020(?<hash>\w{64})$/,
+  p2tr: /^0120(?<hash>\w{64})$/
 }
 
-export function decodeScript(script, opt) {
-
+export function decodeScript (script, opt) {
   const stream = new Stream(script)
 
   const stack = []
 
-  let word, wordType, wordSize, count = 0
+  let word; let wordType; let wordSize; let count = 0
 
   while (count < stream.length) {
     word = stream.read(1, { format: 'number' })
@@ -60,11 +59,11 @@ export function decodeScript(script, opt) {
   return stack
 }
 
-function getWordType(word) {
+function getWordType (word) {
   switch (true) {
     case (word === 0):
       return 'opcode'
-    case (1 <= word && word <= 75):
+    case (word >= 1 && word <= 75):
       return 'varint'
     case (word === 76):
       return 'pushdata1'
@@ -79,8 +78,8 @@ function getWordType(word) {
   }
 }
 
-function formatCode(code, opt={}) {
-  const { format='asm' } = opt
+function formatCode (code, opt = {}) {
+  const { format = 'asm' } = opt
   switch (format) {
     case 'asm':
       return getOpName(code)
@@ -93,8 +92,8 @@ function formatCode(code, opt={}) {
   }
 }
 
-function getScriptType(script) {
-  for (let p in scriptRegex) {
+function getScriptType (script) {
+  for (const p in scriptRegex) {
     if (scriptRegex[p].test(script)) {
       return p
     }
@@ -102,7 +101,7 @@ function getScriptType(script) {
   return 'unknown'
 }
 
-export function getScriptSigMeta(script) {
+export function getScriptSigMeta (script) {
   const scriptAsm = decodeScript(script)
 
   let scriptType, validSig
@@ -117,7 +116,7 @@ export function getScriptSigMeta(script) {
       ? 'p2pkh'
       : 'unknown'
   }
-  
+
   return {
     scriptType,
     scriptAsm,
@@ -125,37 +124,38 @@ export function getScriptSigMeta(script) {
   }
 }
 
-export function getScriptPubMeta(script) {
+export function getScriptPubMeta (script) {
   const scriptType = getScriptType(script)
 
   return {
     scriptType,
-    scriptAsm  : decodeScript(script),
-    payAddress : getPayAddress(script, scriptType)
+    scriptAsm: decodeScript(script),
+    payAddress: getPayAddress(script, scriptType)
   }
-
 }
 
-export function getWitScriptMeta(witness, meta={}) {
+export function getWitScriptMeta (witness, meta = {}) {
   const { scriptType } = meta
   if (witness.length > 2) {
     const redeemScript = witness.at(-1)
-    if (!scriptType) meta.scriptType = 'p2wsh'
-    meta.redeemAsm = decodeScript(redeemScript),
-    meta.redeemHash = getScriptHash(redeemScript),
+    meta.scriptType = (scriptType.startsWith('p2sh'))
+      ? 'p2sh-p2wsh'
+      : 'p2wsh'
+    meta.redeemAsm = decodeScript(redeemScript)
+    meta.redeemHash = getScriptHash(redeemScript)
     meta.templateHash = getTemplateHash(redeemScript)
   } else {
-    if (!scriptType) meta.scriptType = 'p2wpkh'
+    meta.scriptType = (scriptType.startsWith('p2sh'))
+      ? 'p2sh-p2wpkh'
+      : 'p2wpkh'
     meta.validSig = checkScriptSig(witness)
   }
   return meta
 }
 
-function getPayAddress(script, scriptType) {
+function getPayAddress (script, scriptType) {
   const regex = scriptRegex[scriptType]
   const { hash } = script.match(regex).groups
-
-  
 
   switch (true) {
     case (scriptType === 'p2pkh'):
@@ -171,20 +171,20 @@ function getPayAddress(script, scriptType) {
   }
 }
 
-function checkScriptSig(scriptAsm) {
-  const [ signature, pubkey ] = scriptAsm
+function checkScriptSig (scriptAsm) {
+  // const [signature, pubkey] = scriptAsm
   // also need to get sighash of tx
   return null
 }
 
-export async function getScriptHash(script, fmt='segwit') {
+export async function getScriptHash (script, fmt = 'segwit') {
   if (fmt === 'p2sh') {
-    return bytesToHex(await ripemd160(script))
+    return // bytesToHex(await ripemd160(script))
   }
   return bytesToHex(await sha256(script))
 }
 
-export async function getTemplateHash(script) {
+export async function getTemplateHash (script) {
   const scriptAsm = decodeScript(script)
   const template = scriptAsm.map(word => {
     word = convertCode(word)
@@ -197,13 +197,13 @@ export async function getTemplateHash(script) {
   return bytesToHex(await sha256(Uint8Array.from(template)))
 }
 
-export function convertCode(word) {
+export function convertCode (word) {
   /** Check if the word is a valid opcode,
    *  and return its integer value.
    */
   if (
-    typeof(word) === 'string'
-    && word.startsWith('OP_')
+    typeof (word) === 'string' &&
+    word.startsWith('OP_')
   ) {
     return Number(getOpCode(word))
   }

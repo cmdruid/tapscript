@@ -19,15 +19,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
-const GENERATOR = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3];
+const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'
+const GENERATOR = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
 
 const encodings = {
-  BECH32: "bech32",
-  BECH32M: "bech32m",
-};
+  BECH32: 'bech32',
+  BECH32M: 'bech32m'
+}
 
-function getEncodingConst(enc) {
+function getEncodingConst (enc) {
   switch (enc) {
     case encodings.BECH32:
       return 1
@@ -38,44 +38,44 @@ function getEncodingConst(enc) {
   }
 }
 
-function polymod(values) {
-  var chk = 1;
-  for (var p = 0; p < values.length; ++p) {
-    var top = chk >> 25;
-    chk = (chk & 0x1ffffff) << 5 ^ values[p];
-    for (var i = 0; i < 5; ++i) {
+function polymod (values) {
+  let chk = 1
+  for (let p = 0; p < values.length; ++p) {
+    const top = chk >> 25
+    chk = (chk & 0x1ffffff) << 5 ^ values[p]
+    for (let i = 0; i < 5; ++i) {
       if ((top >> i) & 1) {
-        chk ^= GENERATOR[i];
+        chk ^= GENERATOR[i]
       }
     }
   }
-  return chk;
+  return chk
 }
 
-function hrpExpand(hrp) {
+function hrpExpand (hrp) {
   /** Expand the HRP into values for checksum computation. */
-  const ret = [];
-  let p;
+  const ret = []
+  let p
   for (p = 0; p < hrp.length; ++p) {
-    ret.push(hrp.charCodeAt(p) >> 5);
+    ret.push(hrp.charCodeAt(p) >> 5)
   }
-  ret.push(0);
+  ret.push(0)
   for (p = 0; p < hrp.length; ++p) {
-    ret.push(hrp.charCodeAt(p) & 31);
+    ret.push(hrp.charCodeAt(p) & 31)
   }
-  return ret;
+  return ret
 }
 
-function convertBits(data, fromBits, toBits, pad=true) {
+function convertBits (data, fromBits, toBits, pad = true) {
   /** Power of 2 base conversion. */
-  const ret = [];
+  const ret = []
 
-  let acc = 0, bits = 0;
+  let acc = 0; let bits = 0
 
-  let maxVal = (1 << toBits) - 1,
-      maxAcc = (1 << (fromBits + toBits - 1)) - 1
-  
-  for (let val of data) {
+  const maxVal = (1 << toBits) - 1
+  const maxAcc = (1 << (fromBits + toBits - 1)) - 1
+
+  for (const val of data) {
     if (val < 0 || (val >> fromBits)) {
       return null
     }
@@ -97,102 +97,102 @@ function convertBits(data, fromBits, toBits, pad=true) {
   return ret
 }
 
-function verifyChecksum(hrp, data, enc) {
+function verifyChecksum (hrp, data, enc) {
   const combined = hrpExpand(hrp).concat(data)
-  return polymod(combined) === getEncodingConst(enc);
+  return polymod(combined) === getEncodingConst(enc)
 }
 
-function createChecksum(hrp, data, enc) {
-  var values = hrpExpand(hrp).concat(data).concat([0, 0, 0, 0, 0, 0]);
-  var mod = polymod(values) ^ getEncodingConst(enc);
-  var ret = [];
-  for (var p = 0; p < 6; ++p) {
-    ret.push((mod >> 5 * (5 - p)) & 31);
+function createChecksum (hrp, data, enc) {
+  const values = hrpExpand(hrp).concat(data).concat([0, 0, 0, 0, 0, 0])
+  const mod = polymod(values) ^ getEncodingConst(enc)
+  const ret = []
+  for (let p = 0; p < 6; ++p) {
+    ret.push((mod >> 5 * (5 - p)) & 31)
   }
-  return ret;
+  return ret
 }
 
-function encode(hrp, data, enc) {
+function encode (hrp, data, enc) {
   const combined = data.concat(createChecksum(hrp, data, enc))
-  let ret = hrp + '1';
-  for (var p = 0; p < combined.length; ++p) {
-    ret += CHARSET.charAt(combined[p]);
+  let ret = hrp + '1'
+  for (let p = 0; p < combined.length; ++p) {
+    ret += CHARSET.charAt(combined[p])
   }
-  return ret;
+  return ret
 }
 
-function decode(bechstr, version) {
+function decode (bechstr, version) {
   const enc = (version) ? 'bech32m' : 'bech32'
 
   if (!checkBounds(bechstr)) {
-    return [ null, null ];
+    return [null, null]
   }
 
-  bechstr = bechstr.toLowerCase();
-  
+  bechstr = bechstr.toLowerCase()
+
   if (!checkSeparatorPos(bechstr)) {
-    return [ null, null ];
+    return [null, null]
   }
 
   const data = []
 
-  let pos = bechstr.lastIndexOf('1'),
-      hrp = bechstr.substring(0, pos);
+  const pos = bechstr.lastIndexOf('1')
+  const hrp = bechstr.substring(0, pos)
 
   for (let p = pos + 1; p < bechstr.length; ++p) {
-    let d = CHARSET.indexOf(bechstr.charAt(p));
+    const d = CHARSET.indexOf(bechstr.charAt(p))
     if (d === -1) {
-      return [ null, null ];
+      return [null, null]
     }
-    data.push(d);
+    data.push(d)
   }
 
   return (verifyChecksum(hrp, data, enc))
-    ? [ hrp, data.slice(0, data.length - 6) ]
-    : [ null, null ]
+    ? [hrp, data.slice(0, data.length - 6)]
+    : [null, null]
 }
 
-function checkBounds(bechstr) {
-  let p, char, has_lower = false, has_upper = false;
+function checkBounds (bechstr) {
+  let p; let char; let hasLower = false; let hasUpper = false
 
   for (p = 0; p < bechstr.length; ++p) {
     char = bechstr.charCodeAt(p)
     if (char < 33 || char > 126) {
-      return false;
+      return false
     }
     if (char >= 97 && char <= 122) {
-        has_lower = true;
+      hasLower = true
     }
     if (char >= 65 && char <= 90) {
-        has_upper = true;
+      hasUpper = true
     }
   }
 
-  return !(has_lower && has_upper)
+  return !(hasLower && hasUpper)
 }
 
-function checkSeparatorPos(bechstr) {
-  let pos = bechstr.lastIndexOf('1');
+function checkSeparatorPos (bechstr) {
+  const pos = bechstr.lastIndexOf('1')
   return !(
-    pos < 1 
-    || pos + 7 > bechstr.length 
-    || bechstr.length > 90
+    pos < 1 ||
+    pos + 7 > bechstr.length ||
+    bechstr.length > 90
   )
 }
 
-function bech32encode(hrp, data, version=0) {
-  const dat = [ version, ...convertBits(data, 8, 5) ]
+function bech32encode (hrp, data, version = 0) {
+  const dat = [version, ...convertBits(data, 8, 5)]
   const enc = (version) ? 'bech32m' : 'bech32'
   const str = encode(hrp, dat, enc)
   const chk = bech32decode(str, version)
   return (chk) ? str : null
 }
 
-function bech32decode(string, version=0) {
+function bech32decode (string, version = 0) {
   const hrp = string.split('1', 1)[0]
-  const [ hrpgot, data ] = decode(string, version)
+  const [hrpgot, data] = decode(string, version)
   const decoded = convertBits(data.slice(1), 5, 8, false)
-  const length  = decoded.length
+  const length = decoded.length
 
   switch (true) {
     case (hrp !== hrpgot):
