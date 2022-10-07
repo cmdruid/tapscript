@@ -37,7 +37,8 @@ const config = {
     path: path + '/dist',
     filename: 'bton.js',
     library: 'BTON',
-    libraryTarget: 'var'
+    libraryExport: 'default',
+    libraryTarget: 'umd'
   }
 }
 
