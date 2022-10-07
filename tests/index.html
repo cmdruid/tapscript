@@ -21,7 +21,8 @@
           sequence: 0xFFFFFFFF,
           witness: [
             '30440220084d33f3184626e745ded7792ef265230465d90308698a3ea858579428c0ac1f0220528224177f1bba21ddc83716c11d3a04ae28c0cef4f92649ccf9f88775ebe9c401',
-            '03c1f09640d7ac03330876ecda7bcf30afa46431898b0e55d037c01d3bd03ec3da'
+            '03c1f09640d7ac03330876ecda7bcf30afa46431898b0e55d037c01d3bd03ec3da',
+            '76a914c021f50982f8901e92ea7f92b3a3d546568fb9e788ac'
           ]
         },
         {
@@ -48,7 +49,30 @@
       ],
       locktime: 0,
       meta: {
-        test: 'string'
+        name: 'test contract',
+        parties: [
+          {
+            name: 'alice',
+            desc: 'Buyer',
+            vin: [0],
+            vout: [0, 1],
+            keys: ['a']
+          },
+          {
+            name: 'bob',
+            desc: 'Seller',
+            vin: [0],
+            vout: [0, 1],
+            keys: ['b']
+          },
+          {
+            name: 'Lightning Escrow',
+            desc: 'Escrow agent',
+            vin: [0, 1],
+            vout: [0, 1],
+            keys: ['a', 'b']
+          }
+        ]
       }
     }
 
