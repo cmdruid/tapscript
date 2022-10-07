@@ -26,7 +26,6 @@ export function decodeTx (raw, opt = {}) {
 
   // If witness flag is set, parse witness data.
   if (opt?.hasWitness) {
-    console.log(tx)
     for (const vin of tx.vin) {
       const witness = readWitness(stream)
       vin.txWitness = witness
@@ -50,7 +49,6 @@ function readVersion (stream) {
 
 function checkFlags (stream, opt) {
   const [marker, flag] = stream.peek(2)
-  console.log(marker, flag)
   if (marker === 0) {
     stream.read(2)
     if (flag === 2) {
