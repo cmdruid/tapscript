@@ -9,8 +9,26 @@ import {
   bytesToBigInt
 } from './convert.js'
 
-export class Bytes {
-  static from (data, size, opt = {}) {
+export class Bytes extends Uint8Array {
+  constructor(data, size, opt = {}) {
+    super(size)
+    this.set(data)
+    this.opt = opt
+  }
+
+  to(format, opt = {}) {
+    return Bytes.to(this, format, opt)
+  }
+
+  prepend(data) {
+    return Bytes.from([...data, ...this])
+  }
+
+  concat(data) {
+    return Bytes.from([...this, ...data])
+  }
+
+  static convert(data, size, opt = {}) {
     /** Create a byte-array from the presented data. */
     const {
       varint = false,
@@ -41,18 +59,20 @@ export class Bytes {
         bytes = bigIntToBytes(data)
         break
       default:
-        throw new Error('Unsupported data type:', typeof (data))
+        throw new Error(`Unsupported data type: ${typeof data}`)
     }
 
     if (reverse) {
       // Reverse the byte-array.
       bytes.reverse()
     }
+
     if (!size) {
       // If no fixed-size is provided,
       // use length of byte-array.
       size = bytes.length
     }
+
     if (varint) {
       // If specified, prepend a varint that
       // provides the length of the byte-array.
@@ -68,7 +88,12 @@ export class Bytes {
     return typedArray
   }
 
-  static to (bytes, format, opt = {}) {
+  static from(bytes, format, opt = {}) {
+    const raw = Bytes.convert(bytes, format, opt)
+    return new Bytes(raw, raw.length, opt)
+  }
+
+  static to(bytes, format, opt = {}) {
     /** Convert a byte-array into the specified format. */
     const { reverse = false } = opt
 
@@ -86,10 +111,12 @@ export class Bytes {
         return bytesToNum(bytes)
       case 'bigint':
         return bytesToBigInt(bytes)
+      default:
+        return Uint8Array.from(bytes)
     }
   }
 
-  static join (arr) {
+  static join(arr) {
     let idx = 0
     const totalSize = arr.reduce((prev, curr) => prev + curr.length, 0)
     const totalBytes = new Uint8Array(totalSize)
@@ -101,46 +128,46 @@ export class Bytes {
     return totalBytes
   }
 
-  static varInt (num) {
+  static varInt(num) {
     if (num < 0xfd) {
-      return Bytes.from(num, 1)
+      return Bytes.convert(num, 1)
     } else if (num < 0x10000) {
-      return Bytes.join([Bytes.from('fd', 1), Bytes.from(num, 2)])
+      return Bytes.join([Bytes.convert('fd', 1), Bytes.convert(num, 2)])
     } else if (num < 0x100000000) {
-      return Bytes.join([Bytes.from('fe', 1), Bytes.from(num, 4)])
+      return Bytes.join([Bytes.convert('fe', 1), Bytes.convert(num, 4)])
     } else if (num < 0x10000000000000000) {
-      return Bytes.join([Bytes.from('ff', 1), Bytes.from(num, 8)])
+      return Bytes.join([Bytes.convert('ff', 1), Bytes.convert(num, 8)])
     } else {
-      throw new Error('Int value is too large:', num)
+      throw new Error(`Int value is too large: ${num}`)
     }
   }
 }
 
 export class Stream {
-  constructor (data, size, opt = {}) {
+  constructor(data, size, opt = {}) {
     if (Array.isArray(data)) {
       data = Uint8Array.from(data)
     } else {
-      data = Bytes.from(data, size, opt)
+      data = Bytes.convert(data, size, opt)
     }
 
     if (!(data instanceof Uint8Array)) {
-      throw new Error('Unsupported type:', typeof (data))
+      throw new Error(`Unsupported type: ${typeof data}`)
     }
 
     this.data = data
-    this.length = this.data.length
-    this.buffer = this.data.buffer
+    this.size = this.data.length
+    this.buff = this.data.buffer
     this.name = this.data.name
 
     return this
   }
 
-  peek (size, opt = {}) {
+  peek(size, opt = {}) {
     const { reverse = false, format = 'bytes' } = opt
 
     if (size > this.length) {
-      throw new Error('Size greater than array:', `${size} > ${this.length}`)
+      throw new Error(`Size greater than array: ${size} > ${this.length}`)
     }
 
     const bytes = (reverse)
@@ -159,18 +186,19 @@ export class Stream {
       case 'bigint':
         return bytesToBigInt(bytes)
       default:
-        throw new Error('Unrecognized format:', format)
+        throw new Error(`Unrecognized format: ${format}`)
     }
   }
 
-  read (size, opt = {}) {
+  read(size, opt = {}) {
     size = size || this.readVarint()
     const data = this.peek(size, opt)
     this.data = this.data.slice(size)
+    this.size -= size
     return data
   }
 
-  readVarint () {
+  readVarint() {
     const num = this.read(1, { format: 'number' })
     switch (true) {
       case (num >= 0 && num < 253):

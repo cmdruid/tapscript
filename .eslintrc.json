@@ -12,5 +12,6 @@
     "project": ["tsconfig.json"]
   },
   "rules": {
+    "space-before-function-paren": ["error", "never"]
   }
 }

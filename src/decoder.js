@@ -1,21 +1,28 @@
 import { Stream } from './bytes.js'
+import { appendTxData } from './calc.js'
 import { bytesToJSON } from './convert.js'
 
 import {
-  getScriptSigMeta,
-  getScriptPubMeta,
-  getWitScriptMeta
+  addScriptSigMeta,
+  addScriptPubMeta,
+  addWitScriptMeta
 } from './script.js'
 
-export function decodeTx (raw, opt = {}) {
+export function decodeTx(txhex, opt = {}) {
   /** Decode a raw bitcoin transaction.
    * */
 
   // Setup a byte-stream.
-  const stream = new Stream(raw)
+  const stream = new Stream(txhex)
 
-  // Initiate our object with the version number.
-  const tx = { version: readVersion(stream) }
+  // Initiate our transaction object.
+  const tx = {
+    size: stream.size,
+    bsize: stream.size,
+    msize: 0
+  }
+
+  tx.version = readVersion(stream)
 
   // Check and enable any flags that are set.
   checkFlags(stream, opt)
@@ -26,10 +33,10 @@ export function decodeTx (raw, opt = {}) {
 
   // If witness flag is set, parse witness data.
   if (opt?.hasWitness) {
+    tx.bsize = tx.bsize - stream.size + 4
     for (const vin of tx.vin) {
-      const witness = readWitness(stream)
-      vin.txWitness = witness
-      vin.meta = getWitScriptMeta(witness, vin.meta)
+      vin.witness = { data: readWitness(stream) }
+      addWitScriptMeta(vin.witness)
     }
   }
 
@@ -37,17 +44,23 @@ export function decodeTx (raw, opt = {}) {
   tx.locktime = readLocktime(stream)
 
   // If meta flag is set, parse metadata.
-  if (opt.hasMeta) tx.meta = readMetaData(stream)
+  if (opt.hasMeta) {
+    tx.msize = stream.size
+    tx.size = tx.size - stream.size
+    txhex = txhex.replace('0002', '0001')
+    txhex = txhex.slice(0, -(stream.size * 2))
+    tx.meta = readMetaData(stream)
+  }
 
-  // Return transaction object.
-  return tx
+  // Return transaction object with calculated fields.
+  return appendTxData(tx, txhex)
 }
 
-function readVersion (stream) {
+function readVersion(stream) {
   return stream.read(4, { format: 'number' })
 }
 
-function checkFlags (stream, opt) {
+function checkFlags(stream, opt) {
   const [marker, flag] = stream.peek(2)
   if (marker === 0) {
     stream.read(2)
@@ -62,7 +75,7 @@ function checkFlags (stream, opt) {
   }
 }
 
-function readInputs (stream, opt) {
+function readInputs(stream, opt) {
   const inputs = []
   const vinCount = stream.readVarint()
   for (let i = 0; i < vinCount; i++) {
@@ -71,20 +84,20 @@ function readInputs (stream, opt) {
   return inputs
 }
 
-function readInput (stream) {
+function readInput(stream) {
   const txin = {
     prevTxid: stream.read(32, { format: 'hex', reverse: true }),
     prevOut: stream.read(4, { format: 'number' }),
-    scriptSig: readData(stream, { format: 'hex' }),
+    scriptSig: { hex: readData(stream, { format: 'hex' }) },
     sequence: stream.read(4, { format: 'number' })
   }
 
-  txin.meta = getScriptSigMeta(txin.scriptSig)
+  addScriptSigMeta(txin.scriptSig)
 
   return txin
 }
 
-function readOutputs (stream) {
+function readOutputs(stream) {
   const outputs = []
   const voutCount = stream.readVarint()
   for (let i = 0; i < voutCount; i++) {
@@ -93,18 +106,18 @@ function readOutputs (stream) {
   return outputs
 }
 
-function readOutput (stream) {
+function readOutput(stream) {
   const txout = {
     value: stream.read(8, { format: 'number' }),
-    scriptPubkey: readData(stream, { format: 'hex' })
+    scriptPubkey: { hex: readData(stream, { format: 'hex' }) }
   }
 
-  txout.meta = getScriptPubMeta(txout.scriptPubkey)
+  addScriptPubMeta(txout.scriptPubkey)
 
   return txout
 }
 
-function readWitness (stream) {
+function readWitness(stream) {
   const stack = []
   const count = stream.readVarint()
   for (let i = 0; i < count; i++) {
@@ -114,23 +127,23 @@ function readWitness (stream) {
   return stack
 }
 
-function readData (stream, opt = {}) {
+function readData(stream, opt = {}) {
   const { varint = true } = opt
 
   const size = (varint)
     ? stream.readVarint()
-    : stream.length
+    : stream.size
 
   return (size)
     ? stream.read(size, opt)
-    : 0
+    : 0 // (format === 'hex') ? '00' : 0
 }
 
-function readLocktime (stream) {
+function readLocktime(stream) {
   return stream.read(4, { format: 'number' })
 }
 
-function readMetaData (stream) {
+function readMetaData(stream) {
   const size = stream.readVarint()
   const bytes = stream.read(size)
   return bytesToJSON(bytes)

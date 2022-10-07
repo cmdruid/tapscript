@@ -1,8 +1,8 @@
 export const SIGHASH_MAP = {
-    0x01: 'ALL',
-    0x02: 'NONE',
-    0x03: 'SINGLE',
-    0x80: 'ANYPAY'
+  0x01: 'ALL',
+  0x02: 'NONE',
+  0x03: 'SINGLE',
+  0x80: 'ANYPAY'
 }
 
 export const OPCODE_MAP = {
@@ -95,7 +95,7 @@ export const OPCODE_MAP = {
   182: 'OP_NOP7',
   183: 'OP_NOP8',
   184: 'OP_NOP9',
-  185: 'OP_NOP10',
+  185: 'OP_NOP10'
 }
 
 export function getOpName(num) {
@@ -103,14 +103,14 @@ export function getOpName(num) {
 }
 
 export function getOpCode(string) {
-  for (let [k,v] of Object.entries(OPCODE_MAP)) {
+  for (const [k, v] of Object.entries(OPCODE_MAP)) {
     if (v === string) return Number(k)
   }
   throw new Error('OPCODE not found:', string)
 }
 
 export function getSigCode(string) {
-  for (let [k,v] of Object.entries(SIGHASH_MAP)) {
+  for (const [k, v] of Object.entries(SIGHASH_MAP)) {
     if (v === string) return Number(k)
   }
   throw new Error('SIGCODE not found:', string)

@@ -41,7 +41,7 @@ BTON.digest = {
       prevOut   : 0,          // Index of UTXO being spent.
       scriptSig : [],         // Array of unlocking arguments.
       sequence  : 'FFFFFFFF', // Sequence modifier.
-      txWitness : [           // Array of witness arguments.
+      witness : [           // Array of witness arguments.
 
         'argument2',
         'argument1',

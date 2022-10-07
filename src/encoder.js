@@ -5,63 +5,68 @@ import { isString, isNumber } from './validate.js'
 import { getSigCode } from './codes.js'
 import { convertCode } from './script.js'
 
-export function encodeTx (obj, opt = {}) {
+export function encodeTx(obj, opt = {}) {
   /** Convert a JSON-based Bitcoin transaction
    * into hex-encoded bytes.
    * */
+  const { omitMeta, omitWitness } = opt
   const { version, vin, vout, locktime, meta } = obj
 
   const hasWitness = checkForWitness(vin)
 
   const raw = [encodeVersion(version)]
 
-  if (meta) {
-    raw.push(Bytes.from('0002', 2))
-  } else if (checkForWitness(vin)) {
-    raw.push(Bytes.from('0001', 2))
+  if (!omitMeta && meta) {
+    raw.push(Bytes.convert('0002', 2))
+  } else if (!omitWitness && checkForWitness(vin)) {
+    raw.push(Bytes.convert('0001', 2))
   }
 
   raw.push(encodeInputs(vin))
   raw.push(encodeOutputs(vout))
 
   for (const input of vin) {
-    if (hasWitness && input?.txWitness) {
-      raw.push(encodeWitness(input.txWitness))
+    if (!omitWitness && hasWitness && input?.witness) {
+      raw.push(encodeWitness(input.witness))
     }
   }
 
   raw.push(encodeLocktime(locktime))
 
-  if (meta) raw.push(encodeMeta(meta))
+  if (!omitMeta && meta) raw.push(encodeMeta(meta))
 
   return Bytes.to(Bytes.join(raw), 'hex')
 }
 
-function checkForWitness (vin) {
+export function encodeBaseTx(obj) {
+  return encodeTx(obj, { omitWintess: true, omitMeta: true })
+}
+
+function checkForWitness(vin) {
   /** Check if any witness data is present. */
   for (const txin of vin) {
-    if (txin?.txWitness) return true
+    if (txin?.witness) return true
   }
   return false
 }
 
-function encodeVersion (num) {
-  return Bytes.from(num, 4)
+function encodeVersion(num) {
+  return Bytes.convert(num, 4)
 }
 
-function encodeTxid (txid) {
-  return Bytes.from(txid, 32, { reverse: true })
+function encodeTxid(txid) {
+  return Bytes.convert(txid, 32, { reverse: true })
 }
 
-function encodePrevOut (vout) {
-  return Bytes.from(vout, 4)
+function encodePrevOut(vout) {
+  return Bytes.convert(vout, 4)
 }
 
-function encodeSequence (seq) {
-  return Bytes.from(seq, 4)
+function encodeSequence(seq) {
+  return Bytes.convert(seq, 4)
 }
 
-function encodeInputs (arr) {
+function encodeInputs(arr) {
   const raw = [Bytes.varInt(arr.length)]
   for (const vin of arr) {
     const { prevTxid, prevOut, scriptSig, sequence } = vin
@@ -73,11 +78,11 @@ function encodeInputs (arr) {
   return Bytes.join(raw)
 }
 
-function encodeValue (value) {
-  return Bytes.from(value, 8)
+function encodeValue(value) {
+  return Bytes.convert(value, 8)
 }
 
-function encodeOutputs (arr) {
+function encodeOutputs(arr) {
   const raw = [Bytes.varInt(arr.length)]
   for (const vout of arr) {
     const { value, scriptPubkey } = vout
@@ -87,55 +92,66 @@ function encodeOutputs (arr) {
   return Bytes.join(raw)
 }
 
-function encodeWitness (data) {
+function encodeWitness(data) {
   if (Array.isArray(data)) {
     const words = [Bytes.varInt(data.length)]
     for (const word of data) {
-      words.push(Bytes.from(word, false, { varint: true }))
+      words.push(Bytes.convert(word, false, { varint: true }))
     }
     return Bytes.join(words)
   }
   if (isString(data)) {
-    return Bytes.from(data)
+    return Bytes.convert(data)
   }
   throw new Error('Invalid data type:', typeof (data))
 }
 
-function encodeLocktime (num) {
-  return Bytes.from(num, 4)
+function encodeLocktime(num) {
+  return Bytes.convert(num, 4)
 }
 
-function encodeMeta (meta) {
+function encodeMeta(meta) {
   const bytes = JSONtoBytes(meta)
   const size = Bytes.varInt(bytes.length)
   return Bytes.join([size, bytes])
 }
 
-export function encodeScript (script, opt = {}) {
+export function encodeScript(script, opt = {}) {
   const { varint = true } = opt
+  const { hex, asm } = script
 
   let bytes
 
-  if (Array.isArray(script)) {
-    bytes = encodeScriptArray(script)
-  } else if (isString(script)) {
-    bytes = Bytes.from(script)
-  } else {
-    throw new Error('Invalid script format:', typeof (script))
+  switch (true) {
+    case (hex !== undefined):
+      bytes = Bytes.convert(hex)
+      break
+    case (asm !== undefined):
+      bytes = encodeScriptArray(asm)
+      break
+    case (Array.isArray(script)):
+      bytes = encodeScriptArray(script)
+      break
+    case (isString(script) || isNumber(script)):
+      bytes = Bytes.convert(script)
+      break
+    default:
+      throw new Error(`Invalid script format: ${typeof script}`)
   }
+
   return (varint)
     ? Bytes.join([Bytes.varInt(bytes.length), bytes])
     : bytes
 }
 
-function encodeScriptArray (scriptArray) {
+function encodeScriptArray(scriptArray) {
   const words = []
   for (let word of scriptArray) {
     word = convertCode(word)
     if (isNumber(word)) {
-      words.push(Bytes.from(word, 1))
+      words.push(Bytes.convert(word, 1))
     } else {
-      const bytes = Bytes.from(word)
+      const bytes = Bytes.convert(word)
       words.push(encodeWordSize(bytes.length))
       words.push(bytes)
     }
@@ -143,7 +159,7 @@ function encodeScriptArray (scriptArray) {
   return Bytes.join(words)
 }
 
-export async function getSigHash (tx, idx, value, script, opt = {}) {
+export async function getSigHash(tx, idx, value, script, opt = {}) {
   const { version, vin, vout, locktime } = tx
 
   opt.sigflag = opt.sigflag || 'ALL'
@@ -175,16 +191,16 @@ export async function getSigHash (tx, idx, value, script, opt = {}) {
     ? getSigCode(opt.sigflag) + 0x80
     : getSigCode(opt.sigflag)
 
-  raw.push(Bytes.from(sigcode))
+  raw.push(Bytes.convert(sigcode))
 
   return sha256(Bytes.join(raw))
     .then(bytes => Bytes.to(bytes, 'hex'))
 }
 
-function hashPrevouts (vin, opt) {
+function hashPrevouts(vin, opt) {
   const { anypay } = opt
   if (anypay) {
-    return Bytes.from(0, 32)
+    return Bytes.convert(0, 32)
   }
   const raw = []
   for (const { txid, vout } of vin) {
@@ -194,10 +210,10 @@ function hashPrevouts (vin, opt) {
   return sha256(Bytes.join(raw), 2)
 }
 
-function hashSequence (vin, opt) {
+function hashSequence(vin, opt) {
   const { sigflag, anypay } = opt
   if (anypay || ['SINGLE', 'NONE'].includes(sigflag)) {
-    return Bytes.from(0, 32)
+    return Bytes.convert(0, 32)
   }
   const raw = []
   for (const { sequence } of vin) {
@@ -206,7 +222,7 @@ function hashSequence (vin, opt) {
   return sha256(Bytes.join(raw), 2)
 }
 
-function hashOutputs (vout, idx, opt) {
+function hashOutputs(vout, idx, opt) {
   const { sigflag } = opt
   const raw = []
   if (sigflag === 'ALL') {
@@ -223,22 +239,22 @@ function hashOutputs (vout, idx, opt) {
     }
     return sha256(Bytes.join(raw), 2)
   } else {
-    return Bytes.from(0, 32)
+    return Bytes.convert(0, 32)
   }
 }
 
-function encodeWordSize (size) {
+function encodeWordSize(size) {
   const MAX_SIZE = 0x208
-  const OP_DATAPUSH1 = Bytes.from(0x4c, 1)
-  const OP_DATAPUSH2 = Bytes.from(0x4d, 1)
+  const OP_DATAPUSH1 = Bytes.convert(0x4c, 1)
+  const OP_DATAPUSH2 = Bytes.convert(0x4d, 1)
 
   switch (true) {
     case (size <= 0x4b):
-      return Bytes.from(size, 1)
+      return Bytes.convert(size, 1)
     case (size > 0x4b < 0x100):
-      return Bytes.join([OP_DATAPUSH1, Bytes.from(size, 1)])
+      return Bytes.join([OP_DATAPUSH1, Bytes.convert(size, 1)])
     case (size >= 0x100 < MAX_SIZE):
-      return Bytes.join([OP_DATAPUSH2, Bytes.from(size, 2)])
+      return Bytes.join([OP_DATAPUSH2, Bytes.convert(size, 2)])
     default:
       throw new Error('Invalid word size:', size)
   }
