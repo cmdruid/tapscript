@@ -1,6 +1,5 @@
 import { Stream } from './bytes.js'
 import { appendTxData } from './calc.js'
-import { bytesToJSON } from './convert.js'
 
 import {
   addScriptSigMeta,
@@ -49,7 +48,7 @@ export function decodeTx(txhex, opt = {}) {
     tx.size = tx.size - stream.size
     txhex = txhex.replace('0002', '0001')
     txhex = txhex.slice(0, -(stream.size * 2))
-    tx.meta = readMetaData(stream)
+    tx.meta = { data: readData(stream) }
   }
 
   // Return transaction object with calculated fields.
@@ -136,15 +135,9 @@ function readData(stream, opt = {}) {
 
   return (size)
     ? stream.read(size, opt)
-    : 0 // (format === 'hex') ? '00' : 0
+    : 0
 }
 
 function readLocktime(stream) {
   return stream.read(4, { format: 'number' })
-}
-
-function readMetaData(stream) {
-  const size = stream.readVarint()
-  const bytes = stream.read(size)
-  return bytesToJSON(bytes)
 }

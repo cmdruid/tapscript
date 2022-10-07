@@ -38,7 +38,30 @@ const testTx = {
   ],
   locktime: 0,
   meta: {
-    test: 'string'
+    name: 'test contract',
+    parties: [
+      {
+        name: 'alice',
+        desc: 'Buyer',
+        vin: [0],
+        vout: [0, 1],
+        keys: ['a']
+      },
+      {
+        name: 'bob',
+        desc: 'Seller',
+        vin: [0],
+        vout: [0, 1],
+        keys: ['b']
+      },
+      {
+        name: 'Lightning Escrow',
+        desc: 'Escrow agent',
+        vin: [0, 1],
+        vout: [0, 1],
+        keys: ['a', 'b']
+      }
+    ]
   }
 }
 

@@ -18,10 +18,11 @@ export function decodeScript(script, opt) {
   const stream = new Stream(script)
 
   const stack = []
+  const stackSize = stream.size
 
   let word; let wordType; let wordSize; let count = 0
 
-  while (count < stream.size) {
+  while (count < stackSize) {
     word = stream.read(1, { format: 'number' })
     wordType = getWordType(word)
     count++
@@ -130,14 +131,16 @@ export function addScriptPubMeta(script) {
   script.address = getPayAddress(hex, scriptType)
 }
 
-export function addWitScriptMeta(witness) {
+export async function addWitScriptMeta(witness) {
   if (witness.data.length > 2) {
-    const redeemScript = witness.data.pop()
+    const script = witness.data.pop()
+    const hash = await getScriptHash(script)
     witness.type = 'p2wsh'
-    witness.hex = redeemScript
-    witness.asm = decodeScript(redeemScript)
-    witness.hash = getScriptHash(redeemScript)
-    witness.template = getTemplateHash(redeemScript)
+    witness.hex = script
+    witness.asm = decodeScript(script)
+    witness.hash = hash
+    witness.template = await getTemplateHash(script)
+    witness.address = getPayAddress('0020' + hash, 'p2wsh')
   } else {
     witness.type = 'p2wpkh'
     witness.isValidSig = checkScriptSig(witness.data)

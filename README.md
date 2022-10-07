@@ -65,13 +65,13 @@ BTON.digest = {
 
   /* You can also include metadata! */
   meta: {
-
-    /* Anything that is valid JSON can 
-       go here. Simply remove the meta 
-       field and re-encode the object 
-       to get broadcast-able hex.
-    */
-
+    data: {
+      /* Anything that is valid JSON can 
+        go here. Simply remove the meta 
+        field and re-encode the object 
+        to get broadcast-able hex.
+      */
+    }
   }
 }
 ```
