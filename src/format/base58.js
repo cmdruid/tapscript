@@ -2,7 +2,7 @@ import { bytesToHex, strToBytes } from '../convert.js'
 
 const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
-export function toBase58 (str) {
+export function toBase58(str) {
   const bytes = strToBytes(str)
 
   const d = []
@@ -30,7 +30,7 @@ export function toBase58 (str) {
   return s
 }
 
-export function fromBase58 (str) {
+export function fromBase58(str) {
   const d = []; const b = []; let i; let j; let c; let n
 
   for (i in str) {

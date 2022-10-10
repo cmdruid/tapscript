@@ -1,5 +1,6 @@
 import { Stream } from './bytes.js'
 import { appendTxData } from './calc.js'
+import { addSequenceMeta } from './format/timelocks.js'
 
 import {
   addScriptSigMeta,
@@ -18,21 +19,23 @@ export function decodeTx(txhex, opt = {}) {
   const tx = {
     size: stream.size,
     bsize: stream.size,
-    msize: 0
+    msize: 0,
+    hasWitness: false,
+    hasMeta: false
   }
 
   tx.version = readVersion(stream)
 
   // Check and enable any flags that are set.
-  checkFlags(stream, opt)
+  checkTxFlags(stream, tx)
 
   // Parse our inputs and outputs.
   tx.vin = readInputs(stream)
   tx.vout = readOutputs(stream)
 
   // If witness flag is set, parse witness data.
-  if (opt?.hasWitness) {
-    tx.bsize = tx.bsize - stream.size + 4
+  if (tx.hasWitness) {
+    tx.bsize = tx.bsize - stream.size
     for (const vin of tx.vin) {
       vin.witness = { data: readWitness(stream) }
       addWitScriptMeta(vin.witness)
@@ -43,7 +46,7 @@ export function decodeTx(txhex, opt = {}) {
   tx.locktime = readLocktime(stream)
 
   // If meta flag is set, parse metadata.
-  if (opt.hasMeta) {
+  if (tx.hasMeta) {
     tx.msize = stream.size
     tx.size = tx.size - stream.size
     txhex = txhex.replace('0002', '0001')
@@ -59,15 +62,15 @@ function readVersion(stream) {
   return stream.read(4, { format: 'number' })
 }
 
-function checkFlags(stream, opt) {
+function checkTxFlags(stream, tx) {
   const [marker, flag] = stream.peek(2)
   if (marker === 0) {
     stream.read(2)
     if (flag === 2) {
-      opt.hasMeta = true
+      tx.hasMeta = true
     }
     if (flag > 0) {
-      opt.hasWitness = true
+      tx.hasWitness = true
     } else {
       throw new Error(`Invalid flag: ${flag}`)
     }
@@ -88,10 +91,11 @@ function readInput(stream) {
     prevTxid: stream.read(32, { format: 'hex', reverse: true }),
     prevOut: stream.read(4, { format: 'number' }),
     scriptSig: { hex: readData(stream, { format: 'hex' }) },
-    sequence: stream.read(4, { format: 'number' })
+    sequence: { hex: stream.read(4, { format: 'hex', reverse: true }) }
   }
 
   addScriptSigMeta(txin.scriptSig)
+  addSequenceMeta(txin.sequence)
 
   return txin
 }

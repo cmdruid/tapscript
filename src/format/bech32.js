@@ -27,7 +27,7 @@ const encodings = {
   BECH32M: 'bech32m'
 }
 
-function getEncodingConst (enc) {
+function getEncodingConst(enc) {
   switch (enc) {
     case encodings.BECH32:
       return 1
@@ -38,7 +38,7 @@ function getEncodingConst (enc) {
   }
 }
 
-function polymod (values) {
+function polymod(values) {
   let chk = 1
   for (let p = 0; p < values.length; ++p) {
     const top = chk >> 25
@@ -52,7 +52,7 @@ function polymod (values) {
   return chk
 }
 
-function hrpExpand (hrp) {
+function hrpExpand(hrp) {
   /** Expand the HRP into values for checksum computation. */
   const ret = []
   let p
@@ -66,7 +66,7 @@ function hrpExpand (hrp) {
   return ret
 }
 
-function convertBits (data, fromBits, toBits, pad = true) {
+function convertBits(data, fromBits, toBits, pad = true) {
   /** Power of 2 base conversion. */
   const ret = []
 
@@ -97,12 +97,12 @@ function convertBits (data, fromBits, toBits, pad = true) {
   return ret
 }
 
-function verifyChecksum (hrp, data, enc) {
+function verifyChecksum(hrp, data, enc) {
   const combined = hrpExpand(hrp).concat(data)
   return polymod(combined) === getEncodingConst(enc)
 }
 
-function createChecksum (hrp, data, enc) {
+function createChecksum(hrp, data, enc) {
   const values = hrpExpand(hrp).concat(data).concat([0, 0, 0, 0, 0, 0])
   const mod = polymod(values) ^ getEncodingConst(enc)
   const ret = []
@@ -112,7 +112,7 @@ function createChecksum (hrp, data, enc) {
   return ret
 }
 
-function encode (hrp, data, enc) {
+function encode(hrp, data, enc) {
   const combined = data.concat(createChecksum(hrp, data, enc))
   let ret = hrp + '1'
   for (let p = 0; p < combined.length; ++p) {
@@ -121,7 +121,7 @@ function encode (hrp, data, enc) {
   return ret
 }
 
-function decode (bechstr, version) {
+function decode(bechstr, version) {
   const enc = (version) ? 'bech32m' : 'bech32'
 
   if (!checkBounds(bechstr)) {
@@ -152,7 +152,7 @@ function decode (bechstr, version) {
     : [null, null]
 }
 
-function checkBounds (bechstr) {
+function checkBounds(bechstr) {
   let p; let char; let hasLower = false; let hasUpper = false
 
   for (p = 0; p < bechstr.length; ++p) {
@@ -171,7 +171,7 @@ function checkBounds (bechstr) {
   return !(hasLower && hasUpper)
 }
 
-function checkSeparatorPos (bechstr) {
+function checkSeparatorPos(bechstr) {
   const pos = bechstr.lastIndexOf('1')
   return !(
     pos < 1 ||
@@ -180,7 +180,7 @@ function checkSeparatorPos (bechstr) {
   )
 }
 
-function bech32encode (hrp, data, version = 0) {
+function bech32encode(hrp, data, version = 0) {
   const dat = [version, ...convertBits(data, 8, 5)]
   const enc = (version) ? 'bech32m' : 'bech32'
   const str = encode(hrp, dat, enc)
@@ -188,7 +188,7 @@ function bech32encode (hrp, data, version = 0) {
   return (chk) ? str : null
 }
 
-function bech32decode (string, version = 0) {
+function bech32decode(string, version = 0) {
   const hrp = string.split('1', 1)[0]
   const [hrpgot, data] = decode(string, version)
   const decoded = convertBits(data.slice(1), 5, 8, false)

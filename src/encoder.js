@@ -4,6 +4,7 @@ import { JSONtoBytes } from './convert.js'
 import { isString, isNumber } from './validate.js'
 import { getSigCode } from './codes.js'
 import { convertCode } from './script.js'
+import { encodeSequenceMeta } from './format/timelocks.js'
 
 export function encodeTx(obj, opt = {}) {
   /** Convert a JSON-based Bitcoin transaction
@@ -63,7 +64,21 @@ function encodePrevOut(vout) {
 }
 
 function encodeSequence(seq) {
-  return Bytes.convert(seq, 4)
+  let sequence
+  switch (true) {
+    case (seq === 0 || seq === null):
+      sequence = Bytes.convert(0xFFFFFFFF, 4)
+      break
+    case (isString(seq) || isNumber(seq)):
+      sequence = Bytes.convert(seq, 4)
+      break
+    case (typeof seq === 'object'):
+      sequence = Bytes.convert(encodeSequenceMeta(seq), 4)
+      break
+    default:
+      throw new TypeError('Invalid sequence:' + seq)
+  }
+  return sequence
 }
 
 function encodeInputs(arr) {
@@ -92,18 +107,26 @@ function encodeOutputs(arr) {
   return Bytes.join(raw)
 }
 
-function encodeWitness(data) {
-  if (Array.isArray(data)) {
-    const words = [Bytes.varInt(data.length)]
-    for (const word of data) {
-      words.push(Bytes.convert(word, false, { varint: true }))
-    }
-    return Bytes.join(words)
+function encodeWitness(witness) {
+  switch (true) {
+    case (typeof witness === 'object'):
+      witness = [...witness.data, witness.hex]
+      return encodeWordArray(witness)
+    case (Array.isArray(witness)):
+      return encodeWordArray(witness)
+    case (typeof data === 'string'):
+      return Bytes.convert(witness)
+    default:
+      throw new Error('Invalid data type:', typeof (data))
   }
-  if (isString(data)) {
-    return Bytes.convert(data)
+}
+
+function encodeWordArray(data) {
+  const words = [Bytes.varInt(data.length)]
+  for (const word of data) {
+    words.push(Bytes.convert(word, false, { varint: true }))
   }
-  throw new Error('Invalid data type:', typeof (data))
+  return Bytes.join(words)
 }
 
 function encodeLocktime(num) {
