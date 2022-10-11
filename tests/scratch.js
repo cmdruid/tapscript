@@ -72,7 +72,11 @@ const testTx = {
       }
     }
   ],
-  locktime: 0
+  locktime: 0,
+  meta: {
+    name: 'Escrow Contract',
+    parties: ['alice', 'bob']
+  }
 }
 
 const encoded = BTON.encode.tx(testTx)
