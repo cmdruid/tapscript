@@ -1,10 +1,10 @@
 import { Stream } from './bytes.js'
 import { isValidCode } from './validate.js'
 import { getOpName, getOpCode } from './codes.js'
-import { toBase58 } from './format/base58.js'
-import { bytesToHex, hexToBytes } from './convert.js'
+import Base58 from './format/base58.js'
+import Convert from './format/convert.js'
 import { sha256 } from './crypto.js'
-import { Bech32 } from './format/bech32.js'
+import Bech32 from './format/bech32.js'
 
 const scriptRegex = {
   p2pkh: /^76a914(?<hash>\w{40})88ac$/,
@@ -23,27 +23,27 @@ export function decodeScript(script, opt) {
   let word; let wordType; let wordSize; let count = 0
 
   while (count < stackSize) {
-    word = stream.read(1, { format: 'number' })
+    word = stream.read(1).toNumber()
     wordType = getWordType(word)
     count++
     switch (wordType) {
       case 'varint':
-        stack.push(stream.read(word, { format: 'hex' }))
+        stack.push(stream.read(word).toHex())
         count += word
         break
       case 'pushdata1':
-        wordSize = stream.read(1, { format: 'number' })
-        stack.push(stream.read(wordSize, { format: 'hex' }))
+        wordSize = stream.read(1).toNumber()
+        stack.push(stream.read(wordSize).toHex())
         count += wordSize + 1
         break
       case 'pushdata2':
-        wordSize = stream.read(2, { format: 'number' })
-        stack.push(stream.read(wordSize, { format: 'hex' }))
+        wordSize = stream.read(2).toNumber()
+        stack.push(stream.read(wordSize).toHex())
         count += wordSize + 2
         break
       case 'pushdata4':
-        wordSize = stream.read(4, { format: 'number' })
-        stack.push(stream.read(wordSize, { format: 'hex' }))
+        wordSize = stream.read(4).toNumber()
+        stack.push(stream.read(wordSize).toHex())
         count += wordSize + 4
         break
       case 'opcode':
@@ -143,25 +143,31 @@ export async function addWitScriptMeta(witness) {
     witness.address = getPayAddress('0020' + hash, 'p2wsh')
   } else {
     witness.type = 'p2wpkh'
+    // witness.address = getPayAddress('0014' + witness.data[1], 'p2wpkh')
     witness.isValidSig = checkScriptSig(witness.data)
   }
 }
 
 function getPayAddress(script, scriptType) {
   const regex = scriptRegex[scriptType]
-  const { hash } = script.match(regex).groups
+  const { groups } = script.match(regex)
 
-  switch (true) {
-    case (scriptType === 'p2pkh'):
-      return toBase58(hash)
-    case (scriptType.startsWith('p2sh')):
-      return toBase58(hash)
-    case (scriptType.startsWith('p2w')):
-      return Bech32.encode('bcrt', hexToBytes(hash))
-    case (scriptType === 'p2tr'):
-      return Bech32.encode('tr', hexToBytes(hash), 1)
-    default:
-      return null
+  if (groups?.hash) {
+    const { hash } = groups
+    switch (true) {
+      case (scriptType === 'p2pkh'):
+        return Base58.encode(hash)
+      case (scriptType.startsWith('p2sh')):
+        return Base58.encode(hash)
+      case (scriptType.startsWith('p2w')):
+        return Bech32.encode('bcrt', Convert.from(hash, 'hex').toBytes())
+      case (scriptType === 'p2tr'):
+        return Bech32.encode('tr', Convert.from(hash, 'hex').toBytes(), 1)
+      default:
+        return null
+    }
+  } else {
+    return null
   }
 }
 
@@ -175,7 +181,7 @@ export async function getScriptHash(script, fmt = 'segwit') {
   if (fmt === 'p2sh') {
     return // bytesToHex(await ripemd160(script))
   }
-  return bytesToHex(await sha256(script))
+  return Convert.bytes(await sha256(script)).toHex()
 }
 
 export async function getTemplateHash(script) {
@@ -188,7 +194,7 @@ export async function getTemplateHash(script) {
     return 0x01
   })
 
-  return bytesToHex(await sha256(Uint8Array.from(template)))
+  return Convert.bytes(await sha256(Uint8Array.from(template))).toHex()
 }
 
 export function convertCode(word) {

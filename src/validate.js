@@ -2,7 +2,7 @@ export const isNumber = x => typeof (x) === 'number'
 
 export const isString = x => typeof (x) === 'string'
 
-export function isValidCode (num) {
+export function isValidCode(num) {
   /** Check if the provided value
    * is a valid script opcode.
    * */

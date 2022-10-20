@@ -1,4 +1,4 @@
-import { Stream } from './bytes.js'
+import { Bytes, Stream } from './bytes.js'
 import { appendTxData } from './calc.js'
 import { addSequenceMeta } from './format/timelocks.js'
 
@@ -59,7 +59,7 @@ export function decodeTx(txhex, opt = {}) {
 }
 
 function readVersion(stream) {
-  return stream.read(4, { format: 'number' })
+  return stream.read(4).toNumber()
 }
 
 function checkTxFlags(stream, tx) {
@@ -88,10 +88,10 @@ function readInputs(stream, opt) {
 
 function readInput(stream) {
   const txin = {
-    prevTxid: stream.read(32, { format: 'hex', reverse: true }),
-    prevOut: stream.read(4, { format: 'number' }),
-    scriptSig: { hex: readData(stream, { format: 'hex' }) },
-    sequence: { hex: stream.read(4, { format: 'hex', reverse: true }) }
+    prevTxid: stream.read(32, true).toHex(),
+    prevOut: stream.read(4).toNumber(),
+    scriptSig: { hex: readData(stream).toHex() },
+    sequence: { hex: stream.read(4, true).toHex() }
   }
 
   addScriptSigMeta(txin.scriptSig)
@@ -111,8 +111,8 @@ function readOutputs(stream) {
 
 function readOutput(stream) {
   const txout = {
-    value: stream.read(8, { format: 'number' }),
-    scriptPubkey: { hex: readData(stream, { format: 'hex' }) }
+    value: stream.read(8).toNumber(),
+    scriptPubkey: { hex: readData(stream).toHex() }
   }
 
   addScriptPubMeta(txout.scriptPubkey)
@@ -124,7 +124,7 @@ function readWitness(stream) {
   const stack = []
   const count = stream.readVarint()
   for (let i = 0; i < count; i++) {
-    const word = readData(stream, { format: 'hex' })
+    const word = readData(stream).toHex()
     stack.push(word)
   }
   return stack
@@ -138,10 +138,10 @@ function readData(stream, opt = {}) {
     : stream.size
 
   return (size)
-    ? stream.read(size, opt)
-    : 0
+    ? stream.read(size)
+    : Bytes.from(0)
 }
 
 function readLocktime(stream) {
-  return stream.read(4, { format: 'number' })
+  return stream.read(4).toNumber()
 }

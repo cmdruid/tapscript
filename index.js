@@ -1,21 +1,13 @@
 import { encodeTx, encodeScript, getSigHash } from './src/encoder.js'
 import { decodeTx } from './src/decoder.js'
 import { decodeScript, getScriptHash, getTemplateHash } from './src/script.js'
+import { Bytes, Stream } from './src/bytes.js'
+import Base64 from './src/format/base64.js'
+import Base58 from './src/format/base58.js'
+import Bech32 from './src/format/bech32.js'
+// import { hash160 } from './src/crypto/lib/ripemd160.js'
 
 export default class BTON {
-  // constructor (data, opt = {}) {
-  //   if (typeof (data) === 'string') {
-  //     data = BTON.decode.tx(data, opt)
-  //   } else {
-  //     data = BTON.convert(data, opt)
-  //   }
-
-  //   this.data = data
-  //   this.opt = opt
-
-  //   return this
-  // }
-
   static encode = {
     tx: encodeTx,
     script: encodeScript
@@ -26,7 +18,7 @@ export default class BTON {
     script: decodeScript
   }
 
-  static convert = (tx, opt) => {
+  static transcode = (tx, opt) => {
     return decodeTx(encodeTx(tx, opt), opt)
   }
 
@@ -35,6 +27,21 @@ export default class BTON {
     scriptHash: getScriptHash,
     templateHash: getTemplateHash,
     metahash: null
+  }
+
+  static utils = {
+    bytes: Bytes,
+    stream: Stream,
+    bech32: Bech32,
+    base58: Base58,
+    base64: Base64
+  }
+
+  static crypto = {
+    // hash: { sha256: null, ripemd: hash160 },
+    secret: { encrypt: null, decrypt: null },
+    ECDSA: { sign: null, verify: null },
+    schnorr: { sign: null, verify: null }
   }
 
   // static validate = {

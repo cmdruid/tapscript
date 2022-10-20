@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "pack": "webpack",
-    "test": "echo \"No test specified\"",
+    "test": "tape tests/**/*.test.js",
     "dev": "export TS_JEST_DISABLE_VER_CHECKER=true && jest",
     "lint": "eslint . --ext .ts",
     "scratch": "node tests/scratch.js"
@@ -44,6 +44,7 @@
     "@babel/core": "^7.19.3",
     "@babel/preset-env": "^7.19.3",
     "@types/jest": "*",
+    "@types/tape": "^4.13.2",
     "@typescript-eslint/eslint-plugin": "*",
     "babel-loader": "^8.2.5",
     "eslint": "*",
@@ -52,6 +53,7 @@
     "eslint-plugin-n": "*",
     "eslint-plugin-promise": "*",
     "jest": "*",
+    "tape": "^5.6.1",
     "ts-jest": "*",
     "ts-node": "*",
     "tsconfig-paths": "*",

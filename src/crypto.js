@@ -5,9 +5,15 @@ const crypto = (typeof window !== 'undefined')
   ? window.crypto
   : webcrypto
 
+export default class Crypto {
+  static encrypt
+  static decrypt
+  static hash
+}
+
 export async function sha256(data, rounds = 1) {
   if (!(data instanceof Uint8Array)) {
-    data = Bytes.convert(data)
+    data = Bytes.from(data).toBytes()
   }
   for (let i = 0; i < rounds; i++) {
     data = await crypto.subtle.digest('SHA-256', data)

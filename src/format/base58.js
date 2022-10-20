@@ -1,11 +1,19 @@
-import { bytesToHex, strToBytes } from '../convert.js'
+export default class Base58 {
+  static encode = toBase58
+  static decode = fromBase58
+  static ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+}
 
-const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+const ec = new TextEncoder()
+const dc = new TextDecoder()
 
-export function toBase58(str) {
-  const bytes = strToBytes(str)
+function toBase58(data) {
+  const bytes = (data instanceof Uint8Array)
+    ? data
+    : ec.encode(data)
 
   const d = []
+
   let s = ''
   let i, j, c, n
 
@@ -24,18 +32,18 @@ export function toBase58(str) {
   }
 
   while (j--) {
-    s += ALPHABET[d[j]]
+    s += Base58.ALPHABET[d[j]]
   }
 
   return s
 }
 
-export function fromBase58(str) {
+function fromBase58(str) {
   const d = []; const b = []; let i; let j; let c; let n
 
   for (i in str) {
     j = 0
-    c = ALPHABET.indexOf(str[i])
+    c = Base58.ALPHABET.indexOf(str[i])
 
     if (c < 0) {
       return undefined
@@ -56,5 +64,11 @@ export function fromBase58(str) {
     b.push(d[j])
   }
 
-  return bytesToHex(new Uint8Array(b))
+  return dc.decode(Uint8Array.from(b).buffer)
 };
+
+const testMessage = 'thisisatest'
+const encoded = Base58.encode(testMessage)
+const decoded = Base58.decode(encoded)
+
+console.log(encoded, decoded, decoded === testMessage)

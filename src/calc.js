@@ -1,4 +1,5 @@
-import { bytesToHex, bytesToJSON } from './convert.js'
+import Convert from './format/convert.js'
+import { bytesToJSON } from './helpers.js'
 import { hash256, sha256 } from './crypto.js'
 
 export async function appendTxData(tx, txhex) {
@@ -11,8 +12,8 @@ export async function appendTxData(tx, txhex) {
   await getMetaData(tx)
 
   return {
-    txid: bytesToHex(txid.reverse()),
-    hash: bytesToHex(hash.reverse()),
+    txid: Convert.bytes(txid.reverse()).toHex(),
+    hash: Convert.bytes(hash.reverse()).toHex(),
     ...tx,
     weight,
     vsize,
@@ -49,7 +50,7 @@ async function getMetaData(tx) {
     const { data } = meta
     tx.meta = {
       data: bytesToJSON(data),
-      hash: bytesToHex(await sha256(data))
+      hash: Convert.bytes(await sha256(data)).toHex()
     }
   }
 }
