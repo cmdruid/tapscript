@@ -3,8 +3,10 @@ import { isValidCode } from './validate.js'
 import { getOpName, getOpCode } from './codes.js'
 import Base58 from './format/base58.js'
 import Convert from './format/convert.js'
-import { sha256 } from './crypto.js'
+import Crypto from './crypto/index.js'
 import Bech32 from './format/bech32.js'
+
+const { Hash } = Crypto
 
 const scriptRegex = {
   p2pkh: /^76a914(?<hash>\w{40})88ac$/,
@@ -134,7 +136,7 @@ export function addScriptPubMeta(script) {
 export async function addWitScriptMeta(witness) {
   if (witness.data.length > 2) {
     const script = witness.data.pop()
-    const hash = await getScriptHash(script)
+    const hash = await getScriptHash(script, 'p2wsh')
     witness.type = 'p2wsh'
     witness.hex = script
     witness.asm = decodeScript(script)
@@ -177,11 +179,22 @@ function checkScriptSig(scriptAsm) {
   return null
 }
 
-export async function getScriptHash(script, fmt = 'segwit') {
-  if (fmt === 'p2sh') {
-    return // bytesToHex(await ripemd160(script))
+export async function getScriptHash(script, fmt) {
+  let res
+  switch (fmt) {
+    case 'p2pkh':
+      res = Hash.hash160(Convert.hex(script))
+      break
+    case 'p2sh':
+      res = Hash.hash160(Convert.hex(script))
+      break
+    case 'p2wsh':
+      res = Hash.hash256(Convert.hex(script))
+      break
+    default:
+      throw new Error('Invalid format: ' + fmt)
   }
-  return Convert.bytes(await sha256(script)).toHex()
+  return Convert.bytes(await res).toHex()
 }
 
 export async function getTemplateHash(script) {
@@ -194,7 +207,7 @@ export async function getTemplateHash(script) {
     return 0x01
   })
 
-  return Convert.bytes(await sha256(Uint8Array.from(template))).toHex()
+  return Convert.bytes(await Hash.sha256(Uint8Array.from(template))).toHex()
 }
 
 export function convertCode(word) {

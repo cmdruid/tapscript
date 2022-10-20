@@ -1,6 +1,6 @@
 {
   "name": "bton-lib",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "A basic library for working with Bitcoin transaction data.",
   "private": false,
   "main": "index.js",

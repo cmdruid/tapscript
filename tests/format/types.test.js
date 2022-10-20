@@ -1,6 +1,5 @@
 /* eslint-disable key-spacing */
 import test from 'tape'
-
 import Type from '../../src/format/types.js'
 
 test('types.js', t => {

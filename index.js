@@ -5,7 +5,7 @@ import { Bytes, Stream } from './src/bytes.js'
 import Base64 from './src/format/base64.js'
 import Base58 from './src/format/base58.js'
 import Bech32 from './src/format/bech32.js'
-// import { hash160 } from './src/crypto/lib/ripemd160.js'
+import Hash from './src/crypto/hash.js'
 
 export default class BTON {
   static encode = {
@@ -34,11 +34,11 @@ export default class BTON {
     stream: Stream,
     bech32: Bech32,
     base58: Base58,
-    base64: Base64
+    base64: Base64,
+    hash: Hash
   }
 
   static crypto = {
-    // hash: { sha256: null, ripemd: hash160 },
     secret: { encrypt: null, decrypt: null },
     ECDSA: { sign: null, verify: null },
     schnorr: { sign: null, verify: null }

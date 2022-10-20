@@ -1,7 +1,5 @@
 import test from 'tape'
-
 import { webcrypto as crypto } from 'crypto'
-
 import Convert from '../../src/format/convert.js'
 
 const ec = new TextEncoder()

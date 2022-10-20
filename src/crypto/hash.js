@@ -1,6 +1,7 @@
 /* eslint-disable no-multi-spaces */
 import { webcrypto as crypto } from 'crypto'
-import Convert from '../format/convert'
+import { hash160 } from './ripemd160.js'
+import Convert from '../format/convert.js'
 
 const ec = new TextEncoder()
 
@@ -9,15 +10,17 @@ export default class Hash {
     return Hash.digest(bytes)
   }
 
-  static ripemd() {
-    return null
+  static ripemd160(bytes) {
+    return hash160(bytes)
+  }
+
+  static async hash160(bytes) {
+    return Hash.sha256(bytes).then((b) => Hash.ripemd160(b))
   }
 
   static async hash256(bytes) {
     return Hash.digest(bytes, { rounds: 2 })
   }
-
-  static hash160 = null
 
   static async digest(bytes, opt) {
     const hash = new Hash(opt)

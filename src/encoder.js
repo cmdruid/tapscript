@@ -15,8 +15,6 @@ export function encodeTx(obj, opt = {}) {
 
   const hasWitness = checkForWitness(vin)
 
-  console.log('version:', version)
-
   const raw = [encodeVersion(version)]
 
   if (!omitMeta && meta) {
