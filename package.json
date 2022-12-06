@@ -1,18 +1,25 @@
 {
   "name": "bton-lib",
-  "version": "0.1.12",
+  "version": "0.1.15",
   "description": "A basic library for working with Bitcoin transaction data.",
-  "private": false,
-  "main": "index.js",
-  "unpkg": "dist/bton.js",
   "type": "module",
+  "main": "./dist/main.js",
+  "unpkg": "./dist/bundle.min.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    "import": "./dist/module.js",
+    "require": "./dist/main.js"
+  },
   "scripts": {
-    "build": "tsc",
-    "pack": "webpack",
-    "test": "tape tests/**/*.test.js",
-    "dev": "export TS_JEST_DISABLE_VER_CHECKER=true && jest",
+    "build": "rollup -c rollup.config.ts --configPlugin typescript",
+    "clean": "rm -rf dist/* coverage .nyc_output",
+    "scratch": "node --loader ts-node/esm --no-warnings test/scratch.ts",
+    "format": "prettier --write .",
     "lint": "eslint . --ext .ts",
-    "scratch": "node tests/scratch.js"
+    "tape": "node --loader ts-node/esm --no-warnings test/index.test.js",
+    "test": "nyc --reporter=lcov --require ts-node/register yarn tape | tap-spec; nyc report ---reporter=text",
+    "types": "tsc",
+    "release": "yarn clean && yarn types && yarn lint && yarn build && yarn test"
   },
   "keywords": [
     "bitcoin",
@@ -36,32 +43,37 @@
   "files": [
     "README.md",
     "LICENSE",
-    "dist",
-    "src",
-    "index.js"
+    "dist"
   ],
   "devDependencies": {
-    "@babel/core": "^7.19.3",
-    "@babel/preset-env": "^7.19.3",
-    "@types/jest": "*",
+    "@rollup/plugin-commonjs": "^23.0.2",
+    "@rollup/plugin-json": "^5.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^9.0.2",
     "@types/tape": "^4.13.2",
     "@typescript-eslint/eslint-plugin": "*",
-    "babel-loader": "^8.2.5",
+    "camelcase": "^7.0.0",
     "eslint": "*",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-config-standard-with-typescript": "*",
     "eslint-plugin-import": "*",
     "eslint-plugin-n": "*",
     "eslint-plugin-promise": "*",
-    "jest": "*",
+    "nyc": "^15.1.0",
+    "prettier": "^2.7.1",
+    "rollup": "^3.2.3",
+    "rollup-plugin-terser": "^7.0.2",
+    "tap-spec": "^5.0.0",
     "tape": "^5.6.1",
-    "ts-jest": "*",
-    "ts-node": "*",
-    "tsconfig-paths": "*",
-    "typescript": "*",
-    "webpack": "^5.74.0",
-    "webpack-cli": "^4.10.0"
+    "tiny-secp256k1": "^2.2.1",
+    "ts-node": "^10.9.1",
+    "typescript": "*"
+  },
+  "dependencies": {
+    "@cmdcode/buff-utils": "^1.1.4",
+    "@cmdcode/crypto-utils": "^1.0.17"
   },
   "browser": {
-    "crypto": false
+    "crypto": true
   }
 }
