@@ -1,6 +1,6 @@
 {
   "name": "@cmdcode/bton",
-  "version": "0.1.16",
+  "version": "1.0.0",
   "description": "A basic library for working with Bitcoin transaction data.",
   "type": "module",
   "main": "./dist/main.js",
@@ -13,13 +13,14 @@
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin typescript",
     "clean": "rm -rf dist/* coverage .nyc_output",
-    "scratch": "node --loader ts-node/esm --no-warnings test/scratch.ts",
-    "format": "prettier --write .",
+    "start": "node --trace-deprecation --no-warnings --loader ts-node/esm",
+    "scratch": "yarn start test/scratch.ts",
     "lint": "eslint . --ext .ts",
-    "tape": "node --loader ts-node/esm --no-warnings test/index.test.js",
+    "fix": "eslint --fix . --ext .ts",
+    "tape": "yarn start test/tape.ts",
     "test": "nyc --reporter=lcov --require ts-node/register yarn tape | tap-spec; nyc report ---reporter=text",
     "types": "tsc",
-    "release": "yarn clean && yarn types && yarn lint && yarn build && yarn test"
+    "release": "yarn test && yarn clean && yarn types && yarn lint && yarn build"
   },
   "keywords": [
     "bitcoin",
@@ -46,33 +47,32 @@
     "dist"
   ],
   "devDependencies": {
+    "@cmdcode/buff-utils": "^1.4.3",
+    "@cmdcode/crypto-utils": "^1.5.11",
+    "@cmdcode/keylink": "^1.2.0",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-json": "^5.0.1",
     "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^9.0.2",
+    "@types/node": "^18.14.0",
     "@types/tape": "^4.13.2",
-    "@typescript-eslint/eslint-plugin": "*",
-    "camelcase": "^7.0.0",
-    "eslint": "*",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-config-standard-with-typescript": "*",
-    "eslint-plugin-import": "*",
-    "eslint-plugin-n": "*",
-    "eslint-plugin-promise": "*",
+    "@typescript-eslint/eslint-plugin": "^5.48.0",
+    "eslint": "^8.31.0",
+    "eslint-config-standard-with-typescript": "^26.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.6.0",
+    "eslint-plugin-promise": "^6.1.1",
     "nyc": "^15.1.0",
     "prettier": "^2.7.1",
     "rollup": "^3.2.3",
-    "rollup-plugin-terser": "^7.0.2",
     "tap-spec": "^5.0.0",
     "tape": "^5.6.1",
-    "tiny-secp256k1": "^2.2.1",
     "ts-node": "^10.9.1",
-    "typescript": "*"
+    "typescript": "^4.9.4",
+    "zod": "^3.20.6"
   },
-  "dependencies": {
-    "@cmdcode/buff-utils": "^1.1.4",
-    "@cmdcode/crypto-utils": "^1.0.17"
-  },
+  "dependencies": {},
   "browser": {
     "crypto": true
   }
