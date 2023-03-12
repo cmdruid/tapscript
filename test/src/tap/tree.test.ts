@@ -39,7 +39,7 @@ export async function tweak_test(t : Test) : Promise<void> {
       if (scripts.length === 0) {
         t.test('Testing empty key tweak.', async t => {
           t.plan(1)
-          const [ tapkey ] = await TAP.getTapKey(internalPubkey)
+          const [ tapkey ] = await TAP.getTapPubkey(internalPubkey)
           t.equal(tapkey, tweakedPubkey, 'Tweaked pubs should match.')
         })
       } else {
@@ -49,7 +49,7 @@ export async function tweak_test(t : Test) : Promise<void> {
           t.equal(Buff.raw(root).hex, merkleRoot, 'Root hash should match.')
           const taptweak = await TAP.getTapTweak(internalPubkey, merkleRoot as string)
           t.equal(Buff.raw(taptweak).hex, tweak, 'Tweak hash should match.')
-          const [ tapkey ] = (await TAP.getTapKey(internalPubkey, leafHashes))
+          const [ tapkey ] = (await TAP.getTapPubkey(internalPubkey, leafHashes))
           t.equal(tapkey, tweakedPubkey, 'Tweaked pubs should match.')
         })
 
@@ -58,7 +58,6 @@ export async function tweak_test(t : Test) : Promise<void> {
         for (let i = 0; i < leaves.length; i++) {
           t.test('Testing leaf: ' + leaves[i], async t => {
             t.plan(2)
-            const cblock  = cblocks[i]
             const cbyte   = Buff.hex(cblocks[i]).slice(0, 1).num
             const parity  = (cbyte % 2 === 0) ? 0 : 1
             const version = cbyte & 0xfe
@@ -68,7 +67,7 @@ export async function tweak_test(t : Test) : Promise<void> {
             t.equal(tapleaf, leaves[i], 'Leaf hash should match.')
 
             const target = leaves[i]
-            const block  = await TAP.getTapPath(internalPubkey, leafHashes, target, version, parity, true)
+            const block  = await TAP.getTapPath(internalPubkey, target, leafHashes, version, parity)
             t.equal(block, cblocks[i], 'Control blocks should be equal.')
           })
         }

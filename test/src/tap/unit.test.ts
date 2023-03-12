@@ -33,11 +33,12 @@ export async function unit_tests(t : Test) : Promise<void> {
   t.test('Testing control block creation', async t => {
     const vectors = test_vectors.ctrlblock
     t.plan(vectors.length)
-    for (const { scripts, index, pubkey, parity, cblock } of vectors) {
+    for (const { scripts, index, pubkey, cblock } of vectors) {
       const data   = scripts.map(e => Script.encode(e))
       const leaves = await Promise.all(data.map(e => Tap.getLeaf(e, 0xc0)))
-      const target = Buff.raw(data[index]).hex
-      const block  = await Tap.getPath(pubkey, leaves, target)
+      const script = Buff.raw(data[index]).hex
+      const target = await Tap.getLeaf(script)
+      const block  = await Tap.getPath(pubkey, target, leaves)
       t.equal(block, cblock, 'Control block should match')
     }
   }),
@@ -46,7 +47,8 @@ export async function unit_tests(t : Test) : Promise<void> {
     t.plan(vectors.length)
     for (const { address, scripts, index, cblock } of vectors) {
       const tapkey  = Tap.decodeAddress(address)
-      const target  = Buff.raw(Script.encode(scripts[index])).hex
+      const script  = Script.encode(scripts[index])
+      const target  = await Tap.getLeaf(script)
       const isValid = await Tap.checkPath(tapkey, cblock, target)
       t.true(isValid, 'Control block should be valid.')
     }

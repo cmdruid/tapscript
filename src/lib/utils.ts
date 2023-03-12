@@ -1,5 +1,8 @@
-export function safeThrow (msg : string, bool : boolean) : boolean {
-  if (bool) {
-    throw new Error(msg)
+export function safeThrow (
+  errorMsg    : string,
+  shouldThrow : boolean
+) : boolean {
+  if (shouldThrow) {
+    throw new Error(errorMsg)
   } else { return false }
 }

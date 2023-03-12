@@ -48,7 +48,14 @@ export function encodeTx (
 function checkForWitness (vin : InputData[]) : boolean {
   /** Check if any witness data is present. */
   for (const txin of vin) {
-    if (txin?.witness !== undefined) return true
+    const { witness } = txin
+    if (
+      typeof witness === 'string'   ||
+      witness instanceof Uint8Array ||
+      (Array.isArray(witness) && witness.length > 0)
+    ) {
+      return true
+    }
   }
   return false
 }
@@ -109,11 +116,13 @@ function encodeWitness (
   data : WitnessData
 ) : Uint8Array {
   const buffer : Uint8Array[] = []
-  buffer.push(Buff.readSize(data.length))
-  for (const entry of data) {
-    buffer.push(encodeScript(entry))
-  }
-  return Buff.join(buffer)
+  if (Array.isArray(data)) {
+    buffer.push(Buff.readSize(data.length))
+    for (const entry of data) {
+      buffer.push(encodeScript(entry))
+    }
+    return Buff.join(buffer)
+  } else { return Buff.normalize(data) }
 }
 
 export function encodeLocktime (num : number) : Uint8Array {

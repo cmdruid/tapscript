@@ -28,7 +28,7 @@ export function encodeScript (
   }
 
   if (varint) {
-    buff = buff.prefixSize()
+    buff = buff.prefixSize('be')
   }
 
   return buff.raw

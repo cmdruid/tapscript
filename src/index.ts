@@ -22,7 +22,7 @@ export const Sig = {
     sign        : SIG.taprootSign,
     verify      : SIG.taprootVerify,
     tweakPubkey : SIG.tweakPubkey,
-    tweakPrvkey : SIG.tweakPrvkey
+    tweakSeckey : SIG.tweakPrvkey
   }
 }
 
@@ -32,7 +32,8 @@ export const Tap = {
   getBranch     : TAP.getTapBranch,
   getRoot       : TAP.getTapRoot,
   getTweak      : TAP.getTapTweak,
-  getKey        : TAP.getTapKey,
+  getPubkey     : TAP.getTapPubkey,
+  getSeckey     : TAP.getTapSeckey,
   getPath       : TAP.getTapPath,
   checkPath     : TAP.checkTapPath,
   encodeAddress : TAP.encodeTapAddress,

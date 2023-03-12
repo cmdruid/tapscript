@@ -47,7 +47,7 @@
     "dist"
   ],
   "devDependencies": {
-    "@cmdcode/buff-utils": "^1.4.3",
+    "@cmdcode/buff-utils": "^1.4.4",
     "@cmdcode/crypto-utils": "^1.5.11",
     "@cmdcode/keylink": "^1.2.0",
     "@rollup/plugin-commonjs": "^23.0.2",

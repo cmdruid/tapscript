@@ -126,5 +126,5 @@ export function normalizeTx (
   ) {
     txdata = decodeTx(txdata)
   }
-  return txdata
+  return { ...txdata }
 }

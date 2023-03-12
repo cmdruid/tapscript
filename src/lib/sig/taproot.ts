@@ -14,27 +14,41 @@ import {
 } from '../../schema/types.js'
 
 import { normalizeData } from '../script/decode.js'
-import { checkTapPath } from '../tap/script.js'
+import { checkTapPath, getTapLeaf }  from '../tap/script.js'
 
 const ec = new TextEncoder()
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
 export function tweakPrvkey (
-  prvkey : Uint8Array,
-  tweak  : Uint8Array
+  prvkey : string | Uint8Array,
+  tweak  : string | Uint8Array
 ) : Uint8Array {
-  const p = new Field(prvkey)
-  return p.add(tweak)
+  let sec = new Field(prvkey)
+  if (sec.point.hasOddY) {
+    sec = sec.negate()
+  }
+  return sec.add(tweak)
 }
 
 export function tweakPubkey (
-  pubkey : Uint8Array,
-  tweak  : Uint8Array
+  pubkey : string | Uint8Array,
+  tweak  : string | Uint8Array
 ) : Uint8Array {
   const P = Point.fromX(pubkey)
-  const Q = P.add(new Field(tweak).point)
+  const Q = P.add(tweak)
   return Q.rawX
+}
+
+export function getTweakFromPub (
+  internal : string | Uint8Array,
+  tweaked  : string | Uint8Array
+) : Uint8Array {
+  return Point
+    .fromX(tweaked)
+    .negate()
+    .add(Point.fromX(internal))
+    .rawX
 }
 
 export async function taprootSign (
@@ -76,10 +90,7 @@ export async function taprootVerify (
   const prevout   = tx.input[index].prevout
   const tapkey    = normalizeData(prevout?.scriptPubKey).slice(2)
 
-  let script,
-      cblock,
-      pubkey = tapkey,
-      flag   = 0x00
+  let target, cblock, flag = 0x00
 
   if (stream.size === 1) {
     flag = stream.read(1).num
@@ -91,23 +102,24 @@ export async function taprootVerify (
   if (witness.length > 1) {
     // Check if cblock present.
     cblock = normalizeData(witness.pop())
-    pubkey = cblock.slice(1, 33)
   }
 
-  if (witness.length > 1) {
-    script = Buff.raw(encodeScript(witness.pop())).hex
+  if (witness.length > 1 && cblock instanceof Uint8Array) {
+    const script  = encodeScript(witness.pop())
+    const version = cblock[0] & 0xfe
+    target = await getTapLeaf(script, version)
   }
 
-  const hash   = await taprootHash(txdata, index, flag)
+  const hash   = await taprootHash(tx, index, flag)
   const verify = Noble.schnorr.verify
 
-  if (!await verify(signature, hash, pubkey)) {
+  if (!await verify(signature, hash, tapkey)) {
     return safeThrow('Invalid signature!', shouldThrow)
   }
 
   if (
-    cblock !== undefined && script !== undefined &&
-    !await checkTapPath(tapkey, cblock, script)
+    cblock !== undefined && target !== undefined &&
+    !await checkTapPath(tapkey, cblock, target)
   ) {
     return safeThrow('Invalid cblock!', shouldThrow)
   }
