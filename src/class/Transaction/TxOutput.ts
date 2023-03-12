@@ -1,12 +1,11 @@
-import TxScript  from "./TxScript.js"
-import * as Type from '../../types.js'
+import TxScript      from './TxScript.js'
+import { OutputData } from '../../schema/types.js'
 
 export default class TxOutput {
-  
-  public value : number
+  public value : bigint
   public scriptPubKey : TxScript
 
-  constructor(txout : Type.OutData) {
+  constructor (txout : OutputData) {
     this.value  = txout.value
     this.scriptPubKey = new TxScript(txout.scriptPubKey, 'scriptPubKey')
   }

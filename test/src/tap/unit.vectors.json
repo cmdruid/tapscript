@@ -1,0 +1,53 @@
+{
+  "tapleaf": [
+    [
+      "029000b275209997a497d964fc1a62885b05a51166a65a90df00492c8d7cf61d6accf54803beac",
+      "c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9"
+    ],
+    [
+      "a8206c60f404f8167a38fc70eaf8aa17ac351023bef86bcb9d1086a19afe95bd533388204edfcf9dfe6c0b5c83d1ab3f78d1b39a46ebac6798e08e19761f5ed89ec83c10ac",
+      "632c8632b4f29c6291416e23135cf78ecb82e525788ea5ed6483e3c6ce943b42"
+    ],
+    [
+      "76a91463a3c9bbb29995e9984e67f7b627c6916df7a39488ac",
+      "b4b368abc58b8a818a560958725ae23c400759dfb48188ac60192d4eac98abe7"
+    ]
+  ],
+  "tapbranch": [
+    [
+      "632c8632b4f29c6291416e23135cf78ecb82e525788ea5ed6483e3c6ce943b42",
+      "c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9",
+      "41646f8c1fe2a96ddad7f5471bc4fee7da98794ef8c45a4f4fc6a559d60c9f6b"
+    ],
+    [
+      "b4b368abc58b8a818a560958725ae23c400759dfb48188ac60192d4eac98abe7",
+      "b4b368abc58b8a818a560958725ae23c400759dfb48188ac60192d4eac98abe7",
+      "9a645e96720bff16d0e1421a74b4aa43dc16453489a7e6c55be2c3f4cc9d1686"
+    ],
+    [
+      "41646f8c1fe2a96ddad7f5471bc4fee7da98794ef8c45a4f4fc6a559d60c9f6b",
+      "9a645e96720bff16d0e1421a74b4aa43dc16453489a7e6c55be2c3f4cc9d1686",
+      "637d38612e290a7ec781b65e662a17d5a51a9a5a6736e669b1c2751a67119687"
+    ]
+  ],
+  "taproot": [
+    [
+      "5bf08d58a430f8c222bffaf9127249c5cdff70a2d68b2b45637eb662b6b88eb5",
+      "41646f8c1fe2a96ddad7f5471bc4fee7da98794ef8c45a4f4fc6a559d60c9f6b",
+      "0b0e6981ce6cac74d055d0e4c25e5b4455a083b3217761327867f26460e0a776"
+    ]
+  ],
+  "ctrlblock": [
+    {
+      "scripts" : [ 
+        [ "9000", "OP_CHECKSEQUENCEVERIFY", "OP_DROP", "9997a497d964fc1a62885b05a51166a65a90df00492c8d7cf61d6accf54803be", "OP_CHECKSIG" ],
+        [ "OP_SHA256", "6c60f404f8167a38fc70eaf8aa17ac351023bef86bcb9d1086a19afe95bd5333", "OP_EQUALVERIFY", "4edfcf9dfe6c0b5c83d1ab3f78d1b39a46ebac6798e08e19761f5ed89ec83c10", "OP_CHECKSIG" ]
+      ],
+      "index"   : 1,
+      "pubkey"  : "5bf08d58a430f8c222bffaf9127249c5cdff70a2d68b2b45637eb662b6b88eb5",
+      "parity"  : 1,
+      "cblock"  : "c15bf08d58a430f8c222bffaf9127249c5cdff70a2d68b2b45637eb662b6b88eb5c81451874bd9ebd4b6fd4bba1f84cdfb533c532365d22a0a702205ff658b17c9",
+      "address" : "bcrt1p7y52329xxmse7q9gq9542rldlsntdawaqnvntmz99z224kfcauxqag4w9y"
+    }
+  ]
+}

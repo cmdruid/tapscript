@@ -3,88 +3,85 @@ A basic library for working with Bitcoin transaction data.
 
 ## How to Import
 ```html
-<script src="https://unpkg.com/bton-lib"></script>
+<script src="https://unpkg.com/@cmdcode/tapscript"></script>
+<script> const BTON = window.bton </script>
 ```
-```js
-import BTON from 'bton-lib'
+```ts
+import * as BTON from '@cmdcode/tapscript'
 ```
 
 ## How to Use
-```js
-BTON.encode = {
-  tx     : (txObject, options)  => 'hex encoded string',
-  script : (scriptArr, options) => 'hex encoded string'
+```ts
+BTON.script = {
+  encode : (script : ScriptData, varint = true) => string,
+  decode : (script : string) => ScriptData
 }
 
-BTON.decode = {
-  tx       : (hexString, options) => { 'Tx Object' },
-  script   : (hexString, options) => [ 'Script Array' ]
+BTON.sig = {
+  segwit: {
+    hash :   // Calculate the signature hash.
+  }
+  taproot: {
+    hash :        // Calulate the signature hash.
+    sign :        // Sign a transaction.
+    verify :      // Verify a signed transaction.
+    tweakPubkey : // Tweak a public key.
+    tweakPrvkey : // Tweak a private key.
+  }
 }
 
-BTON.convert = (object, options)  => { 'Tx Object' }
+BTON.tap = {
+  // Returns a 'hashtag' used for padding.
+  getTag
+  // Returns a 'tapleaf' used for building a tree.
+  getLeaf
+  // Returns a 'branch' which combines two leaves.
+  getBranch
+  // Returns the merkle root of a tree.
+  getRoot
+  // Returns a 'taptweak' which is used to tweak the internal key.
+  getTweak
+  // Returns the merkle-proof needed for validating a tapleaf.
+  getPath
+  // Checks if a merkle-proof is valid for a given tapleaf.
+  checkPath
+  // Encodes a public key into a taproot address.
+  encodeAddress
+  // Decodes a taproot address into a public key.
+  decodeAddress
+}
 
-BTON.digest = {
-  sigHash  : (txObject, options) => 'hex encoded signature hash',
-  script   : (script, options)   => 'hex encoded script hash',
-  template : (script, options)   => 'hex encoded template hash',
-  metadata : null /* Not yet implemented! */
+BTON.tx = {
+  // Serializes a JSON transaction into a hex-encoded string.
+  encode : (txObject, options)  => 'hex encoded string',
+  // Parses a hex-encoded transaction into a JSON object.
+  decode : (scriptArr, options) => 'hex encoded string'
 }
 ```
 
 ## Example Transaction Object
-```js
-{
-  version: 0,                 // Version number.
-  vin: [
+```ts
+interface TxData {
+  version : number
+  input   : [
     {
-      prevTxid  : 'abcd1234', // 32-byte UTXO transaction ID.
-      prevOut   : 0,          // Index of UTXO being spent.
-      scriptSig : [],         // Array of unlocking arguments.
-      sequence  : 'FFFFFFFF', // Sequence modifier.
-      witness : [           // Array of witness arguments.
-
-        'argument2',
-        'argument1',
-        /* 'P2WSH redeem script' */
-
-      ]
+      txid      : string
+      vout      : number
+      scriptSig : string | string[]
+      sequence  : number
+      prevout   : { value : number | bigint, scriptPubKey : string | string[] }
+      witness   : Array<string | string[]>
     }
   ],
-  vout: [
-    {
-      value: 100000000,       // Output value.
-      scriptPubkey: [         // Array of locking arguments.
-
-        'opcodes (or witness version)',
-        'more opcodes (or locking hash)'
-
-      ]
-    }
+  output : [
+    { value: number | bigint, scriptPubkey: string | string[] }
   ],
-  locktime: 0,                // Transaction lock-time.
-
-  /* You can also include metadata! */
-  meta: {
-    data: {
-      /* Anything that is valid JSON can 
-        go here. Simply remove the meta 
-        field and re-encode the object 
-        to get broadcast-able hex.
-      */
-    }
-  }
+  locktime: number
 }
 ```
 
-## Tentative Features
-* More calculated fields (txid, size, weight, etc).
-* Commitment hash for metadata field.
-* Linting and validation of scripts / transactions.
-* More support for script templates and metadata.
-* Signature verification (requires libsecp256k1).
-
 ## Contribution
-Feel free to fork and make contributions. Issue suggestions are also welcome!
+Feel free to fork and make contributions. Suggestions are also welcome!
 
 ## License
 Use this library however you want!

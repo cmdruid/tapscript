@@ -1,7 +1,7 @@
 import { Buff } from '@cmdcode/buff-utils'
 import { Hash } from '@cmdcode/crypto-utils'
-import { encodeWords, decodeWords } from '../../words.js'
-import * as Type from '../../types.js'
+import { encodeWords, decodeWords } from '../../lib/script/words.js'
+import * as Type from '../../schema/types.js'
 
 export default class TxScript {
   

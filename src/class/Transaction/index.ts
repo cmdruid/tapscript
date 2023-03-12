@@ -1,4 +1,4 @@
-import Transaction from './TxMain.js'
+import Transaction from './Transaction.js'
 import Input     from './TxInput.js'
 import Output    from './TxOutput.js'
 import Script    from './TxScript.js'

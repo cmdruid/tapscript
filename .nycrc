@@ -1,4 +1,0 @@
-{
-  "include": ["src/**/*.ts"],
-  "extension": [".ts"]
-}

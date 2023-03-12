@@ -1,15 +1,45 @@
-import encodeTx  from './encode.js'
-import decodeTx  from './decode.js'
-import * as TX   from './class/Transaction/index.js'
-import * as Type from './types.js'
+import { encodeTx }     from './lib/tx/encode.js'
+import { decodeTx }     from './lib/tx/decode.js'
+import { encodeScript } from './lib/script/encode.js'
+import { decodeScript } from './lib/script/decode.js'
+import { segwitHash  }  from './lib/sig/segwit.js'
+import * as SIG  from './lib/sig/taproot.js'
+import * as TAP  from './lib/tap/script.js'
 
-const BTON = {
-  encode: encodeTx,
-  decode: decodeTx
+export * from './schema/types.js'
+
+export const Script = {
+  encode : encodeScript,
+  decode : decodeScript
 }
 
-export {
-  BTON,
-  TX,
-  Type
+export const Sig = {
+  segwit: {
+    hash: segwitHash
+  },
+  taproot: {
+    hash        : SIG.taprootHash,
+    sign        : SIG.taprootSign,
+    verify      : SIG.taprootVerify,
+    tweakPubkey : SIG.tweakPubkey,
+    tweakPrvkey : SIG.tweakPrvkey
+  }
+}
+
+export const Tap = {
+  getTag        : TAP.getTapTag,
+  getLeaf       : TAP.getTapLeaf,
+  getBranch     : TAP.getTapBranch,
+  getRoot       : TAP.getTapRoot,
+  getTweak      : TAP.getTapTweak,
+  getKey        : TAP.getTapKey,
+  getPath       : TAP.getTapPath,
+  checkPath     : TAP.checkTapPath,
+  encodeAddress : TAP.encodeTapAddress,
+  decodeAddress : TAP.decodeTapAddress
+}
+
+export const Tx = {
+  encode : encodeTx,
+  decode : decodeTx
 }
