@@ -3,42 +3,31 @@ import * as ENC          from '../tx/encode.js'
 import { encodeScript }  from '../script/encode.js'
 import { safeThrow }     from '../utils.js'
 
-import { Hash, Noble, Field, Point } from '@cmdcode/crypto-utils'
-import { decodeTx, normalizeTx }     from '../tx/decode.js'
+import { Hash, Noble, Point }    from '@cmdcode/crypto-utils'
+import { decodeTx, normalizeTx } from '../tx/decode.js'
 
 import {
   TxData,
   InputData,
   OutputData,
-  WitnessData
+  WitnessData,
+  Bytes
 } from '../../schema/types.js'
 
 import { normalizeData } from '../script/decode.js'
-import { checkTapPath, getTapLeaf }  from '../tap/script.js'
+import { checkTapPath }  from '../tap/script.js'
+
+interface HashConfig {
+  extention     ?: Bytes
+  sigflag       ?: number
+  extflag       ?: number
+  key_version   ?: number
+  separator_pos ?: number
+}
 
 const ec = new TextEncoder()
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
-
-export function tweakPrvkey (
-  prvkey : string | Uint8Array,
-  tweak  : string | Uint8Array
-) : Uint8Array {
-  let sec = new Field(prvkey)
-  if (sec.point.hasOddY) {
-    sec = sec.negate()
-  }
-  return sec.add(tweak)
-}
-
-export function tweakPubkey (
-  pubkey : string | Uint8Array,
-  tweak  : string | Uint8Array
-) : Uint8Array {
-  const P = Point.fromX(pubkey)
-  const Q = P.add(tweak)
-  return Q.rawX
-}
 
 export function getTweakFromPub (
   internal : string | Uint8Array,
@@ -55,10 +44,11 @@ export async function taprootSign (
   prvkey  : string | Uint8Array,
   txdata  : TxData | string | Uint8Array,
   index   : number,
-  sigflag : number = 0x00
+  config  : HashConfig = {}
 ) : Promise<string> {
+  const { sigflag = 0x00 } = config
   const sign = Noble.schnorr.sign
-  const hash = await taprootHash(txdata, index, sigflag)
+  const hash = await taprootHash(txdata, index, config)
   const sig  = await sign(hash, prvkey)
 
   return (sigflag === 0x00)
@@ -69,6 +59,7 @@ export async function taprootSign (
 export async function taprootVerify (
   txdata  : TxData | string | Uint8Array,
   index   : number,
+  config  : HashConfig = {},
   shouldThrow = false
 ) : Promise<boolean> {
   const tx = normalizeTx(txdata)
@@ -108,9 +99,10 @@ export async function taprootVerify (
     const script  = encodeScript(witness.pop())
     const version = cblock[0] & 0xfe
     target = await getTapLeaf(script, version)
+    config.extention = target
   }
 
-  const hash   = await taprootHash(tx, index, flag)
+  const hash   = await taprootHash(tx, index, config)
   const verify = Noble.schnorr.verify
 
   if (!await verify(signature, hash, tapkey)) {
@@ -130,8 +122,7 @@ export async function taprootVerify (
 export async function taprootHash (
   txdata  : TxData | string | Uint8Array,
   index   : number,
-  sigflag : number = 0x00,
-  extflag : number = 0x00
+  config  : HashConfig = {}
 ) : Promise<Uint8Array> {
   if (
     typeof txdata === 'string' ||
@@ -139,6 +130,14 @@ export async function taprootHash (
   ) {
     txdata = decodeTx(txdata)
   }
+  // Unpack configuration.
+  const {
+    extention,
+    sigflag       = 0x00,
+    extflag       = 0x00,
+    key_version   = 0x00,
+    separator_pos = 0xFFFFFFFF
+  } = config
 
   // Unpack txdata object.
   const { version, input = [], output = [], locktime } = txdata
@@ -147,9 +146,6 @@ export async function taprootHash (
     // If index is out of bounds, throw error.
     throw new Error('Index out of bounds: ' + String(index))
   }
-
-  // Unpack the input being signed.
-  const { txid, vout, sequence, witness } = input[index]
 
   if (!VALID_HASH_TYPES.includes(sigflag)) {
     // If the sigflag is an invalid type, throw error.
@@ -161,10 +157,15 @@ export async function taprootHash (
     throw new Error('Extention flag out of range: ' + String(extflag))
   }
 
+  // Unpack the input being signed.
+  const { txid, vout, sequence, witness = [] } = input[index]
+
   // Define the parameters of the transaction.
   const isAnyPay  = (sigflag & 0x80) === 0x80
-  const annex     = await getAnnex(witness)
-  const spendType = (extflag * 2) + (annex !== undefined ? 1 : 0)
+  const annex     = await getAnnexData(witness)
+  const annexBit  = (extention !== undefined) ? 1 : 0
+  const extendBit = (annex !== undefined) ? 1 : 0
+  const spendType = ((extflag + extendBit) * 2) + annexBit
 
   // Begin building our digest.
   const digest = [
@@ -218,7 +219,18 @@ export async function taprootHash (
   // Useful for debugging the digest stack.
   // console.log(digest.map(e => Buff.raw(e).hex))
 
-  return Hash.sha256(Buff.join(digest))
+  let sigmsg = await Hash.sha256(Buff.join(digest))
+
+  if (extention !== undefined) {
+    sigmsg = Buff.of(
+      ...sigmsg,
+      ...Buff.normalize(extention),
+      key_version,
+      ...Buff.num(separator_pos)
+    )
+  }
+
+  return sigmsg
 }
 
 export async function hashOutpoints (
@@ -282,7 +294,7 @@ export async function hashOutput (
   ))
 }
 
-async function getAnnex (
+async function getAnnexData (
   witness ?: WitnessData
 ) : Promise<Uint8Array | undefined> {
   // If no witness exists, return undefined.
@@ -302,7 +314,7 @@ async function getAnnex (
     annex[0] === 0x50
   ) {
     // return a digest of the annex.
-    return Buff.raw(annex).prefixSize().digest
+    return Buff.raw(annex).prefixSize('be').digest
   }
   // Else, return undefined.
   return undefined
@@ -315,7 +327,18 @@ function getPrevout (vin : InputData) : OutputData {
   return vin.prevout
 }
 
-export async function getTapTag (tag : string) : Promise<Uint8Array> {
+async function getTapTag (tag : string) : Promise<Uint8Array> {
   const htag = await Hash.sha256(ec.encode(tag))
   return Uint8Array.of(...htag, ...htag)
+}
+
+async function getTapLeaf (
+  data : string | Uint8Array,
+  version = 0xc0
+) : Promise<string> {
+  return Hash.sha256(Uint8Array.of(
+    ...await getTapTag('TapLeaf'),
+    version & 0xf0,
+    ...Buff.normalize(data)
+  )).then(e => Buff.raw(e).hex)
 }

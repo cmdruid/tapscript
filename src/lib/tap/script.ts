@@ -1,11 +1,30 @@
 import { Buff, Stream } from '@cmdcode/buff-utils'
-import { Hash, Noble }         from '@cmdcode/crypto-utils'
-import { tweakPrvkey, tweakPubkey }  from '../sig/taproot.js'
+import { Hash, Field, Point, Noble }  from '@cmdcode/crypto-utils'
 
 import { TapTree, TapRoot, TapKey } from './types.js'
 
 const DEFAULT_VERSION = 0xc0
 const ec = new TextEncoder()
+
+export function tweakPrvkey (
+  prvkey : string | Uint8Array,
+  tweak  : string | Uint8Array
+) : Uint8Array {
+  let sec = new Field(prvkey)
+  if (sec.point.hasOddY) {
+    sec = sec.negate()
+  }
+  return sec.add(tweak)
+}
+
+export function tweakPubkey (
+  pubkey : string | Uint8Array,
+  tweak  : string | Uint8Array
+) : Uint8Array {
+  const P = Point.fromX(pubkey)
+  const Q = P.add(tweak)
+  return Q.rawX
+}
 
 async function getTapKey (
   intkey : string | Uint8Array,
@@ -174,10 +193,11 @@ export function encodeTapAddress (
   tapkey : string | Uint8Array,
   prefix = 'bc'
 ) : string {
+  tapkey = Buff.normalize(tapkey)
   if (tapkey.length > 32) {
     tapkey = tapkey.slice(1, 33)
   }
-  return Buff.any(tapkey).toBech32(prefix, 1)
+  return Buff.raw(tapkey).toBech32(prefix, 1)
 }
 
 export async function merkleize (

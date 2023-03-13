@@ -21,7 +21,7 @@ export interface OutputData {
 
 export type SequenceData = string | number
 export type ScriptData   = Bytes  | WordArray
-export type WitnessData  = ScriptData[] | string | Uint8Array
+export type WitnessData  = ScriptData[]
 export type LockData     = number
 export type Bytes        = string | Uint8Array
 export type Word         = string | number | Uint8Array

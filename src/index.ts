@@ -18,11 +18,9 @@ export const Sig = {
     hash: segwitHash
   },
   taproot: {
-    hash        : SIG.taprootHash,
-    sign        : SIG.taprootSign,
-    verify      : SIG.taprootVerify,
-    tweakPubkey : SIG.tweakPubkey,
-    tweakSeckey : SIG.tweakPrvkey
+    hash   : SIG.taprootHash,
+    sign   : SIG.taprootSign,
+    verify : SIG.taprootVerify
   }
 }
 
@@ -36,6 +34,8 @@ export const Tap = {
   getSeckey     : TAP.getTapSeckey,
   getPath       : TAP.getTapPath,
   checkPath     : TAP.checkTapPath,
+  tweakSeckey   : TAP.tweakPrvkey,
+  tweakPubkey   : TAP.tweakPubkey,
   encodeAddress : TAP.encodeTapAddress,
   decodeAddress : TAP.decodeTapAddress
 }
