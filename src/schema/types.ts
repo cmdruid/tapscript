@@ -15,6 +15,7 @@ export interface InputData {
 }
 
 export interface OutputData {
+  address     ?: string
   value        : number | bigint
   scriptPubKey : ScriptData
 }

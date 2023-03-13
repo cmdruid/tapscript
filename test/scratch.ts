@@ -1,30 +1,30 @@
 import fs          from 'fs/promises'
 import path        from 'path'
 import { Buff }    from '@cmdcode/buff-utils'
-import { KeyPair, Noble } from '@cmdcode/crypto-utils'
-import { TxData }  from '../src/index.js'
+import { KeyPair } from '@cmdcode/crypto-utils'
 import { Script, Sig, Tap, Tx } from '../src/index.js'
 
 const ec       = new TextEncoder()
 const fpath    = path.join(process.cwd(), '/test')
 const data     = await fs.readFile(path.join(fpath, '/image.png')).then(e => new Uint8Array(e))
 
-const seckey   = new KeyPair('043a5a8e482008dc18ef75dd8a6d4b0aaefaa6085af2a207c65d320d3cd8258d')
+const seckey   = new KeyPair('39879f30a087ff472784bafe74b0acfe9bf9ad02639c40211a8a722b6629def6')
 const pubkey   = seckey.pub.rawX
 const mimetype = ec.encode('image/png')
-const script   = [ pubkey, 'OP_CHECKSIG' ] // 'OP_0', 'OP_IF', ec.encode('ord'), '01', mimetype, 'OP_0', data, 'OP_ENDIF' ]
+const script   = [ pubkey, 'OP_CHECKSIG' ] // [ 'OP_0', 'OP_IF', ec.encode('ord'), '01', mimetype, 'OP_0', data, 'OP_ENDIF' ]
 
 const leaf       = await Tap.getLeaf(Script.encode(script))
 const [ tapkey ] = await Tap.getPubkey(pubkey, [ leaf ])
 const cblock     = await Tap.getPath(pubkey, leaf)
 
+console.log('leaf:', leaf)
 console.log('Tapkey:', tapkey)
 console.log('Address: ', Tap.encodeAddress(tapkey, 'bcrt'))
 
-const redeemtx : TxData = {
+const redeemtx = {
   version: 2,
   input: [{
-    txid: '3dcce7056f7bb20d4f18e0f5664689f68159441a1e95e07d1186f3032e0228c6',
+    txid: '1351f611fa0ae6124d0f55c625ae5c929ca09ae93f9e88656a4a82d160d99052',
     vout: 0,
     prevout: { value: 100000, scriptPubKey: '5120' + tapkey },
     witness: []
@@ -39,7 +39,7 @@ const redeemtx : TxData = {
 const sec = await Tap.getSeckey(seckey.raw, [ leaf ])
 const sig = await Sig.taproot.sign(seckey.raw, redeemtx, 0, { extention: leaf })
 
-redeemtx.input[0].witness = [ sig ]
+redeemtx.input[0].witness = [ sig, script, cblock ]
 
 console.dir(redeemtx, { depth: null })
 

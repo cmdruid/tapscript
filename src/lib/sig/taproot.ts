@@ -1,7 +1,14 @@
 import { Buff, Stream }  from '@cmdcode/buff-utils'
 import * as ENC          from '../tx/encode.js'
 import { encodeScript }  from '../script/encode.js'
+import { normalizeData } from '../script/decode.js'
 import { safeThrow }     from '../utils.js'
+
+import {
+  getTapTag,
+  getTapLeaf,
+  checkTapPath
+} from '../tap/script.js'
 
 import { Hash, Noble, Point }    from '@cmdcode/crypto-utils'
 import { decodeTx, normalizeTx } from '../tx/decode.js'
@@ -14,9 +21,6 @@ import {
   Bytes
 } from '../../schema/types.js'
 
-import { normalizeData } from '../script/decode.js'
-import { checkTapPath }  from '../tap/script.js'
-
 interface HashConfig {
   extention     ?: Bytes
   sigflag       ?: number
@@ -24,8 +28,6 @@ interface HashConfig {
   key_version   ?: number
   separator_pos ?: number
 }
-
-const ec = new TextEncoder()
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
@@ -70,6 +72,7 @@ export async function taprootVerify (
   }
 
   const annex = normalizeData(witness[witness.length - 1])
+
   if (annex[0] === 0x50) witness.pop()
 
   if (witness.length < 1) {
@@ -81,11 +84,11 @@ export async function taprootVerify (
   const prevout   = tx.input[index].prevout
   const tapkey    = normalizeData(prevout?.scriptPubKey).slice(2)
 
-  let target, cblock, flag = 0x00
+  let target, cblock
 
   if (stream.size === 1) {
-    flag = stream.read(1).num
-    if (flag === 0x00) {
+    config.sigflag = stream.read(1).num
+    if (config.sigflag === 0x00) {
       return safeThrow('0x00 is not a valid appended sigflag!', shouldThrow)
     }
   }
@@ -163,8 +166,8 @@ export async function taprootHash (
   // Define the parameters of the transaction.
   const isAnyPay  = (sigflag & 0x80) === 0x80
   const annex     = await getAnnexData(witness)
-  const annexBit  = (extention !== undefined) ? 1 : 0
-  const extendBit = (annex !== undefined) ? 1 : 0
+  const annexBit  = (annex !== undefined) ? 1 : 0
+  const extendBit = (extention !== undefined) ? 1 : 0
   const spendType = ((extflag + extendBit) * 2) + annexBit
 
   // Begin building our digest.
@@ -216,21 +219,18 @@ export async function taprootHash (
     digest.push(await hashOutput(output[index]))
   }
 
-  // Useful for debugging the digest stack.
-  // console.log(digest.map(e => Buff.raw(e).hex))
-
-  let sigmsg = await Hash.sha256(Buff.join(digest))
-
   if (extention !== undefined) {
-    sigmsg = Buff.of(
-      ...sigmsg,
-      ...Buff.normalize(extention),
-      key_version,
-      ...Buff.num(separator_pos)
+    digest.push(
+      Buff.normalize(extention),
+      Buff.num(key_version),
+      Buff.num(separator_pos, 4)
     )
   }
 
-  return sigmsg
+  // Useful for debugging the digest stack.
+  // console.log(digest.map(e => Buff.raw(e).hex))
+
+  return Hash.sha256(Buff.join(digest))
 }
 
 export async function hashOutpoints (
@@ -325,20 +325,4 @@ function getPrevout (vin : InputData) : OutputData {
     throw new Error('Prevout data missing for input: ' + String(vin.txid))
   }
   return vin.prevout
-}
-
-async function getTapTag (tag : string) : Promise<Uint8Array> {
-  const htag = await Hash.sha256(ec.encode(tag))
-  return Uint8Array.of(...htag, ...htag)
-}
-
-async function getTapLeaf (
-  data : string | Uint8Array,
-  version = 0xc0
-) : Promise<string> {
-  return Hash.sha256(Uint8Array.of(
-    ...await getTapTag('TapLeaf'),
-    version & 0xf0,
-    ...Buff.normalize(data)
-  )).then(e => Buff.raw(e).hex)
 }

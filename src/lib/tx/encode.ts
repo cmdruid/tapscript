@@ -105,9 +105,13 @@ export function encodeValue (
 function encodeOutputs (arr : OutputData[]) : Uint8Array {
   const raw : Uint8Array[] = [ Buff.readSize(arr.length) ]
   for (const vout of arr) {
-    const { value, scriptPubKey } = vout
+    const { address, value, scriptPubKey } = vout
     raw.push(encodeValue(value))
-    raw.push(encodeScript(scriptPubKey))
+    if (address !== undefined) {
+      raw.push(Buff.bech32(address).raw)
+    } else {
+      raw.push(encodeScript(scriptPubKey))
+    }
   }
   return Buff.join(raw)
 }
