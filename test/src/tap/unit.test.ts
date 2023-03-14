@@ -1,8 +1,8 @@
 import { Test } from 'tape'
 import { Buff } from '@cmdcode/buff-utils'
-import { Tap, Script } from '../../../src/index.js'
-import test_vectors    from './unit.vectors.json' assert { type: 'json' }
-import { encodeScript } from '../../../src/lib/script/encode.js'
+import { Tap, Tweak, Script } from '../../../src/index.js'
+import test_vectors           from './unit.vectors.json' assert { type: 'json' }
+import { encodeScript }       from '../../../src/lib/script/encode.js'
 
 export async function unit_tests(t : Test) : Promise<void> {
   t.test('Testing tapleaf creation:', async t => {
@@ -26,7 +26,7 @@ export async function unit_tests(t : Test) : Promise<void> {
     const vectors = test_vectors.taproot
     t.plan(vectors.length)
     for (const [ pub, root, ans ] of vectors) {
-      const key = await Tap.getTweak(Buff.hex(pub), Buff.hex(root))
+      const key = await Tweak.getTweak(Buff.hex(pub), Buff.hex(root))
       t.equal(Buff.raw(key).hex, ans, 'Taptweak should match')
     }
   }),

@@ -1,5 +1,4 @@
 import { Buff } from '@cmdcode/buff-utils'
-
 import { encodeScript } from '../script/encode.js'
 
 import {
@@ -7,8 +6,11 @@ import {
   InputData,
   OutputData,
   SequenceData,
-  WitnessData
+  WitnessData,
+  ScriptData
 } from '../../schema/types.js'
+
+const BECH32_PREFIX = [ 'bc', 'tb', 'bcrt' ]
 
 export function encodeTx (
   txdata       : TxData,
@@ -40,10 +42,6 @@ export function encodeTx (
 
   return Buff.join(raw).hex
 }
-
-// export function encodeBaseTx(obj : Transaction) : string {
-//   return encodeTx(obj, { omitWitness: true, omitMeta: true })
-// }
 
 function checkForWitness (vin : InputData[]) : boolean {
   /** Check if any witness data is present. */
@@ -107,8 +105,9 @@ function encodeOutputs (arr : OutputData[]) : Uint8Array {
   for (const vout of arr) {
     const { address, value, scriptPubKey } = vout
     raw.push(encodeValue(value))
-    if (address !== undefined) {
-      raw.push(Buff.bech32(address).raw)
+    if (typeof address === 'string') {
+      const script = encodeAddress(address)
+      raw.push(encodeScript(script))
     } else {
       raw.push(encodeScript(scriptPubKey))
     }
@@ -131,4 +130,32 @@ function encodeWitness (
 
 export function encodeLocktime (num : number) : Uint8Array {
   return Buff.num(num, 4).reverse()
+}
+
+export function encodeAddress (
+  address : string
+) : ScriptData {
+  if (address.startsWith('1')) {
+    const b58 = Buff.b58check(address)
+    return [ 'OP_DUP', 'OP_HASH160', b58, 'OP_EQUALVERIFY', 'OP_CHECKSIG' ]
+  }
+  if (address.startsWith('3')) {
+    const b58 = Buff.b58check(address)
+    return [ 'OP_HASH160', b58, 'OP_EQUAL' ]
+  }
+  if (address.includes('1')) {
+    const [ prefix, rest ] = address.split('1')
+    if (!BECH32_PREFIX.includes(prefix)) {
+      throw new Error('Invalid bech32 prefix!')
+    }
+    if (rest.startsWith('p')) {
+      const raw = Buff.bech32m(address).prefixSize()
+      return Buff.of(0x51, ...raw)
+    }
+    if (rest.startsWith('q')) {
+      const raw = Buff.bech32(address, 0).prefixSize()
+      return Buff.of(0x00, ...raw)
+    }
+  }
+  throw new Error('Unable to parse address!')
 }

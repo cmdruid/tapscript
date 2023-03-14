@@ -3,8 +3,11 @@ import { decodeTx }     from './lib/tx/decode.js'
 import { encodeScript } from './lib/script/encode.js'
 import { decodeScript } from './lib/script/decode.js'
 import { segwitHash  }  from './lib/sig/segwit.js'
+
 import * as SIG  from './lib/sig/taproot.js'
 import * as TAP  from './lib/tap/script.js'
+import * as TWK  from './lib/tap/tweak.js'
+import * as CHK  from './lib/tap/proof.js'
 
 export * from './schema/types.js'
 
@@ -29,15 +32,18 @@ export const Tap = {
   getLeaf       : TAP.getTapLeaf,
   getBranch     : TAP.getTapBranch,
   getRoot       : TAP.getTapRoot,
-  getTweak      : TAP.getTapTweak,
-  getPubkey     : TAP.getTapPubkey,
-  getSeckey     : TAP.getTapSeckey,
-  getPath       : TAP.getTapPath,
-  checkPath     : TAP.checkTapPath,
-  tweakSeckey   : TAP.tweakPrvkey,
-  tweakPubkey   : TAP.tweakPubkey,
+  getPath       : CHK.getTapPath,
+  checkPath     : CHK.checkTapPath,
   encodeAddress : TAP.encodeTapAddress,
   decodeAddress : TAP.decodeTapAddress
+}
+
+export const Tweak = {
+  getPubkey   : TWK.getTapPubkey,
+  getSeckey   : TWK.getTapSeckey,
+  getTweak    : TWK.getTapTweak,
+  tweakSeckey : TWK.tweakPrvkey,
+  tweakPubkey : TWK.tweakPubkey
 }
 
 export const Tx = {

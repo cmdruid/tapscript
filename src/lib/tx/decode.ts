@@ -69,7 +69,7 @@ function readInput (stream : Stream) : InputData {
   return {
     txid      : stream.read(32).reverse().toHex(),
     vout      : stream.read(4).reverse().toNum(),
-    scriptSig : readData(stream, true),
+    scriptSig : readScript(stream, true),
     sequence  : stream.read(4).reverse().toHex()
   }
 }
@@ -86,7 +86,7 @@ function readOutputs (stream : Stream) : OutputData[] {
 function readOutput (stream : Stream) : OutputData {
   return {
     value        : stream.read(8).reverse().big,
-    scriptPubKey : readData(stream, true)
+    scriptPubKey : readScript(stream, true)
   }
 }
 
@@ -111,6 +111,14 @@ function readData (
   return size > 0
     ? stream.read(size).toHex()
     : Buff.num(0).toHex()
+}
+
+function readScript (
+  stream : Stream,
+  hasVarint ?: boolean
+) : string | string[] {
+  const data = readData(stream, hasVarint)
+  return (data !== '00') ? data : []
 }
 
 function readLocktime (stream : Stream) : number {

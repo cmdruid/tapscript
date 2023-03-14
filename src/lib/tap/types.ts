@@ -5,7 +5,7 @@ export type TapKey = [
 
 export type TapTree = Array<string | string[]>
 
-export type TapRoot  = [
+export type TapProof = [
   root   : string,
   target : string | null,
   path   : string[]

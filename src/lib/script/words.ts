@@ -4,6 +4,7 @@ export const OPCODE_MAP = {
   OP_PUSHDATA2           : 77,
   OP_PUSHDATA4           : 78,
   OP_1NEGATE             : 79,
+  OP_SUCCESS80           : 80,
   OP_1                   : 81,
   OP_2                   : 82,
   OP_3                   : 83,
@@ -21,6 +22,7 @@ export const OPCODE_MAP = {
   OP_15                  : 95,
   OP_16                  : 96,
   OP_NOP                 : 97,
+  OP_SUCCESS98           : 98,
   OP_IF                  : 99,
   OP_NOTIF               : 100,
   OP_ELSE                : 103,
@@ -46,17 +48,34 @@ export const OPCODE_MAP = {
   OP_ROT                 : 123,
   OP_SWAP                : 124,
   OP_TUCK                : 125,
+  OP_SUCCESS126          : 126,
+  OP_SUCCESS127          : 127,
+  OP_SUCCESS128          : 128,
+  OP_SUCCESS129          : 129,
   OP_SIZE                : 130,
+  OP_SUCCESS131          : 131,
+  OP_SUCCESS132          : 132,
+  OP_SUCCESS133          : 133,
+  OP_SUCCESS134          : 134,
   OP_EQUAL               : 135,
   OP_EQUALVERIFY         : 136,
+  OP_SUCCESS137          : 137,
+  OP_SUCCESS138          : 138,
   OP_1ADD                : 139,
   OP_1SUB                : 140,
+  OP_SUCCESS141          : 141,
+  OP_SUCCESS142          : 142,
   OP_NEGATE              : 143,
   OP_ABS                 : 144,
   OP_NOT                 : 145,
   OP_0NOTEQUAL           : 146,
   OP_ADD                 : 147,
   OP_SUB                 : 148,
+  OP_SUCCESS149          : 149,
+  OP_SUCCESS150          : 150,
+  OP_SUCCESS151          : 151,
+  OP_SUCCESS152          : 152,
+  OP_SUCCESS153          : 153,
   OP_BOOLAND             : 154,
   OP_BOOLOR              : 155,
   OP_NUMEQUAL            : 156,
@@ -88,10 +107,14 @@ export const OPCODE_MAP = {
   OP_NOP7                : 182,
   OP_NOP8                : 183,
   OP_NOP9                : 184,
-  OP_NOP10               : 185
+  OP_NOP10               : 185,
+  OP_CHECKSIGADD         : 186
 }
 
 export function getOpLabel (num : number) : string {
+  if (num > 186 && num < 255) {
+    return 'OP_SUCCESS' + String(num)
+  }
   for (const [ k, v ] of Object.entries(OPCODE_MAP)) {
     if (v === num) return k
   }
@@ -103,4 +126,46 @@ export function getOpCode (string : string) : number {
     if (k === string) return Number(v)
   }
   throw new Error('OPCODE not found:' + string)
+}
+
+export function getWordType (word : number) : string {
+  switch (true) {
+    case (word === 0):
+      return 'opcode'
+    case (word >= 1 && word <= 75):
+      return 'varint'
+    case (word === 76):
+      return 'pushdata1'
+    case (word === 77):
+      return 'pushdata2'
+    case (word === 78):
+      return 'pushdata4'
+    case (word <= 254):
+      return 'opcode'
+    default:
+      throw new Error(`Invalid word range: ${word}`)
+  }
+}
+
+export function isValidWord (word : number) : boolean {
+  /** Check if the provided value
+   * is a valid script opcode.
+   * */
+  const MIN_RANGE = 75
+  const MAX_RANGE = 254
+
+  const DISABLED_OPCODES : number[] = []
+
+  switch (true) {
+    case (typeof (word) !== 'number'):
+      return false
+    case (word === 0):
+      return true
+    case (DISABLED_OPCODES.includes(word)):
+      return false
+    case (MIN_RANGE < word && word < MAX_RANGE):
+      return true
+    default:
+      return false
+  }
 }

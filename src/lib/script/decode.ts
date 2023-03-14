@@ -1,5 +1,10 @@
 import { Buff, Stream } from '@cmdcode/buff-utils'
-import { getOpLabel }   from './words.js'
+
+import {
+  getOpLabel,
+  getWordType,
+  isValidWord
+} from './words.js'
 
 import { ScriptData, WordArray } from '../../schema/types.js'
 
@@ -19,6 +24,11 @@ export function normalizeData (
     throw new Error('Script data is an array!')
   }
   return Buff.normalize(script)
+}
+
+export function decodeAddress (address : string) : string {
+  // if (address.length === 20)
+  return address
 }
 
 export function decodeWords (
@@ -73,49 +83,4 @@ export function decodeWords (
     }
   }
   return stack
-}
-
-export function getWordType (word : number) : string {
-  switch (true) {
-    case (word === 0):
-      return 'opcode'
-    case (word >= 1 && word <= 75):
-      return 'varint'
-    case (word === 76):
-      return 'pushdata1'
-    case (word === 77):
-      return 'pushdata2'
-    case (word === 78):
-      return 'pushdata4'
-    case (word <= 185):
-      return 'opcode'
-    default:
-      throw new Error(`Invalid word range: ${word}`)
-  }
-}
-
-export function isValidWord (word : number) : boolean {
-  /** Check if the provided value
-   * is a valid script opcode.
-   * */
-  const MIN_RANGE = 75
-  const MAX_RANGE = 186
-
-  const DISABLED_OPCODES = [
-    126, 127, 128, 129, 131, 132, 133, 134,
-    141, 142, 149, 150, 151, 152, 153
-  ]
-
-  switch (true) {
-    case (typeof (word) !== 'number'):
-      return false
-    case (word === 0):
-      return true
-    case (DISABLED_OPCODES.includes(word)):
-      return false
-    case (MIN_RANGE < word && word < MAX_RANGE):
-      return true
-    default:
-      return false
-  }
 }

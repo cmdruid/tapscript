@@ -1,17 +1,13 @@
 import { Buff, Stream }  from '@cmdcode/buff-utils'
+import { Hash, Noble }   from '@cmdcode/crypto-utils'
 import * as ENC          from '../tx/encode.js'
 import { encodeScript }  from '../script/encode.js'
 import { normalizeData } from '../script/decode.js'
 import { safeThrow }     from '../utils.js'
+import { checkTapPath }  from '../tap/proof.js'
 
-import {
-  getTapTag,
-  getTapLeaf,
-  checkTapPath
-} from '../tap/script.js'
-
-import { Hash, Noble, Point }    from '@cmdcode/crypto-utils'
 import { decodeTx, normalizeTx } from '../tx/decode.js'
+import { getTapTag, getTapLeaf } from '../tap/script.js'
 
 import {
   TxData,
@@ -22,25 +18,15 @@ import {
 } from '../../schema/types.js'
 
 interface HashConfig {
-  extention     ?: Bytes
-  sigflag       ?: number
-  extflag       ?: number
-  key_version   ?: number
-  separator_pos ?: number
+  extension     ?: Bytes   // Include a tapleaf hash with your signature hash.
+  pubkey        ?: Bytes   // Verify using this pubkey instead of the tapkey.
+  sigflag       ?: number  // Set the signature type flag.
+  separator_pos ?: number  // If using OP_CODESEPARATOR, specify the latest opcode position.
+  extflag       ?: number  // Set the extention version flag (future use).
+  key_version   ?: number  // Set the key version flag (future use).
 }
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
-
-export function getTweakFromPub (
-  internal : string | Uint8Array,
-  tweaked  : string | Uint8Array
-) : Uint8Array {
-  return Point
-    .fromX(tweaked)
-    .negate()
-    .add(Point.fromX(internal))
-    .rawX
-}
 
 export async function taprootSign (
   prvkey  : string | Uint8Array,
@@ -102,7 +88,7 @@ export async function taprootVerify (
     const script  = encodeScript(witness.pop())
     const version = cblock[0] & 0xfe
     target = await getTapLeaf(script, version)
-    config.extention = target
+    config.extension = target
   }
 
   const hash   = await taprootHash(tx, index, config)
@@ -135,7 +121,7 @@ export async function taprootHash (
   }
   // Unpack configuration.
   const {
-    extention,
+    extension,
     sigflag       = 0x00,
     extflag       = 0x00,
     key_version   = 0x00,
@@ -167,7 +153,7 @@ export async function taprootHash (
   const isAnyPay  = (sigflag & 0x80) === 0x80
   const annex     = await getAnnexData(witness)
   const annexBit  = (annex !== undefined) ? 1 : 0
-  const extendBit = (extention !== undefined) ? 1 : 0
+  const extendBit = (extension !== undefined) ? 1 : 0
   const spendType = ((extflag + extendBit) * 2) + annexBit
 
   // Begin building our digest.
@@ -219,9 +205,9 @@ export async function taprootHash (
     digest.push(await hashOutput(output[index]))
   }
 
-  if (extention !== undefined) {
+  if (extension !== undefined) {
     digest.push(
-      Buff.normalize(extention),
+      Buff.normalize(extension),
       Buff.num(key_version),
       Buff.num(separator_pos, 4)
     )

@@ -1,8 +1,10 @@
 import { Test } from 'tape'
 import { Buff } from '@cmdcode/buff-utils'
+import * as CHK from '../../../src/lib/tap/proof.js'
 import * as TAP from '../../../src/lib/tap/script.js'
+import * as TWK from '../../../src/lib/tap/tweak.js'
 
-import tree_vectors from './tree.vectors.json' assert { type: 'json' }
+import tree_vectors     from './tree.vectors.json' assert { type: 'json' }
 import { encodeScript } from '../../../src/lib/script/encode.js'
 
 interface Vector {
@@ -39,7 +41,7 @@ export async function tweak_test(t : Test) : Promise<void> {
       if (scripts.length === 0) {
         t.test('Testing empty key tweak.', async t => {
           t.plan(1)
-          const [ tapkey ] = await TAP.getTapPubkey(internalPubkey)
+          const [ tapkey ] = await TWK.getTapPubkey(internalPubkey)
           t.equal(tapkey, tweakedPubkey, 'Tweaked pubs should match.')
         })
       } else {
@@ -47,9 +49,9 @@ export async function tweak_test(t : Test) : Promise<void> {
           t.plan(3)
           const root = await TAP.getTapRoot(leafHashes)
           t.equal(Buff.raw(root).hex, merkleRoot, 'Root hash should match.')
-          const taptweak = await TAP.getTapTweak(internalPubkey, merkleRoot as string)
+          const taptweak = await TWK.getTapTweak(internalPubkey, merkleRoot as string)
           t.equal(Buff.raw(taptweak).hex, tweak, 'Tweak hash should match.')
-          const [ tapkey ] = (await TAP.getTapPubkey(internalPubkey, leafHashes))
+          const [ tapkey ] = (await TWK.getTapPubkey(internalPubkey, leafHashes))
           t.equal(tapkey, tweakedPubkey, 'Tweaked pubs should match.')
         })
 
@@ -67,7 +69,7 @@ export async function tweak_test(t : Test) : Promise<void> {
             t.equal(tapleaf, leaves[i], 'Leaf hash should match.')
 
             const target = leaves[i]
-            const block  = await TAP.getTapPath(internalPubkey, target, leafHashes, version, parity)
+            const block  = await CHK.getTapPath(internalPubkey, target, leafHashes, version, parity)
             t.equal(block, cblocks[i], 'Control blocks should be equal.')
           })
         }

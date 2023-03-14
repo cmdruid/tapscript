@@ -5,7 +5,7 @@ import { Noble } from '@cmdcode/crypto-utils'
 import { decodeTx } from '../../../src/lib/tx/decode.js'
 import * as SIG     from '../../../src/lib/sig/taproot.js'
 import test_vectors from './sig.vectors.json' assert { type: 'json' }
-import { Tap } from '../../../src/index.js'
+import { Tweak }    from '../../../src/index.js'
 
 const verify = Noble.schnorr.verify
 
@@ -39,10 +39,10 @@ export async function test_signatures(t : Test) : Promise<void> {
       const { txinIndex, hashType, internalPrivkey, merkleRoot } = given
       const { sigHash, tweak, internalPubkey, tweakedPrivkey }   = intermediary
       // Test our ability to create the tweak.
-      const taptweak = await Tap.getTweak(internalPubkey, merkleRoot ?? new Uint8Array())
+      const taptweak = await Tweak.getTweak(internalPubkey, merkleRoot ?? new Uint8Array())
       t.equal(Buff.raw(taptweak).hex, tweak, 'The tap tweak should match.')
       // Test our ability to tweak the private key.
-      const tweakedPrv  = Tap.tweakSeckey(internalPrivkey, tweak)
+      const tweakedPrv  = Tweak.tweakSeckey(internalPrivkey, tweak)
       t.equal(Buff.raw(tweakedPrv).hex, tweakedPrivkey, 'The tweaked prvkey should match.')
       // Test our ability to calculate the signature hash.
       const actual_hash = await SIG.taprootHash(tx, txinIndex, { sigflag: hashType })

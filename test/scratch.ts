@@ -2,7 +2,7 @@ import fs          from 'fs/promises'
 import path        from 'path'
 import { Buff }    from '@cmdcode/buff-utils'
 import { KeyPair } from '@cmdcode/crypto-utils'
-import { Script, Sig, Tap, Tx } from '../src/index.js'
+import { Script, Sig, Tap, Tweak, Tx } from '../src/index.js'
 
 const ec       = new TextEncoder()
 const fpath    = path.join(process.cwd(), '/test')
@@ -14,7 +14,7 @@ const mimetype = ec.encode('image/png')
 const script   = [ pubkey, 'OP_CHECKSIG' ] // [ 'OP_0', 'OP_IF', ec.encode('ord'), '01', mimetype, 'OP_0', data, 'OP_ENDIF' ]
 
 const leaf       = await Tap.getLeaf(Script.encode(script))
-const [ tapkey ] = await Tap.getPubkey(pubkey, [ leaf ])
+const [ tapkey ] = await Tweak.getPubkey(pubkey, [ leaf ])
 const cblock     = await Tap.getPath(pubkey, leaf)
 
 console.log('leaf:', leaf)
@@ -29,20 +29,22 @@ const redeemtx = {
     prevout: { value: 100000, scriptPubKey: '5120' + tapkey },
     witness: []
   }],
-  output:[{
+  output: [{
     value: 90000,
-    scriptPubKey: "001439144dbc3c59b3b9b9a6a8275bd4c550129484e8"
+    address: 'bcrt1pqksclnx3jz0nx9lym4l3zft7gs5gsjgzk8r5vmp5ul6fpc8xyldqaxu8ys'
   }],
   locktime: 0
 }
 
-const sec = await Tap.getSeckey(seckey.raw, [ leaf ])
-const sig = await Sig.taproot.sign(seckey.raw, redeemtx, 0, { extention: leaf })
+// const sec = await Tap.getSeckey(seckey.raw, [ leaf ])
+// const sig = await Sig.taproot.sign(seckey.raw, redeemtx, 0, { extension: leaf })
 
-redeemtx.input[0].witness = [ sig, script, cblock ]
+// redeemtx.input[0].witness = [ sig, script, cblock ]
 
-console.dir(redeemtx, { depth: null })
+// console.dir(redeemtx, { depth: null })
 
 // await Sig.taproot.verify(redeemtx, 0, true)
 
-console.log('Txdata:', Tx.encode(redeemtx))
+const txhex = Tx.encode(redeemtx)
+console.log('Txdata:', txhex)
+console.log('Txdata:', Tx.decode(txhex))
