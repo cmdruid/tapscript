@@ -1,6 +1,6 @@
 {
   "name": "@cmdcode/bton",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A basic library for working with Bitcoin transaction data.",
   "type": "module",
   "main": "./dist/main.js",
@@ -47,8 +47,6 @@
     "dist"
   ],
   "devDependencies": {
-    "@cmdcode/buff-utils": "^1.4.4",
-    "@cmdcode/crypto-utils": "^1.5.11",
     "@cmdcode/keylink": "^1.2.0",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-json": "^5.0.1",
@@ -72,7 +70,10 @@
     "typescript": "^4.9.4",
     "zod": "^3.20.6"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@cmdcode/buff-utils": "^1.5.2",
+    "@cmdcode/crypto-utils": "^1.6.0"
+  },
   "browser": {
     "crypto": true
   }
