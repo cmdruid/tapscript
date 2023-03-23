@@ -44,8 +44,7 @@
   },
   "exclude": [
     "node_modules",
-    "src/class",
-    "src/escrow",
+    "test",
     "contrib"
   ],
   "include": [

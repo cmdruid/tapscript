@@ -491,7 +491,7 @@ Feel free to fork and make contributions. Suggestions are welcome!
 This library contains minimal dependencies.  
 
 **Buff-Utils**  
-A swiss-army-knife of byte manipulation tools.
+A swiss-army-knife of byte manipulation tools.  
 https://github.com/cmdruid/buff-utils
 
 **Crypto-Utils**  
