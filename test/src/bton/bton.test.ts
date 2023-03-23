@@ -1,5 +1,5 @@
 import { Test } from 'tape'
-import { Tx } from '../../../src/index.js'
+import { Tx }   from '../../../src/index.js'
 
 import { ecVectors } from './vectors/encoder.js'
 import { dcVectors } from './vectors/decoder.js'

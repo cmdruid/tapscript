@@ -4,7 +4,7 @@ import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs    from '@rollup/plugin-commonjs'
 import terser      from '@rollup/plugin-terser'
 
-const libraryName = 'bton'
+const libraryName = 'tapscript'
 
 const treeshake = {
 	moduleSideEffects: false,
@@ -53,7 +53,7 @@ const nodeConfig = {
 
 const browserConfig = {
   input: 'src/index.ts',
-  // onwarn,
+  onwarn,
   output: [
     {
       file      : 'dist/bundle.min.js',

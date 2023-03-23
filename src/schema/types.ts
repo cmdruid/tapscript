@@ -1,3 +1,5 @@
+export type Networks = 'main' | 'testnet' | 'signet' | 'regtest'
+
 export interface TxData {
   version  : number
   input    : InputData[]

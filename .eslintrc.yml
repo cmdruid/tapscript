@@ -53,6 +53,7 @@ rules:
 
 ignorePatterns:
   - build
+  - contrib
   - coverage
   - dist
   - test

@@ -5,31 +5,36 @@ import { TapTree }                  from './types.js'
 
 const DEFAULT_VERSION = 0xc0
 
-export async function getTapPath (
+export function getTapPath (
   pubkey  : string | Uint8Array,
   target  : string,
   taptree : TapTree = [ target ],
   version = DEFAULT_VERSION,
   parity  = 0
-) : Promise<string> {
-  // Merkelize the leaves into a root hash (with proof).
-  const p = Buff.normalize(pubkey)
-  const [ root, _t, path ] = await merkleize(taptree, target)
-
-  // Create the control block with pubkey.
+) : string {
+  // Parse the 32-33 byte public key.
+  const [ pub, par ] = parsePubkey(pubkey)
+  // Set the parity bit based on info we have collected.
+  parity = (par !== undefined) ? par : parity
+  // Create the control block and append pubkey.
   const ctrl  = Buff.num(version + getParityBit(parity))
-  const block = [ ctrl, Buff.normalize(pubkey) ]
+  const block = [ ctrl, pub ]
+  // Merkelize the leaves into a root hash (with proof).
+  const [ root, _t, path ] = merkleize(taptree, target)
 
   if (taptree.length > 1) {
     // If there is more than one path, add to block.
     path.forEach(e => block.push(Buff.hex(e)))
   }
 
+  // Merge the data together into one array.
   const cblock = Buff.join(block)
-  const tweak  = await getTapTweak(p, Buff.hex(root))
-  const tapkey = tweakPubkey(p, tweak).slice(1)
+  // Calculate the tweak for the pubkey.
+  const tweak  = getTapTweak(pub, Buff.hex(root))
+  // Tweak the public key.
+  const tapkey = tweakPubkey(pub, tweak).slice(1)
 
-  if (!await checkTapPath(tapkey, cblock, target)) {
+  if (!checkTapPath(tapkey, cblock, target)) {
     if (parity === 0) {
       return getTapPath(pubkey, target, taptree, version, 1)
     }
@@ -39,15 +44,15 @@ export async function getTapPath (
   return cblock.hex
 }
 
-export async function checkTapPath (
+export function checkTapPath (
   tapkey : string | Uint8Array,
   cblock : string | Uint8Array,
   target : string
-) : Promise<boolean> {
-  const buffer   = new Stream(Buff.normalize(cblock))
+) : boolean {
+  const buffer    = new Stream(Buff.normalize(cblock))
   const [ _v, y ] = decodeCByte(buffer.read(1).num)
-  const intkey   = buffer.read(32)
-  const pubkey   = Buff.of(y, ...Buff.normalize(tapkey))
+  const intkey    = buffer.read(32)
+  const pubkey    = Buff.join([ y, Buff.normalize(tapkey) ])
 
   const path = []
 
@@ -62,10 +67,10 @@ export async function checkTapPath (
   }
 
   for (const p of path) {
-    branch = await getTapBranch(branch, p)
+    branch = getTapBranch(branch, p)
   }
 
-  const t = await getTapTweak(intkey, Buff.hex(branch))
+  const t = getTapTweak(intkey, Buff.hex(branch))
   const k = tweakPubkey(intkey, t)
 
   return (Buff.raw(k).hex === Buff.raw(pubkey).hex)
@@ -82,4 +87,16 @@ export function decodeCByte (
   byte : number
 ) : number[] {
   return (byte % 2 === 0) ? [ byte, 0x02 ] : [ byte - 1, 0x03 ]
+}
+
+function parsePubkey (
+  pubkey : string | Uint8Array
+) : [ Uint8Array, number | undefined ] {
+  let parity
+  pubkey = Buff.normalize(pubkey)
+  if (pubkey.length > 32) {
+    parity = pubkey[0]
+    pubkey = pubkey.slice(1, 33)
+  }
+  return [ pubkey, parity ]
 }

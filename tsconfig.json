@@ -6,7 +6,10 @@
     "compilerOptions": {
       "module": "ES2022"
     },
-    "include": ["test/**/*.test.ts"]
+    "include": [
+      "test/**/*.test.ts",
+      "contrib/**/*.ts"
+    ]
   },
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
@@ -42,9 +45,10 @@
   "exclude": [
     "node_modules",
     "src/class",
-    "src/escrow"
+    "src/escrow",
+    "contrib"
   ],
   "include": [
-    "src/**/*.ts",
+    "src/**/*.ts"
   ]
 }

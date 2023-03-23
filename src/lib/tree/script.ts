@@ -1,52 +1,50 @@
 import { Buff }              from '@cmdcode/buff-utils'
-import { Hash }              from '@cmdcode/crypto-utils'
 import { TapTree, TapProof } from './types.js'
 
 const DEFAULT_VERSION = 0xc0
-const ec = new TextEncoder()
 
-export async function getTapTag (tag : string) : Promise<Uint8Array> {
-  const htag = await Hash.sha256(ec.encode(tag))
-  return Uint8Array.of(...htag, ...htag)
+export function getTapTag (tag : string) : Buff {
+  const htag = Buff.str(tag).digest
+  return Buff.join([ htag, htag ])
 }
 
-export async function getTapLeaf (
+export function getTapLeaf (
   data : string | Uint8Array,
   version = DEFAULT_VERSION
-) : Promise<string> {
-  return Hash.sha256(Uint8Array.of(
-    ...await getTapTag('TapLeaf'),
+) : string {
+  return Buff.join([
+    getTapTag('TapLeaf'),
     getVersion(version),
-    ...Buff.normalize(data)
-  )).then(e => Buff.raw(e).hex)
+    Buff.normalize(data)
+  ]).digest.hex
 }
 
-export async function getTapBranch (
+export function getTapBranch (
   leafA : string,
   leafB : string
-) : Promise<string> {
+) : string {
   if (leafB < leafA) {
     // Ensure that both branches
     // are sorted lexographically.
     [ leafA, leafB ] = [ leafB, leafA ]
   }
-  return Hash.sha256(Uint8Array.of(
-    ...await getTapTag('TapBranch'),
-    ...Buff.hex(leafA).raw,
-    ...Buff.hex(leafB).raw
-  )).then(e => Buff.raw(e).hex)
+  return Buff.join([
+    getTapTag('TapBranch'),
+    Buff.hex(leafA).raw,
+    Buff.hex(leafB).raw
+  ]).digest.hex
 }
 
-export async function getTapRoot (
+export function getTapRoot (
   leaves : TapTree
-) : Promise<Uint8Array> {
+) : Buff {
   // Merkelize the leaves into a root hash.
-  return merkleize(leaves).then(r => Buff.hex(r[0]))
+  return Buff.hex(merkleize(leaves)[0])
 }
 
 export function decodeTapAddress (
   address : string
-) : Uint8Array {
+) : Buff {
   return Buff.bech32(address, 1)
 }
 
@@ -61,11 +59,11 @@ export function encodeTapAddress (
   return Buff.raw(tapkey).toBech32(prefix, 1)
 }
 
-export async function merkleize (
+export function merkleize (
   taptree : TapTree,
   target  : string | null = null,
   path    : string[] = []
-) : Promise<TapProof> {
+) : TapProof {
   const leaves : string[] = []
   const tree   : string[] = []
 
@@ -80,7 +78,7 @@ export async function merkleize (
     const leaf = taptree[i]
     // console.log('leaf:', leaf)
     if (Array.isArray(leaf)) {
-      const [ r, t, p ] = await merkleize(leaf, target)
+      const [ r, t, p ] = merkleize(leaf, target)
       leaves.push(r); target = t; path.push(...p)
     } else { leaves.push(leaf) }
   }
@@ -104,7 +102,7 @@ export async function merkleize (
   // Sort through the leaves (two at a time).
   for (let i = 0; i < leaves.length - 1; i += 2) {
     // Compute two leaves into a branch.
-    const branch = await getTapBranch(leaves[i], leaves[i + 1])
+    const branch = getTapBranch(leaves[i], leaves[i + 1])
     // Push our branch to the tree.
     tree.push(branch)
     // Check if a proof target is specified.

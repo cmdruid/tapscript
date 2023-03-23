@@ -1,8 +1,8 @@
 import { Test } from 'tape'
 import { Buff } from '@cmdcode/buff-utils'
-import * as CHK from '../../../src/lib/tap/proof.js'
-import * as TAP from '../../../src/lib/tap/script.js'
-import * as TWK from '../../../src/lib/tap/tweak.js'
+import * as CHK from '../../../src/lib/tree/proof.js'
+import * as TAP from '../../../src/lib/tree/script.js'
+import * as TWK from '../../../src/lib/tree/tweak.js'
 
 import tree_vectors     from './tree.vectors.json' assert { type: 'json' }
 import { encodeScript } from '../../../src/lib/script/encode.js'

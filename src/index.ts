@@ -4,10 +4,12 @@ import { encodeScript } from './lib/script/encode.js'
 import { decodeScript } from './lib/script/decode.js'
 import { segwitHash  }  from './lib/sig/segwit.js'
 
-import * as SIG  from './lib/sig/taproot.js'
-import * as TAP  from './lib/tap/script.js'
-import * as TWK  from './lib/tap/tweak.js'
-import * as CHK  from './lib/tap/proof.js'
+import * as TAPSIG  from './lib/sig/taproot.js'
+import * as TAPSCR  from './lib/tree/script.js'
+import * as TAPTWK  from './lib/tree/tweak.js'
+import * as TAPCHK  from './lib/tree/proof.js'
+
+export { Address }  from './lib/addr/index.js'
 
 export * from './schema/types.js'
 
@@ -21,29 +23,29 @@ export const Sig = {
     hash: segwitHash
   },
   taproot: {
-    hash   : SIG.taprootHash,
-    sign   : SIG.taprootSign,
-    verify : SIG.taprootVerify
+    hash   : TAPSIG.hashTx,
+    sign   : TAPSIG.signTx,
+    verify : TAPSIG.verifyTx
   }
 }
 
-export const Tap = {
-  getTag        : TAP.getTapTag,
-  getLeaf       : TAP.getTapLeaf,
-  getBranch     : TAP.getTapBranch,
-  getRoot       : TAP.getTapRoot,
-  getPath       : CHK.getTapPath,
-  checkPath     : CHK.checkTapPath,
-  encodeAddress : TAP.encodeTapAddress,
-  decodeAddress : TAP.decodeTapAddress
+export const Tree = {
+  getTag        : TAPSCR.getTapTag,
+  getLeaf       : TAPSCR.getTapLeaf,
+  getBranch     : TAPSCR.getTapBranch,
+  getRoot       : TAPSCR.getTapRoot,
+  getPath       : TAPCHK.getTapPath,
+  checkPath     : TAPCHK.checkTapPath,
+  encodeAddress : TAPSCR.encodeTapAddress,
+  decodeAddress : TAPSCR.decodeTapAddress
 }
 
 export const Tweak = {
-  getPubkey   : TWK.getTapPubkey,
-  getSeckey   : TWK.getTapSeckey,
-  getTweak    : TWK.getTapTweak,
-  tweakSeckey : TWK.tweakPrvkey,
-  tweakPubkey : TWK.tweakPubkey
+  getPubkey   : TAPTWK.getTapPubkey,
+  getSeckey   : TAPTWK.getTapSeckey,
+  getTweak    : TAPTWK.getTapTweak,
+  tweakSeckey : TAPTWK.tweakPrvkey,
+  tweakPubkey : TAPTWK.tweakPubkey
 }
 
 export const Tx = {

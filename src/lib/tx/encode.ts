@@ -1,16 +1,14 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff }         from '@cmdcode/buff-utils'
 import { encodeScript } from '../script/encode.js'
+import { Address }      from '../addr/index.js'
 
 import {
   TxData,
   InputData,
   OutputData,
   SequenceData,
-  WitnessData,
-  ScriptData
+  WitnessData
 } from '../../schema/types.js'
-
-const BECH32_PREFIX = [ 'bc', 'tb', 'bcrt' ]
 
 export function encodeTx (
   txdata       : TxData,
@@ -80,7 +78,7 @@ export function encodeSequence (
 }
 
 function encodeInputs (arr : InputData[]) : Uint8Array {
-  const raw : Uint8Array[] = [ Buff.readSize(arr.length) ]
+  const raw : Uint8Array[] = [ Buff.varInt(arr.length) ]
   for (const vin of arr) {
     const { txid, vout, scriptSig, sequence } = vin
     raw.push(encodeTxid(txid))
@@ -101,16 +99,24 @@ export function encodeValue (
 }
 
 function encodeOutputs (arr : OutputData[]) : Uint8Array {
-  const raw : Uint8Array[] = [ Buff.readSize(arr.length) ]
+  const raw : Uint8Array[] = [ Buff.varInt(arr.length) ]
   for (const vout of arr) {
-    const { address, value, scriptPubKey } = vout
-    raw.push(encodeValue(value))
-    if (typeof address === 'string') {
-      const script = encodeAddress(address)
-      raw.push(encodeScript(script))
-    } else {
-      raw.push(encodeScript(scriptPubKey))
-    }
+    raw.push(encodeOutput(vout))
+  }
+  return Buff.join(raw)
+}
+
+function encodeOutput (
+  vout : OutputData
+) : Uint8Array {
+  const raw : Uint8Array[] = []
+  const { address, value, scriptPubKey } = vout
+  raw.push(encodeValue(value))
+  if (typeof address === 'string') {
+    const script = Address.convert(address)
+    raw.push(encodeScript(script))
+  } else {
+    raw.push(encodeScript(scriptPubKey))
   }
   return Buff.join(raw)
 }
@@ -120,7 +126,7 @@ function encodeWitness (
 ) : Uint8Array {
   const buffer : Uint8Array[] = []
   if (Array.isArray(data)) {
-    buffer.push(Buff.readSize(data.length))
+    buffer.push(Buff.varInt(data.length))
     for (const entry of data) {
       buffer.push(encodeScript(entry))
     }
@@ -130,32 +136,4 @@ function encodeWitness (
 
 export function encodeLocktime (num : number) : Uint8Array {
   return Buff.num(num, 4).reverse()
-}
-
-export function encodeAddress (
-  address : string
-) : ScriptData {
-  if (address.startsWith('1')) {
-    const b58 = Buff.b58check(address)
-    return [ 'OP_DUP', 'OP_HASH160', b58, 'OP_EQUALVERIFY', 'OP_CHECKSIG' ]
-  }
-  if (address.startsWith('3')) {
-    const b58 = Buff.b58check(address)
-    return [ 'OP_HASH160', b58, 'OP_EQUAL' ]
-  }
-  if (address.includes('1')) {
-    const [ prefix, rest ] = address.split('1')
-    if (!BECH32_PREFIX.includes(prefix)) {
-      throw new Error('Invalid bech32 prefix!')
-    }
-    if (rest.startsWith('p')) {
-      const raw = Buff.bech32m(address).prefixSize()
-      return Buff.of(0x51, ...raw)
-    }
-    if (rest.startsWith('q')) {
-      const raw = Buff.bech32(address, 0).prefixSize()
-      return Buff.of(0x00, ...raw)
-    }
-  }
-  throw new Error('Unable to parse address!')
 }

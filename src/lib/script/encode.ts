@@ -81,10 +81,7 @@ export function encodeWord (
     const words = splitWord(buff)
     return encodeWords(words)
   }
-  return Buff.of(
-    ...encodeSize(buff.length),
-    ...buff
-  )
+  return Buff.join([ encodeSize(buff.length), buff ])
 }
 
 function encodeSize (size : number) : Uint8Array {

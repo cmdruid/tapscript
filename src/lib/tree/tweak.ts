@@ -1,7 +1,7 @@
-import { Buff }                    from '@cmdcode/buff-utils'
-import { Field, Hash, Point, Noble }     from '@cmdcode/crypto-utils'
+import { Buff }                  from '@cmdcode/buff-utils'
+import { Field, Point }          from '@cmdcode/crypto-utils'
 import { getTapTag, getTapRoot } from './script.js'
-import { TapTree, TapKey }         from './types.js'
+import { TapTree, TapKey }       from './types.js'
 
 export function tweakPrvkey (
   prvkey : string | Uint8Array,
@@ -11,45 +11,45 @@ export function tweakPrvkey (
   if (sec.point.hasOddY) {
     sec = sec.negate()
   }
-  return sec.add(tweak)
+  return sec.add(tweak).raw
 }
 
 export function tweakPubkey (
   pubkey : string | Uint8Array,
   tweak  : string | Uint8Array
 ) : Uint8Array {
-  const P = Point.fromX(pubkey)
+  const P = new Point(pubkey)
   const Q = P.add(tweak)
-  return Q.rawX
+  return Q.raw
 }
 
-export async function getTapTweak (
+export function getTapTweak (
   pubkey : string | Uint8Array,
   tweak  : string | Uint8Array
-) : Promise<Uint8Array> {
-  return Hash.sha256(Uint8Array.of(
-    ...await getTapTag('TapTweak'),
-    ...Buff.normalize(pubkey),
-    ...Buff.normalize(tweak)
-  ))
+) : Buff {
+  return Buff.join([
+    getTapTag('TapTweak'),
+    Buff.normalize(pubkey),
+    Buff.normalize(tweak)
+  ]).digest
 }
 
-async function getTapKey (
+function getTapKey (
   intkey : string | Uint8Array,
   leaves : TapTree = [],
   isPrivate = false
-) : Promise<TapKey> {
+) : TapKey {
   const k = Buff.normalize(intkey)
   // Get the merkle root data.
   const r = (leaves.length > 0)
-    ? await getTapRoot(leaves)
+    ? getTapRoot(leaves)
     : new Uint8Array()
   // Get the pubkey for the tweak.
   const P = (isPrivate)
-    ? Noble.getPublicKey(k, true).slice(1)
+    ? new Field(k).point.rawX
     : k
   // Calculate the tweak.
-  const t = await getTapTweak(P, r)
+  const t = getTapTweak(P, r)
   // Return the tweaked key based on type.
   if (isPrivate) {
     // Return tweaked private key.
@@ -61,16 +61,16 @@ async function getTapKey (
   }
 }
 
-export async function getTapPubkey (
+export function getTapPubkey (
   pubkey : string | Uint8Array,
   leaves : TapTree = []
-) : Promise<TapKey> {
+) : TapKey {
   return getTapKey(pubkey, leaves)
 }
 
-export async function getTapSeckey (
+export function getTapSeckey (
   seckey : string | Uint8Array,
   leaves : TapTree = []
-) : Promise<string> {
-  return getTapKey(seckey, leaves, true).then(ret => ret[0])
+) : string {
+  return getTapKey(seckey, leaves, true)[0]
 }

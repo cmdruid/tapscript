@@ -1,50 +1,79 @@
-import fs          from 'fs/promises'
-import path        from 'path'
-import { Buff }    from '@cmdcode/buff-utils'
-import { KeyPair } from '@cmdcode/crypto-utils'
-import { Script, Sig, Tap, Tweak, Tx } from '../src/index.js'
+import fs            from 'fs/promises'
+import path          from 'path'
+import { SecretKey } from '@cmdcode/crypto-utils'
+import { Address, Script, Sig, Tree, Tweak, Tx, TxData } from '../src/index.js'
 
 const ec       = new TextEncoder()
 const fpath    = path.join(process.cwd(), '/test')
-const data     = await fs.readFile(path.join(fpath, '/image.png')).then(e => new Uint8Array(e))
+const imgdata  = await fs.readFile(path.join(fpath, '/image.png')).then(e => new Uint8Array(e))
 
-const seckey   = new KeyPair('39879f30a087ff472784bafe74b0acfe9bf9ad02639c40211a8a722b6629def6')
-const pubkey   = seckey.pub.rawX
-const mimetype = ec.encode('image/png')
-const script   = [ pubkey, 'OP_CHECKSIG' ] // [ 'OP_0', 'OP_IF', ec.encode('ord'), '01', mimetype, 'OP_0', data, 'OP_ENDIF' ]
+/** 
+ * Creating an Inscription. 
+ */
 
-const leaf       = await Tap.getLeaf(Script.encode(script))
-const [ tapkey ] = await Tweak.getPubkey(pubkey, [ leaf ])
-const cblock     = await Tap.getPath(pubkey, leaf)
+// Provide your secret key.
+const seckey = new SecretKey('39879f30a087ff472784bafe74b0acfe9bf9ad02639c40211a8a722b6629def6', true)
+const pubkey = seckey.pub.raw
 
-console.log('leaf:', leaf)
-console.log('Tapkey:', tapkey)
-console.log('Address: ', Tap.encodeAddress(tapkey, 'bcrt'))
+// We have to provide the 'ord' marker,
+// a mimetype for the data, and the blob
+// of data itself (as hex or a Uint8Array).
+const marker   = ec.encode('ord')        // The 'ord' marker.
+const mimetype = ec.encode('image/png')  // The mimetype of the file.
+//const imgdata  = getFile('image.png')    // Imaginary method that fetches the file. 
 
-const redeemtx = {
-  version: 2,
-  input: [{
-    txid: '1351f611fa0ae6124d0f55c625ae5c929ca09ae93f9e88656a4a82d160d99052',
-    vout: 0,
-    prevout: { value: 100000, scriptPubKey: '5120' + tapkey },
-    witness: []
-  }],
-  output: [{
-    value: 90000,
-    address: 'bcrt1pqksclnx3jz0nx9lym4l3zft7gs5gsjgzk8r5vmp5ul6fpc8xyldqaxu8ys'
-  }],
+// A basic "inscription" script. The encoder will also 
+// break up data blobs and use 'OP_PUSHDATA' when needed.
+const script = [
+  pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF'
+]
+
+// Convert the script into a tapleaf.
+const leaf = Tree.getLeaf(Script.encode(script))
+// Pass your pubkey and your leaf in order to get the tweaked pubkey.
+const [ tapkey ] = Tweak.getPubkey(pubkey, [ leaf ])
+// Encode the tweaked pubkey as a bech32m taproot address.
+const address    = Address.P2TR.encode(tapkey, 'regtest')
+
+// Once you send funds to this address, please make a note of 
+// the transaction's txid, and vout index for this address.
+console.log('Your taproot address:', address)
+
+/** 
+ * Publishing an Inscription. 
+ */
+
+// Get the 'cblock' string (which is the proof used to verify the leaf is in the tree).
+const cblock = Tree.getPath(pubkey, leaf)
+
+// Construct our redeem transaction.
+const txdata : TxData = {
+  version : 2,
+  input: [
+    {
+      txid     : 'dc2ff1454bd7b4f7763f82c32a5312fda4080cc08e57293c9078c9797ecb55b9',
+      vout     : 1,
+      prevout  : {
+        value: 100000,
+        address: address
+      },
+      sequence : 0xfffffffd
+    }
+  ],
+  output : [
+    { 
+      value: 90000, 
+      address: 'bcrt1q2tlvgse50z9ch3wtpl45xhfcz2ywk2t57px94c'
+    }
+  ],
   locktime: 0
 }
 
-// const sec = await Tap.getSeckey(seckey.raw, [ leaf ])
-// const sig = await Sig.taproot.sign(seckey.raw, redeemtx, 0, { extension: leaf })
+const sig = Sig.taproot.sign(seckey, txdata, 0, { extension: leaf })
 
-// redeemtx.input[0].witness = [ sig, script, cblock ]
+txdata.input[0].witness = [ sig, script, cblock ]
 
-// console.dir(redeemtx, { depth: null })
+const txhex = Tx.encode(txdata)
 
-// await Sig.taproot.verify(redeemtx, 0, true)
-
-const txhex = Tx.encode(redeemtx)
-console.log('Txdata:', txhex)
-console.log('Txdata:', Tx.decode(txhex))
+console.log('Your transaction:', txdata)
+console.log('Your raw transaction hex:', txhex)

@@ -1,13 +1,13 @@
 import { Buff, Stream }  from '@cmdcode/buff-utils'
-import { Hash, Noble }   from '@cmdcode/crypto-utils'
 import * as ENC          from '../tx/encode.js'
 import { encodeScript }  from '../script/encode.js'
 import { normalizeData } from '../script/decode.js'
+import { checkTapPath }  from '../tree/proof.js'
+import { sign, verify }  from './signer.js'
 import { safeThrow }     from '../utils.js'
-import { checkTapPath }  from '../tap/proof.js'
-
+import { getTapLeaf }    from '../tree/script.js'
+import { Address }       from '../addr/index.js'
 import { decodeTx, normalizeTx } from '../tx/decode.js'
-import { getTapTag, getTapLeaf } from '../tap/script.js'
 
 import {
   TxData,
@@ -28,23 +28,22 @@ interface HashConfig {
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
-export async function taprootSign (
+export function signTx (
   prvkey  : string | Uint8Array,
   txdata  : TxData | string | Uint8Array,
   index   : number,
   config  : HashConfig = {}
-) : Promise<string> {
+) : string {
   const { sigflag = 0x00 } = config
-  const sign = Noble.schnorr.sign
-  const hash = await taprootHash(txdata, index, config)
-  const sig  = await sign(hash, prvkey)
+  const hash = hashTx(txdata, index, config)
+  const sig  = sign(prvkey, hash)
 
   return (sigflag === 0x00)
     ? Buff.raw(sig).hex
-    : Buff.of(...sig, sigflag).hex
+    : Buff.join([ sig, sigflag ]).hex
 }
 
-export async function taprootVerify (
+export async function verifyTx (
   txdata  : TxData | string | Uint8Array,
   index   : number,
   config  : HashConfig = {},
@@ -66,7 +65,7 @@ export async function taprootVerify (
   }
 
   const stream    = new Stream(normalizeData(witness[0]))
-  const signature = stream.read(64)
+  const signature = stream.read(64).raw
   const prevout   = tx.input[index].prevout
   const tapkey    = normalizeData(prevout?.scriptPubKey).slice(2)
 
@@ -91,10 +90,9 @@ export async function taprootVerify (
     config.extension = target
   }
 
-  const hash   = await taprootHash(tx, index, config)
-  const verify = Noble.schnorr.verify
+  const hash = hashTx(tx, index, config)
 
-  if (!await verify(signature, hash, tapkey)) {
+  if (!verify(signature, hash, tapkey, true)) {
     return safeThrow('Invalid signature!', shouldThrow)
   }
 
@@ -108,11 +106,11 @@ export async function taprootVerify (
   return true
 }
 
-export async function taprootHash (
+export function hashTx (
   txdata  : TxData | string | Uint8Array,
   index   : number,
   config  : HashConfig = {}
-) : Promise<Uint8Array> {
+) : Uint8Array {
   if (
     typeof txdata === 'string' ||
     txdata instanceof Uint8Array
@@ -151,14 +149,16 @@ export async function taprootHash (
 
   // Define the parameters of the transaction.
   const isAnyPay  = (sigflag & 0x80) === 0x80
-  const annex     = await getAnnexData(witness)
+  const annex     = getAnnexData(witness)
   const annexBit  = (annex !== undefined) ? 1 : 0
   const extendBit = (extension !== undefined) ? 1 : 0
   const spendType = ((extflag + extendBit) * 2) + annexBit
+  const tag       = Buff.str('TapSighash').digest
 
   // Begin building our digest.
   const digest = [
-    await getTapTag('TapSighash'),
+    tag,
+    tag,
     Buff.num(0x00, 1),
     Buff.num(sigflag, 1),
     ENC.encodeVersion(version),
@@ -170,17 +170,17 @@ export async function taprootHash (
     // include a commitment to all inputs.
     const prevouts = input.map(e => getPrevout(e))
     digest.push(
-      await hashOutpoints(input),
-      await hashAmounts(prevouts),
-      await hashScripts(prevouts),
-      await hashSequence(input)
+      hashOutpoints(input),
+      hashAmounts(prevouts),
+      hashScripts(prevouts),
+      hashSequence(input)
     )
   }
 
   if ((sigflag & 0x03) < 2 || (sigflag & 0x03) > 3) {
     // If hash types SINGLE and NONE are unset,
     // include a commitment to all outputs.
-    digest.push(await hashOutputs(output))
+    digest.push(hashOutputs(output))
   }
 
   // At this step, we include the spend type.
@@ -202,7 +202,7 @@ export async function taprootHash (
   if (annex !== undefined) digest.push(annex)
 
   if ((sigflag & 0x03) === 0x03) {
-    digest.push(await hashOutput(output[index]))
+    digest.push(hashOutput(output[index]))
   }
 
   if (extension !== undefined) {
@@ -216,73 +216,78 @@ export async function taprootHash (
   // Useful for debugging the digest stack.
   // console.log(digest.map(e => Buff.raw(e).hex))
 
-  return Hash.sha256(Buff.join(digest))
+  return Buff.join(digest).digest
 }
 
-export async function hashOutpoints (
+export function hashOutpoints (
   vin : InputData[]
-) : Promise<Uint8Array> {
+) : Uint8Array {
   const stack = []
   for (const { txid, vout } of vin) {
     stack.push(ENC.encodeTxid(txid))
     stack.push(ENC.encodePrevOut(vout))
   }
-  return Hash.sha256(Buff.join(stack))
+  return Buff.join(stack).digest
 }
 
-export async function hashSequence (
+export function hashSequence (
   vin : InputData[]
-) : Promise<Uint8Array> {
+) : Uint8Array {
   const stack = []
   for (const { sequence } of vin) {
     stack.push(ENC.encodeSequence(sequence))
   }
-  return Hash.sha256(Buff.join(stack))
+  return Buff.join(stack).digest
 }
 
-export async function hashAmounts (
+export function hashAmounts (
   prevouts : OutputData[]
-) : Promise<Uint8Array> {
+) : Uint8Array {
   const stack = []
   for (const { value } of prevouts) {
     stack.push(ENC.encodeValue(value))
   }
-  return Hash.sha256(Buff.join(stack))
+  return Buff.join(stack).digest
 }
 
-export async function hashScripts (
+export function hashScripts (
   prevouts : OutputData[]
-) : Promise<Uint8Array> {
+) : Uint8Array {
   const stack = []
-  for (const { scriptPubKey } of prevouts) {
-    stack.push(encodeScript(scriptPubKey))
+  for (const { address, scriptPubKey } of prevouts) {
+    if (typeof address === 'string') {
+      const script = Address.convert(address)
+      stack.push(encodeScript(script))
+    } else {
+      stack.push(encodeScript(scriptPubKey))
+    }
   }
-  return Hash.sha256(Buff.join(stack))
+  return Buff.join(stack).digest
 }
 
-export async function hashOutputs (
+export function hashOutputs (
   vout : OutputData[]
-) : Promise<Uint8Array> {
+) : Uint8Array {
   const stack = []
   for (const { value, scriptPubKey } of vout) {
     stack.push(ENC.encodeValue(value))
     stack.push(encodeScript(scriptPubKey))
   }
-  return Hash.sha256(Buff.join(stack))
+  return Buff.join(stack).digest
 }
 
-export async function hashOutput (
+export function hashOutput (
   vout : OutputData
-) : Promise<Uint8Array> {
-  return Hash.sha256(Buff.of(
-    ...ENC.encodeValue(vout.value),
-    ...encodeScript(vout.scriptPubKey)
-  ))
+) : Uint8Array {
+  return Buff.join([
+    ENC.encodeValue(vout.value),
+    encodeScript(vout.scriptPubKey)
+  ]).digest
 }
 
-async function getAnnexData (
+function getAnnexData (
   witness ?: WitnessData
-) : Promise<Uint8Array | undefined> {
+) : Uint8Array | undefined {
   // If no witness exists, return undefined.
   if (witness === undefined) return
   // If there are less than two elements, return undefined.
