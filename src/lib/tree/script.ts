@@ -79,7 +79,11 @@ export function merkleize (
     // console.log('leaf:', leaf)
     if (Array.isArray(leaf)) {
       const [ r, t, p ] = merkleize(leaf, target)
-      leaves.push(r); target = t; path.push(...p)
+      target = t
+      leaves.push(r)
+      for (const e of p) {
+        path.push(e)
+      }
     } else { leaves.push(leaf) }
   }
 
