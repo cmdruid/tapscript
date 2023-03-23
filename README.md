@@ -513,8 +513,9 @@ This BIP covers changes to opcodes and signature verification.
 https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki
 
 **Tapscript example using Tap**  
-This is a guide to using a command-line tool called Tap. It's very useful  
-for creating taproot transactions and to debug any issues with this library!  
+This is a guide on how to use a command-line tool called btcdeb and Tap.  
+This tool will help you create a taproot transaction from scratch, which  
+is great for learning (and to debug any issues with this library :-)).  
 https://github.com/bitcoin-core/btcdeb/blob/master/doc/tapscript-example-with-tap.md
 
 ## License
