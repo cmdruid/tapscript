@@ -1,6 +1,6 @@
 {
   "name": "@cmdcode/tapscript",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A basic library for working with Tapscript, signatures and Bitcoin transactions.",
   "type": "module",
   "main": "./dist/main.js",
@@ -47,9 +47,8 @@
     "dist"
   ],
   "devDependencies": {
-    "@cmdcode/keylink": "^1.3.0",
+    "@cmdcode/keylink": "^1.4.0",
     "@rollup/plugin-commonjs": "^23.0.2",
-    "@rollup/plugin-json": "^5.0.1",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-terser": "^0.4.0",
     "@rollup/plugin-typescript": "^9.0.2",
@@ -62,7 +61,6 @@
     "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-promise": "^6.1.1",
     "nyc": "^15.1.0",
-    "prettier": "^2.7.1",
     "rollup": "^3.2.3",
     "tap-spec": "^5.0.0",
     "tape": "^5.6.1",
@@ -71,7 +69,7 @@
     "zod": "^3.20.6"
   },
   "dependencies": {
-    "@cmdcode/buff-utils": "^1.6.0",
+    "@cmdcode/buff-utils": "^1.6.5",
     "@cmdcode/crypto-utils": "^1.6.4"
   },
   "browser": {
