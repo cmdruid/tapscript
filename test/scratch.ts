@@ -44,7 +44,7 @@ console.log('Your taproot address:', address)
  */
 
 // Get the 'cblock' string (which is the proof used to verify the leaf is in the tree).
-const cblock = Tree.getPath(pubkey, leaf)
+const cblock = Tree.getPath(pubkey, leaf, [])
 
 // Construct our redeem transaction.
 const txdata : TxData = {

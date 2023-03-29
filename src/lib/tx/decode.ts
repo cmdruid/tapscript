@@ -124,15 +124,3 @@ function readScript (
 function readLocktime (stream : Stream) : number {
   return stream.read(4).reverse().toNum()
 }
-
-export function normalizeTx (
-  txdata : TxData | string | Uint8Array
-) : TxData {
-  if (
-    typeof txdata === 'string' ||
-    txdata instanceof Uint8Array
-  ) {
-    txdata = decodeTx(txdata)
-  }
-  return { ...txdata }
-}

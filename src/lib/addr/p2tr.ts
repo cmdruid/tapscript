@@ -29,11 +29,11 @@ export function decode (address : string) : Buff {
   if (!check(address)) {
     throw new TypeError('Invalid taproot address!')
   }
-  return Buff.bech32(address, 1)
+  return Buff.bech32(address)
 }
 
 export function script (key : string) : string[] {
-  return [ '51', key ]
+  return [ 'OP_1', key ]
 }
 
 export const P2TR = { check, encode, decode, script }

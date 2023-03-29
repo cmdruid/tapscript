@@ -7,7 +7,8 @@ import { sign, verify }  from './signer.js'
 import { safeThrow }     from '../utils.js'
 import { getTapLeaf }    from '../tree/script.js'
 import { Address }       from '../addr/index.js'
-import { decodeTx, normalizeTx } from '../tx/decode.js'
+import { decodeTx }      from '../tx/decode.js'
+import { normalizeTx }   from '../tx/utils.js'
 
 import {
   TxData,

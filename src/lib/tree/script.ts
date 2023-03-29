@@ -42,23 +42,6 @@ export function getTapRoot (
   return Buff.hex(merkleize(leaves)[0])
 }
 
-export function decodeTapAddress (
-  address : string
-) : Buff {
-  return Buff.bech32(address, 1)
-}
-
-export function encodeTapAddress (
-  tapkey : string | Uint8Array,
-  prefix = 'bc'
-) : string {
-  tapkey = Buff.normalize(tapkey)
-  if (tapkey.length > 32) {
-    tapkey = tapkey.slice(1, 33)
-  }
-  return Buff.raw(tapkey).toBech32(prefix, 1)
-}
-
 export function merkleize (
   taptree : TapTree,
   target  : string | null = null,
@@ -66,12 +49,6 @@ export function merkleize (
 ) : TapProof {
   const leaves : string[] = []
   const tree   : string[] = []
-
-//   console.log(`
-// Tree: ${JSON.stringify(taptree, null, 2)}
-// Target: ${String(target)}
-// Path: ${JSON.stringify(path, null, 2)}
-// `)
 
   // If there are nested leaves, resolve them.
   for (let i = 0; i < taptree.length; i++) {

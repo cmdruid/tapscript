@@ -1,5 +1,5 @@
 import { Buff, Stream }             from '@cmdcode/buff-utils'
-import { merkleize, getTapBranch }  from './script.js'
+import { getTapBranch, merkleize }  from './script.js'
 import { getTapTweak, tweakPubkey } from './tweak.js'
 import { TapTree }                  from './types.js'
 

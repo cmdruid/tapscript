@@ -10,8 +10,8 @@ export default class TxWitness {
       ? data.slice(0, -1) as string[]
       : data as string[]
     this.script = (data.length > 2)
-      ? new TxScript(this.args.pop() ?? '', 'witness')
-      : new TxScript([], 'witness')
+      ? new TxScript(this.args.pop() ?? '')
+      : new TxScript([])
   }
 
   get data () : string[] {

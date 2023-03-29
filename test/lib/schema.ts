@@ -1,3 +1,5 @@
+import { SecretKey } from '@cmdcode/crypto-utils'
+
 export interface WalletConfig {
   disable_private_keys ?: boolean   // Disable the possibility of private keys (only watchonlys are possible in this mode).
   blank                ?: boolean   // Create a blank wallet. A blank wallet has no keys or HD seed. One can be set using sethdseed.
@@ -11,6 +13,22 @@ export interface WalletConfig {
 export interface WalletResponse {
   name    : string  // The wallet name if created successfully. If the wallet was created using a full path, the wallet_name will be the full path.
   warning : string  // Warning message if wallet was not loaded cleanly.
+}
+
+export interface UTXO {
+  txid          : string
+  vout          : number
+  address       : string
+  label         : string
+  scriptPubKey  : string
+  amount        : number
+  confirmations : number
+  spendable     : boolean
+  solvable      : boolean
+  desc          : string
+  parent_descs  : string[]
+  safe          : boolean
+  signer       ?: SecretKey
 }
 
 export const WALLET_METHODS = [

@@ -19,9 +19,14 @@ export function encode (
   key     : Bytes,
   network : Networks = 'main'
 ) : string {
+  const bytes  = Buff.bytes(key)
   const prefix = (network === 'main') ? Buff.num(0x00) : Buff.num(0x6F)
-  const bytes  = Buff.bytes(key).prepend(prefix)
-  return bytes.toHash('hash160').tob58check()
+
+  if (bytes.length !== 33) {
+    throw new Error('Invalid key size: ' + String(bytes.length))
+  }
+
+  return bytes.toHash('hash160').prepend(prefix).tob58check()
 }
 
 export function decode (

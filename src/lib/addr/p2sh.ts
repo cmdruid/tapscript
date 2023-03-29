@@ -1,5 +1,6 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { Networks }    from '../../schema/types.js'
+import { Buff } from '@cmdcode/buff-utils'
+import { Networks, ScriptData } from '../../schema/types.js'
+import { Script } from '../script/index.js'
 
 export function check (
   address : string,
@@ -16,12 +17,12 @@ export function check (
 }
 
 export function encode (
-  key     : Bytes,
+  script  : ScriptData,
   network : Networks = 'main'
 ) : string {
   const prefix = (network === 'main') ? Buff.num(0x05) : Buff.num(0xC4)
-  const bytes  = Buff.bytes(key).prepend(prefix)
-  return bytes.toHash('hash160').tob58check()
+  const bytes  = Buff.bytes(Script.encode(script))
+  return bytes.toHash('hash160').prepend(prefix).tob58check()
 }
 
 export function decode (

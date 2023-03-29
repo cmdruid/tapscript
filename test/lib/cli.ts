@@ -1,12 +1,21 @@
 import { Buff, Bytes, Json } from '@cmdcode/buff-utils'
-// import KeyLink         from '@cmdcode/keylink'
-import { spawn }       from 'child_process'
+import { SecretKey }         from '@cmdcode/crypto-utils'
+import KeyLink               from '@cmdcode/keylink'
+import { spawn }             from 'child_process'
+import { UTXO }              from './schema.js'
+import { TxData }            from '../../src/index.js'
 
-import { WalletDescriptor, parseDescriptor, WalletInterface } from './utils.js'
+import {
+  CoreDescriptor,
+  KeyDescriptor,
+  KeyFilter,
+  getKeys,
+  getBaseDescriptor
+} from './descriptors.js'
 
-interface WalletInfo {
+export interface WalletInfo {
   wallet_name : string
-  descriptors : WalletDescriptor[]
+  descriptors : CoreDescriptor[]
 }
 
 interface CliConfig {
@@ -15,6 +24,9 @@ interface CliConfig {
   cmdpath ?: string
   network ?: string
 }
+
+const DEFAULT_SORTER   = (a : UTXO, b : UTXO) => Math.random() > 0.5 ? 1 : -1
+const DEFAULT_TEMPLATE = { version : 1, input : [], output : [], locktime : 0 }
 
 export class CLI {
   wallet ?: string
@@ -35,8 +47,16 @@ export class CLI {
     this.network = network
   }
 
-  get descriptors () : Promise<WalletInfo> {
-    return this.call('listdescriptors', 'true')
+  get newaddress () : Promise<string> {
+    return this.call('getnewaddress')
+  }
+
+  get xprvs () : Promise<CoreDescriptor[]> {
+    return this.call<WalletInfo>('listdescriptors', 'true').then(e => e.descriptors)
+  }
+
+  get xpubs () : Promise<CoreDescriptor[]> {
+    return this.call<WalletInfo>('listdescriptors').then(e => e.descriptors)
   }
 
   async call<T = Json> (
@@ -65,7 +85,7 @@ export class CLI {
     }
 
     return new Promise((resolve, reject) => {
-      console.log(this.cmdpath, params)
+      console.log(params)
       const proc = spawn(this.cmdpath, params)
 
       let blob = ''
@@ -84,20 +104,132 @@ export class CLI {
 
       proc.on('close', code => {
         if (code !== 0) reject(new Error(`code: ${String(code)}`))
-        resolve(JSON.parse(blob))
+        try {
+          resolve(JSON.parse(blob))
+        } catch { 
+          resolve(blob.replace('\n', '') as T) 
+        }
       })
     })
   }
 
-  async getKeys () : Promise<Record<string, WalletInterface>> {
-    const wallets : Record<string, WalletInterface> = {}
-    const { descriptors } = await this.descriptors
+  async getKeys (
+    filters : KeyFilter = {}
+  ) : Promise<KeyDescriptor[]> {
+    const { secret, ...filter } = filters
+    const descriptors = (secret === true) 
+      ? await this.xprvs
+      : await this.xpubs
+    return getKeys(descriptors, filter)
+  }
 
-    for (const d of descriptors) {
-      const parsed = await parseDescriptor(d)
-      if (parsed !== undefined) wallets[parsed.marker] = parsed
+  async getKey (
+    filters : KeyFilter = {}
+  ) : Promise<KeyDescriptor | undefined> {
+    const { secret, ...filter } = filters
+    const descriptors = (secret === true) 
+      ? await this.xprvs 
+      : await this.xpubs
+    const keys = await getKeys(descriptors, filter)
+    return (keys.length > 0) ? keys[0] : undefined
+  }
+
+  async getSigner (
+    descriptor : string
+  ) : Promise<SecretKey | undefined> {
+    let pubdesc = getBaseDescriptor(descriptor)
+
+    if (pubdesc !== undefined) {
+      const { key, marker, purpose, cointype, fullpath } = pubdesc
+      const seckey = await this.getKey({ marker, purpose, cointype, secret : true })
+      console.log(seckey)
+      if (seckey !== undefined) {
+        const signer = await KeyLink.fromBase58(seckey.key).getPath(fullpath)
+        if (signer.pubkey.hex === key) {
+          return signer.seckey
+        }
+      }
     }
+    return undefined
+  }
 
-    return wallets
+  async getBalance() : Promise<number> {
+    const bal : number = await this.call('getbalance')
+    return bal * 100000000
+  }
+
+  async generateFunds(address ?: string, blocks = 110) : Promise<void> {
+    if (address === undefined) address = await this.newaddress
+    return this.call('generatetoaddress', [ blocks, address ])
+  }
+
+  async checkFunds (amount = 10000) {
+    const balance = await this.getBalance()
+    if (balance < amount) {
+      if (this.network === 'regtest') {
+        await this.generateFunds()
+        return this.checkFunds(amount)
+      }
+      throw new Error('Insufficient funds: ' + String(balance))
+    }
+  }
+
+  async getUTXOs(
+    amount = 10_000, 
+    coinsorter = DEFAULT_SORTER
+  ) : Promise<UTXO[]> {
+    const utxos = await this.call<UTXO[]>('listunspent')
+    const selected : UTXO[] = []
+
+    let total = 0
+    let backup : UTXO | undefined = undefined
+
+    utxos.sort(coinsorter)
+
+    for (const utxo of utxos) {
+      const sats = utxo.amount * 100_000_000
+      if (total >= amount) {
+        return selected
+      }
+      if (sats <= amount) {
+        utxo.signer = await this.getSigner(utxo.desc)
+        total += sats
+        selected.push(utxo)
+      } else if (backup === undefined) {
+        backup = utxo
+      }
+    }
+    if (backup !== undefined) {
+      backup.signer = await this.getSigner(backup.desc)
+      selected.push(backup)
+      return selected
+    }
+    throw new Error('Insufficient funds!')
+  }
+
+  async fundAddress (
+    address  : string, 
+    amount   : number  = 10_000,
+    fee      : number  = 1000,
+    template : TxData  = DEFAULT_TEMPLATE
+  ) {
+    
+    const utxos = await this.getUTXOs(amount + fee)
+    const total = utxos.reduce((prev, curr) => utxos.values)
+
+    template.output.push({ address, value : amount })
+
+    template.output.push({
+      value   : total - amount - fee,
+      address : await this.newaddress
+    })
+
+    for (const utxo of utxos) {
+      const { txid, vout, amount: value, scriptPubKey, signer } = utxo
+      const prevout = { value, scriptPubKey, signer }
+      const witness = [ utxo.signer.pub.hex. utxo.signer.sign ]
+      template.input.push({ txid, vout, prevout})
+    }
+    return template
   }
 }

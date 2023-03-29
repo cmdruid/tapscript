@@ -6,12 +6,13 @@ import {
   isValidWord
 } from './words.js'
 
-import { ScriptData, WordArray } from '../../schema/types.js'
+import { ScriptData } from '../../schema/types.js'
 
 export function decodeScript (
-  script : string | Uint8Array
-) : WordArray {
-  return decodeWords(Buff.normalize(script))
+  script  : string | Uint8Array,
+  format ?: 'asm' | 'hex'
+) : string[] {
+  return decodeWords(Buff.normalize(script), format)
 }
 
 export function normalizeData (
@@ -26,18 +27,13 @@ export function normalizeData (
   return Buff.normalize(script)
 }
 
-export function decodeAddress (address : string) : string {
-  // if (address.length === 20)
-  return address
-}
-
 export function decodeWords (
   words : Uint8Array,
   fmt = 'asm'
-) : WordArray {
+) : string[] {
   const stream = new Stream(words)
 
-  const stack : WordArray = []
+  const stack : string[] = []
   const stackSize = stream.size
 
   let word     : number
@@ -52,31 +48,32 @@ export function decodeWords (
     count++
     switch (wordType) {
       case 'varint':
-        stack.push(stream.read(word).toHex())
+        stack.push(stream.read(word).hex)
         count += word
         break
       case 'pushdata1':
         wordSize = stream.read(1).reverse().num
-        stack.push(stream.read(wordSize).toHex())
+        stack.push(stream.read(wordSize).hex)
         count += wordSize + 1
         break
       case 'pushdata2':
         wordSize = stream.read(2).reverse().num
-        stack.push(stream.read(wordSize).toHex())
+        stack.push(stream.read(wordSize).hex)
         count += wordSize + 2
         break
       case 'pushdata4':
         wordSize = stream.read(4).reverse().num
-        stack.push(stream.read(wordSize).toHex())
+        stack.push(stream.read(wordSize).hex)
         count += wordSize + 4
         break
       case 'opcode':
         if (!isValidWord(word)) {
           throw new Error(`Invalid OPCODE: ${word}`)
         }
-        if (fmt === 'asm') {
-          stack.push(getOpLabel(word))
-        } else { stack.push(word) }
+        stack.push((fmt === 'asm')
+          ? getOpLabel(word)
+          : Buff.num(word).hex
+        )
         break
       default:
         throw new Error(`Word type undefined: ${word}`)
