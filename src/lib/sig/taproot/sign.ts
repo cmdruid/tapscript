@@ -1,9 +1,27 @@
 import { Buff, Bytes }  from '@cmdcode/buff-utils'
 import { Field, Point } from '@cmdcode/crypto-utils'
-import { hashTag, safeThrow } from '../utils.js'
+import { hashTx }       from './hash.js'
+import { HashConfig }   from '../types.js'
+import { TxData }       from '../../../schema/types.js'
+import { hashTag, safeThrow } from '../../utils.js'
 
 const FIELD_SIZE  = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2Fn
 const CURVE_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141n
+
+export function signTx (
+  prvkey  : string | Uint8Array,
+  txdata  : TxData | string | Uint8Array,
+  index   : number,
+  config  : HashConfig = {}
+) : string {
+  const { sigflag = 0x00 } = config
+  const hash = hashTx(txdata, index, config)
+  const sig  = sign(prvkey, hash)
+
+  return (sigflag === 0x00)
+    ? Buff.raw(sig).hex
+    : Buff.join([ sig, sigflag ]).hex
+}
 
 export function sign (
   secret  : Bytes,
@@ -91,43 +109,3 @@ export function verify (
   // Return if x coordinate of R value equals r.
   return R.x === r.big
 }
-
-// function lift_x (pubkey : Bytes) : Point {
-//   const x = Buff.bytes(pubkey).big
-//   if (x >= Field.N) {
-//     throw new Error('Point X value is greater than field size!')
-//   }
-//   const p    = FIELD_SIZE
-//   const y_sq = (pow(x, 3n, p) + 7n) % p
-//   const yp   = pow(y_sq, (p + 1n) / 4n, p)
-//   if (pow(yp, 2n, p) !== y_sq) {
-//     throw new Error('Point value is at infinity!')
-//   }
-//   const y = ((yp & 1n) === 0n) ? yp : p - yp
-//   return new Point(x, y)
-// }
-
-// function pow (
-//   x : bigint,
-//   e : bigint,
-//   n = Field.N
-// ) : bigint {
-//   // Wrap starting value to field size.
-//   e = Field.mod(e, n)
-//   // If x value is zero, return zero.
-//   if (x === 0n) return 0n
-//   // Initialize result as 1.
-//   let res = 1n
-//   // While e value is greater than 0:
-//   while (e > 0n) {
-//     // If e value is odd, multiply x with result.
-//     if ((e & 1n) === 1n) {
-//       res = Field.mod(res * x, n)
-//     }
-//     // With e value being even, (e = e / 2).
-//     e = e >> 1n
-//     // Update x value.
-//     x = Field.mod(x * x, n)
-//   }
-//   return res
-// }

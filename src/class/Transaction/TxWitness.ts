@@ -1,26 +1,54 @@
-import { WitnessData } from '../../schema/types.js'
-import TxScript from './TxScript.js'
+import { Buff }    from '@cmdcode/buff-utils'
+import { TxParse } from '../../lib/tx/parse.js'
+import { Script }  from '../../lib/script/index.js'
+import { Bytes, InputType, ScriptData, WitnessData } from '../../schema/types.js'
+
+
 
 export default class TxWitness {
-  public args   : string[]
-  public script : TxScript
+  readonly format ?: InputType
+  readonly _data   : ScriptData[]
+  readonly _meta   : WitnessData
 
-  constructor (data : WitnessData) {
-    this.args = (data.length > 2)
-      ? data.slice(0, -1) as string[]
-      : data as string[]
-    this.script = (data.length > 2)
-      ? new TxScript(this.args.pop() ?? '')
-      : new TxScript([])
+  constructor (
+    data    : ScriptData[],
+    format ?: InputType
+  ) {
+    this._data  = data
+    this._meta  = TxParse.witness(data)
+    this.format = format
   }
 
-  get data () : string[] {
-    return this.script instanceof TxScript
-      ? [ ...this.args, this.script.hex ]
-      : this.args
+  get length () : number {
+    return this._data.length
   }
 
-  toJSON () : string[] {
-    return this.data
+  get annex () : string | undefined {
+    const annex = this._meta.annex
+    return (annex !== null)
+      ? Buff.raw(annex).hex
+      : undefined
+  }
+
+  get cblock () : string | undefined {
+    const cblock = this._meta.cblock
+    return (cblock !== null)
+      ? Buff.raw(cblock).hex
+      : undefined
+  }
+
+  get script () : ScriptData | undefined {
+    const script = this._meta.script
+    return (script !== null)
+      ? Script.decode(script)
+      : undefined
+  }
+
+  get params () : Bytes[] {
+    return this._meta.params
+  }
+
+  toJSON () : ScriptData[] {
+    return this._data
   }
 }

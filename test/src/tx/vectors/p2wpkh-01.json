@@ -1,38 +1,37 @@
 {
-  "tx": {
-    "txid": "3335ffae0df20c5407e8de12b49405c8e912371f00fe4132bfaf95ad49c40243",
-    "hash": "3335ffae0df20c5407e8de12b49405c8e912371f00fe4132bfaf95ad49c40243",
-    "version": 1,
-    "vin": [
+  "tx": [
+    [ 
       {
-        "prevTxid": "9f96ade4b41d5433f4eda31e1738ec2b36f6e7d1420d94a6af99801a88f7f7ff",
-        "prevOut": 0,
-        "scriptSig": "",
-        "sequence": 4294967278
+        "version": 1,
+        "vin": [
+          {
+            "txid": "9f96ade4b41d5433f4eda31e1738ec2b36f6e7d1420d94a6af99801a88f7f7ff",
+            "vout": 0,
+            "scriptSig": "",
+            "sequence": 4294967278
+          },
+          {
+            "txid": "8ac60eb9575db5b2d987e29f301b5b819ea83a5c6579d282d189cc04b8e151ef",
+            "vout": 1,
+            "scriptSig": "",
+            "sequence": 4294967295
+          }
+        ],
+        "vout": [
+          {
+            "value": 112340000,
+            "scriptPubKey": "76a9148280b37df378db99f66f85c95a783a76ac7a6d5988ac"
+          },
+          {
+            "value": 223450000,
+            "scriptPubKey": "76a9143bde42dbee7e4dbe6a21b2d50ce2f0167faa815988ac"
+          }
+        ],
+        "locktime": 17
       },
-      {
-        "prevTxid": "8ac60eb9575db5b2d987e29f301b5b819ea83a5c6579d282d189cc04b8e151ef",
-        "prevOut": 1,
-        "scriptSig": "",
-        "sequence": 4294967295
-      }
-    ],
-    "vout": [
-      {
-        "value": 112340000,
-        "scriptPubKey": "76a9148280b37df378db99f66f85c95a783a76ac7a6d5988ac"
-      },
-      {
-        "value": 223450000,
-        "scriptPubKey": "76a9143bde42dbee7e4dbe6a21b2d50ce2f0167faa815988ac"
-      }
-    ],
-    "locktime": 17,
-    "size": 160,
-    "weight": 640,
-    "vsize": 160,
-    "hex": "0100000002fff7f7881a8099afa6940d42d1e7f6362bec38171ea3edf433541db4e4ad969f0000000000eeffffffef51e1b804cc89d182d279655c3aa89e815b1b309fe287d9b2b55d57b90ec68a0100000000ffffffff02202cb206000000001976a9148280b37df378db99f66f85c95a783a76ac7a6d5988ac9093510d000000001976a9143bde42dbee7e4dbe6a21b2d50ce2f0167faa815988ac11000000"
-  },
+      "0100000002fff7f7881a8099afa6940d42d1e7f6362bec38171ea3edf433541db4e4ad969f0000000000eeffffffef51e1b804cc89d182d279655c3aa89e815b1b309fe287d9b2b55d57b90ec68a0100000000ffffffff02202cb206000000001976a9148280b37df378db99f66f85c95a783a76ac7a6d5988ac9093510d000000001976a9143bde42dbee7e4dbe6a21b2d50ce2f0167faa815988ac11000000"
+    ]
+  ],
   "sign": {
     "sigHash" : {
       "idx"        : 1,

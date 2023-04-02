@@ -34,7 +34,7 @@ export function decode (address : string) : Buff {
 }
 
 export function script (key : string) : string[] {
-  return [ '00', key ]
+  return [ 'OP_0', key ]
 }
 
 export const P2W = { check, encode, decode, script }

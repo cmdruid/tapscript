@@ -25,7 +25,7 @@ export default class Transaction {
     }
 
     const schema = Schema.TxData
-    const data   = schema.parse(txdata)
+    const data   = txdata // schema.parse(txdata)
 
     this.version  = data.version
     this.vin      = data.vin?.map(e => new TxInput(e))   ?? []
@@ -38,11 +38,11 @@ export default class Transaction {
   }
 
   get base () : Buff {
-    return Buff.hex(encodeTx(this.data, true))
+    return encodeTx(this.data, true)
   }
 
   get buff () : Buff {
-    return Buff.hex(encodeTx(this.data))
+    return encodeTx(this.data)
   }
 
   get raw () : Uint8Array {

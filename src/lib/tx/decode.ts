@@ -22,13 +22,13 @@ export function decodeTx (bytes : string | Uint8Array) : TxData {
   const hasWitness = checkWitnessFlag(stream)
 
   // Parse our inputs and outputs.
-  const input  = readInputs(stream)
-  const output = readOutputs(stream)
+  const vin  = readInputs(stream)
+  const vout = readOutputs(stream)
 
   // If witness flag is set, parse witness data.
   if (hasWitness) {
-    for (const vin of input) {
-      vin.witness = readWitness(stream)
+    for (const txin of vin) {
+      txin.witness = readWitness(stream)
     }
   }
 
@@ -36,7 +36,7 @@ export function decodeTx (bytes : string | Uint8Array) : TxData {
   const locktime = readLocktime(stream)
 
   // Return transaction object with calculated fields.
-  return { version, input, output, locktime }
+  return { version, vin, vout, locktime }
 }
 
 function readVersion (stream : Stream) : number {
@@ -101,23 +101,22 @@ function readWitness (stream : Stream) : string[] {
 }
 
 function readData (
-  stream : Stream,
-  hasVarint ?: boolean
+  stream  : Stream,
+  varint ?: boolean
 ) : string {
-  const size = (hasVarint === true)
-    ? stream.readSize()
+  const size = (varint === true)
+    ? stream.readSize('be')
     : stream.size
-
   return size > 0
-    ? stream.read(size).toHex()
-    : Buff.num(0).toHex()
+    ? stream.read(size).hex
+    : Buff.num(0).hex
 }
 
 function readScript (
-  stream : Stream,
-  hasVarint ?: boolean
+  stream  : Stream,
+  varint ?: boolean
 ) : string | string[] {
-  const data = readData(stream, hasVarint)
+  const data = readData(stream, varint)
   return (data !== '00') ? data : []
 }
 

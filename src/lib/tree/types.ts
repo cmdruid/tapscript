@@ -10,3 +10,9 @@ export type TapProof = [
   target : string | null,
   path   : string[]
 ]
+
+export interface ProofConfig {
+  version ?: number
+  parity  ?: 0 | 1
+  tree    ?: TapTree
+}

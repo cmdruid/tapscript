@@ -31,45 +31,45 @@ function flattenArray (
   return ret
 }
 
-export async function tweak_test(t : Test) : Promise<void> {
-  t.test('E2E test of tap-key tweaking', async t => {
+export function tweak_test(t : Test) : void {
+  t.test('E2E test of tap-key tweaking', t => {
     const vectors : Vector[] = tree_vectors.vectors
     for (const vector of vectors) {
       // Unpack our vector data.
       const { internalPubkey, scripts, merkleRoot, tweakedPubkey, tweak, cblocks, leafHashes } = vector
       // Copy leaf array (so the original does not get mutated).
       if (scripts.length === 0) {
-        t.test('Testing empty key tweak.', async t => {
+        t.test('Testing empty key tweak.', t => {
           t.plan(1)
-          const [ tapkey ] = await TWK.getTapPubkey(internalPubkey)
+          const [ tapkey ] = TWK.getTapPubkey(internalPubkey)
           t.equal(tapkey, tweakedPubkey, 'Tweaked pubs should match.')
         })
       } else {
-        t.test('Testing key: ' + tweakedPubkey, async t => {
+        t.test('Testing key: ' + tweakedPubkey, t => {
           t.plan(3)
-          const root = await TAP.getTapRoot(leafHashes)
+          const root = TAP.getTapRoot(leafHashes)
           t.equal(Buff.raw(root).hex, merkleRoot, 'Root hash should match.')
-          const taptweak = await TWK.getTapTweak(internalPubkey, merkleRoot as string)
+          const taptweak = TWK.getTapTweak(internalPubkey, merkleRoot as string)
           t.equal(Buff.raw(taptweak).hex, tweak, 'Tweak hash should match.')
-          const [ tapkey ] = (await TWK.getTapPubkey(internalPubkey, leafHashes))
+          const [ tapkey ] = TWK.getTapPubkey(internalPubkey, leafHashes)
           t.equal(tapkey, tweakedPubkey, 'Tweaked pubs should match.')
         })
 
         const leaves = flattenArray(leafHashes)
         
         for (let i = 0; i < leaves.length; i++) {
-          t.test('Testing leaf: ' + leaves[i], async t => {
+          t.test('Testing leaf: ' + leaves[i], t => {
             t.plan(2)
             const cbyte   = Buff.hex(cblocks[i]).slice(0, 1).num
             const parity  = (cbyte % 2 === 0) ? 0 : 1
             const version = cbyte & 0xfe
             const script  = Buff.raw(encodeScript(scripts[i])).hex
 
-            const tapleaf = await TAP.getTapLeaf(script, version)
+            const tapleaf = TAP.getTapLeaf(script, version)
             t.equal(tapleaf, leaves[i], 'Leaf hash should match.')
 
             const target = leaves[i]
-            const block  = await CHK.getTapPath(internalPubkey, target, leafHashes, version, parity)
+            const block  = CHK.getTapPath(internalPubkey, target, { tree: leafHashes, version, parity })
             t.equal(block, cblocks[i], 'Control blocks should be equal.')
           })
         }

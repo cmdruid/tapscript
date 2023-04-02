@@ -2,52 +2,56 @@ import { Buff }                  from '@cmdcode/buff-utils'
 import { Field, Point }          from '@cmdcode/crypto-utils'
 import { getTapTag, getTapRoot } from './script.js'
 import { TapTree, TapKey }       from './types.js'
+import { xOnlyPub }              from './utils.js'
 
 export function tweakPrvkey (
   prvkey : string | Uint8Array,
   tweak  : string | Uint8Array
-) : Uint8Array {
+) : Buff {
   let sec = new Field(prvkey)
   if (sec.point.hasOddY) {
     sec = sec.negate()
   }
-  return sec.add(tweak).raw
+  return Buff.raw(sec.add(tweak).raw)
 }
 
 export function tweakPubkey (
   pubkey : string | Uint8Array,
   tweak  : string | Uint8Array
-) : Uint8Array {
+) : Buff {
+  pubkey = xOnlyPub(pubkey)
   const P = new Point(pubkey)
   const Q = P.add(tweak)
-  return Q.raw
+  return Buff.raw(Q.raw)
 }
 
 export function getTapTweak (
   pubkey : string | Uint8Array,
   tweak  : string | Uint8Array
 ) : Buff {
+  pubkey = xOnlyPub(pubkey)
   return Buff.join([
     getTapTag('TapTweak'),
-    Buff.normalize(pubkey),
-    Buff.normalize(tweak)
+    Buff.bytes(pubkey),
+    Buff.bytes(tweak)
   ]).digest
 }
 
 function getTapKey (
   intkey : string | Uint8Array,
-  leaves : TapTree = [],
+  leaves : string | TapTree = [],
   isPrivate = false
 ) : TapKey {
-  const k = Buff.normalize(intkey)
+  if (!Array.isArray(leaves)) {
+    leaves = [ leaves ]
+  }
+  const k = Buff.bytes(intkey)
   // Get the merkle root data.
   const r = (leaves.length > 0)
     ? getTapRoot(leaves)
     : new Uint8Array()
   // Get the pubkey for the tweak.
-  const P = (isPrivate)
-    ? new Field(k).point.rawX
-    : k
+  const P = (isPrivate) ? new Field(k).point.rawX : k
   // Calculate the tweak.
   const t = getTapTweak(P, r)
   // Return the tweaked key based on type.
@@ -63,14 +67,14 @@ function getTapKey (
 
 export function getTapPubkey (
   pubkey : string | Uint8Array,
-  leaves : TapTree = []
+  leaves : string | TapTree = []
 ) : TapKey {
   return getTapKey(pubkey, leaves)
 }
 
 export function getTapSeckey (
   seckey : string | Uint8Array,
-  leaves : TapTree = []
+  leaves : string | TapTree = []
 ) : string {
   return getTapKey(seckey, leaves, true)[0]
 }

@@ -199,10 +199,10 @@
   resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.5.7.tgz#7eb626a81cb6726a84cc0215d3590cf3175732ee"
   integrity sha512-qgWBzRKoVnFOnlNqwSbdVxf3fwjQd1T5YLzE//o8S/oMpKnWz2wEWTulacajldhun1JGqNkWSOKumGXDlOYkuw==
 
-"@cmdcode/buff-utils@^1.6.5":
-  version "1.6.5"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.6.5.tgz#26a46892ca7258d1e58a4b5fcebdef2ddc42b045"
-  integrity sha512-bX0XWplJFwR5Svq9SUne0D3YRUHZD/K+AmBo6Jp6a64uvsxW2rqtG26KfuriVngLif/LrpuoPS8y4ZrX0H15Xw==
+"@cmdcode/buff-utils@^1.6.6":
+  version "1.6.6"
+  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.6.6.tgz#f2cff7b2c2ff9d54513866a8061cd4cf42dc5ce8"
+  integrity sha512-6riRYCMTLFfF9xpW+1uoFOFWCyiZtVb6SqzFzDrj087i0gJ5IMzHp5WTo6RfZTgk0MHmS+8et6e6q6Rjja+sjg==
 
 "@cmdcode/crypto-utils@^1.6.4":
   version "1.6.4"

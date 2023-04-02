@@ -1,39 +1,34 @@
 /* eslint-disable quote-props */
 
 import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { Networks }    from '../../schema/types.js'
+import { Networks, ScriptData } from '../../schema/types.js'
 
-export type KeyType = [
+export type AddressType = [
+  prefix  : string,
   type    : keyof AddressTools,
-  network : Networks
+  network : Networks,
+  tool    : KeyTool | ScriptTool
 ]
 
 export interface AddressTool {
   check  : (address : string, network ?: Networks) => boolean
-  encode : (key     : Bytes,  network ?: Networks) => string
   decode : (address : string, network ?: Networks) => Buff
   script : (hash    : string) => string[]
 }
 
-export interface AddressTools {
-  p2pkh : AddressTool
-  p2sh  : AddressTool
-  p2w   : AddressTool
-  p2tr  : AddressTool
+export interface KeyTool extends AddressTool {
+  encode : (key : Bytes,  network ?: Networks) => string
 }
 
-export const VALID_PREFIXES : Record<string, KeyType> = {
-  '1'      : [ 'p2pkh', 'main'     ],
-  '3'      : [ 'p2sh',  'main'     ],
-  'm'      : [ 'p2pkh', 'testnet'  ],
-  'n'      : [ 'p2pkh', 'testnet'  ],
-  '2'      : [ 'p2sh',  'testnet'  ],
-  'bc1q'   : [ 'p2w',   'main'     ],
-  'tb1q'   : [ 'p2w',   'testnet'  ],
-  'bcrt1q' : [ 'p2w',   'regtest'  ],
-  'bc1p'   : [ 'p2tr',  'main'     ],
-  'tb1p'   : [ 'p2tr',  'testnet'  ],
-  'bcrt1p' : [ 'p2tr',  'regtest'  ]
+export interface ScriptTool extends AddressTool {
+  encode : (script : ScriptData, network ?: Networks) => string
+}
+
+export interface AddressTools {
+  p2pkh : KeyTool
+  p2sh  : ScriptTool
+  p2w   : KeyTool
+  p2tr  : KeyTool
 }
 
 export const BECH32_PREFIXES : Record<Networks, string> = {

@@ -1,13 +1,7 @@
-import { segwitHash  } from './segwit.js'
-import * as TAPSIG     from './taproot.js'
+import { SegwitSigner }  from './segwit/index.js'
+import { TapRootSigner } from './taproot/index.js'
 
 export const Sig = {
-  segwit: {
-    hash: segwitHash
-  },
-  taproot: {
-    hash   : TAPSIG.hashTx,
-    sign   : TAPSIG.signTx,
-    verify : TAPSIG.verifyTx
-  }
+  segwit  : SegwitSigner,
+  taproot : TapRootSigner
 }

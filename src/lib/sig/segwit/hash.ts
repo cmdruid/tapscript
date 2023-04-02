@@ -1,55 +1,59 @@
-import { Buff }         from '@cmdcode/buff-utils'
-import { Hash }         from '@cmdcode/crypto-utils'
-import { encodeScript } from '../script/encode.js'
-import * as ENC         from '../tx/encode.js'
+import { Buff }       from '@cmdcode/buff-utils'
+import * as ENC       from '../../tx/encode.js'
+import { Script }     from '../../script/index.js'
+import { HashConfig } from '../types.js'
+import { Tx }         from '../../tx/index.js'
 
 import {
   InputData,
   OutputData,
   TxData,
-  ScriptData
-} from '../../schema/types.js'
+  Bytes
+} from '../../../schema/types.js'
 
 const VALID_HASH_TYPES = [ 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
+const DEFAULT_SCRIPT   = ''
 
-export async function segwitHash (
-  txdata    : TxData,
-  idx       : number,
-  value     : number,
-  script    : ScriptData,
-  sigflag   : number
-) : Promise<Uint8Array> {
+export function hashTx (
+  txdata : TxData | Bytes,
+  idx    : number,
+  config : HashConfig = {}
+) : Buff {
+  const { sigflag = 0x01, script = DEFAULT_SCRIPT } = config
   if (!VALID_HASH_TYPES.includes(sigflag)) {
     // Check if the sigflag type is valid.
     throw new Error('Invalid hash type: ' + String(sigflag))
   }
-
-  const { version, input, output, locktime } = txdata
-  const { txid, vout, sequence } = input[idx]
-
+  const tx = Tx.fmt.toJson(txdata)
+  const { version, vin: input, vout: output, locktime } = tx
+  const { txid, vout, prevout, sequence } = input[idx]
   const isAnypay = sigflag > 0x80
   const stack    = [ ENC.encodeVersion(version) ]
 
+  if (prevout?.value === undefined) {
+    throw new Error('Prevout value is empty!')
+  }
+
   stack.push(
-    await hashPrevouts(input, isAnypay),
-    await hashSequence(input, sigflag),
+    hashPrevouts(input, isAnypay),
+    hashSequence(input, sigflag),
     ENC.encodeTxid(txid),
     ENC.encodePrevOut(vout),
-    encodeScript(script, true),
-    ENC.encodeValue(value),
+    Script.encode(script, true),
+    ENC.encodeValue(prevout.value),
     ENC.encodeSequence(sequence),
-    await hashOutputs(output, idx, sigflag),
+    hashOutputs(output, idx, sigflag),
     ENC.encodeLocktime(locktime),
     Buff.num(sigflag, 4).reverse()
   )
 
-  return Hash.hash256(Buff.join(stack))
+  return Buff.join(stack).toHash('hash256')
 }
 
-async function hashPrevouts (
+function hashPrevouts (
   vin : InputData[],
   isAnypay ?: boolean
-) : Promise<Uint8Array> {
+) : Uint8Array {
   if (isAnypay === true) {
     return Buff.num(0, 32)
   }
@@ -61,13 +65,13 @@ async function hashPrevouts (
     stack.push(ENC.encodePrevOut(vout))
   }
 
-  return Hash.hash256(Buff.join(stack))
+  return Buff.join(stack).toHash('hash256')
 }
 
-async function hashSequence (
+function hashSequence (
   vin     : InputData[],
   sigflag : number
-) : Promise<Uint8Array> {
+) : Uint8Array {
   if (sigflag !== 0x01) {
     return Buff.num(0, 32)
   }
@@ -77,29 +81,29 @@ async function hashSequence (
   for (const { sequence } of vin) {
     stack.push(ENC.encodeSequence(sequence))
   }
-  return Hash.hash256(Buff.join(stack))
+  return Buff.join(stack).toHash('hash256')
 }
 
-async function hashOutputs (
+function hashOutputs (
   vout    : OutputData[],
   idx     : number,
   sigflag : number
-) : Promise<Uint8Array> {
+) : Uint8Array {
   const stack = []
 
   if (sigflag === 0x01) {
     for (const { value, scriptPubKey } of vout) {
       stack.push(ENC.encodeValue(value))
-      stack.push(encodeScript(scriptPubKey))
+      stack.push(Script.encode(scriptPubKey))
     }
-    return Hash.hash256(Buff.join(stack))
+    return Buff.join(stack).toHash('hash256')
   }
 
   if (sigflag === 0x03 && idx < vout.length) {
     const { value, scriptPubKey } = vout[idx]
     stack.push(ENC.encodeValue(value))
-    stack.push(encodeScript(scriptPubKey))
-    return Hash.hash256(Buff.join(stack))
+    stack.push(Script.encode(scriptPubKey))
+    return Buff.join(stack).toHash('hash256')
   }
 
   return Buff.num(0, 32)

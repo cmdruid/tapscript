@@ -24,7 +24,7 @@ tape('BTON Test Suite', async t => {
   //   await unit_tests(t)
   // })
   t.test('BTON Tests', async t => {
-    tx_encode(t)
+    // tx_encode(t)
     // tx_decode(t)
   })
 

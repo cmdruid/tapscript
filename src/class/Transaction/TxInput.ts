@@ -3,7 +3,7 @@ import TxScript      from './TxScript.js'
 import TxSequence    from './TxSequence.js'
 import TxOutput      from './TxOutput.js'
 import TxWitness     from './TxWitness.js'
-import { InputData } from '../../schema/types.js'
+import { InputData, InputType } from '../../schema/types.js'
 
 export default class TxInput {
   public txid      : string
@@ -30,4 +30,17 @@ export default class TxInput {
       this.prevout = new TxOutput(txin.prevout)
     }
   }
+
+  // get type () : InputType {
+  //   const types = [
+  //     'p2pkh',
+  //     'p2sh',
+  //     'p2w-p2pkh',
+  //     'p2w-p2sh',
+  //     'p2wpkh',
+  //     'p2wsh',
+  //     'p2tr-pk',
+  //     'p2tr-ts'
+  //   ]
+  // }
 }

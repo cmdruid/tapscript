@@ -1,25 +1,24 @@
 import { Buff }         from '@cmdcode/buff-utils'
 import { encodeScript } from '../script/encode.js'
-import { Address }      from '../addr/index.js'
 
 import {
   TxData,
   InputData,
   OutputData,
   SequenceData,
-  WitnessData
+  ScriptData
 } from '../../schema/types.js'
 
 export function encodeTx (
   txdata       : TxData,
   omitWitness ?: boolean
-) : string {
+) : Buff {
   /** Convert a JSON-based Bitcoin transaction
    * into hex-encoded bytes.
    * */
-  const { version, input, output, locktime } = txdata
+  const { version, vin, vout, locktime } = txdata
 
-  const useWitness = (omitWitness !== true && checkForWitness(input))
+  const useWitness = (omitWitness !== true && checkForWitness(vin))
 
   const raw = [ encodeVersion(version) ]
 
@@ -27,18 +26,18 @@ export function encodeTx (
     raw.push(Buff.hex('0001'))
   }
 
-  raw.push(encodeInputs(input))
-  raw.push(encodeOutputs(output))
+  raw.push(encodeInputs(vin))
+  raw.push(encodeOutputs(vout))
 
-  for (const vin of input) {
-    if (useWitness && vin?.witness !== undefined) {
-      raw.push(encodeWitness(vin.witness))
+  for (const txin of vin) {
+    if (useWitness) {
+      raw.push(encodeWitness(txin.witness))
     }
   }
 
   raw.push(encodeLocktime(locktime))
 
-  return Buff.join(raw).hex
+  return Buff.join(raw)
 }
 
 function checkForWitness (vin : InputData[]) : boolean {
@@ -109,20 +108,15 @@ function encodeOutputs (arr : OutputData[]) : Uint8Array {
 function encodeOutput (
   vout : OutputData
 ) : Uint8Array {
+  const { value, scriptPubKey } = vout
   const raw : Uint8Array[] = []
-  const { address, value, scriptPubKey } = vout
   raw.push(encodeValue(value))
-  if (typeof address === 'string') {
-    const script = Address.convert(address)
-    raw.push(encodeScript(script))
-  } else {
-    raw.push(encodeScript(scriptPubKey))
-  }
+  raw.push(encodeScript(scriptPubKey))
   return Buff.join(raw)
 }
 
 function encodeWitness (
-  data : WitnessData
+  data : ScriptData[] = []
 ) : Uint8Array {
   const buffer : Uint8Array[] = []
   if (Array.isArray(data)) {

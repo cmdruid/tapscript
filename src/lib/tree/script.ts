@@ -53,7 +53,6 @@ export function merkleize (
   // If there are nested leaves, resolve them.
   for (let i = 0; i < taptree.length; i++) {
     const leaf = taptree[i]
-    // console.log('leaf:', leaf)
     if (Array.isArray(leaf)) {
       const [ r, t, p ] = merkleize(leaf, target)
       target = t
@@ -67,7 +66,6 @@ export function merkleize (
   // If there is only one leaf,
   // then return it as the root.
   if (leaves.length === 1) {
-    // console.log('root:', leaves[0])
     return [ leaves[0], target, path ]
   }
   // Ensure the tree is sorted.
@@ -77,8 +75,6 @@ export function merkleize (
     // If uneven, duplicate the last leaf.
     leaves.push(leaves[leaves.length - 1])
   }
-
-  // console.log(leaves)
 
   // Sort through the leaves (two at a time).
   for (let i = 0; i < leaves.length - 1; i += 2) {
@@ -91,12 +87,10 @@ export function merkleize (
       // Check if this branch is part of our proofs.
       if (target === leaves[i]) {
         // Include right-side of branch.
-        // console.log('append i1:', leaves[i + 1])
         path.push(leaves[i + 1])
         target = branch
       } else if (target === leaves[i + 1]) {
         // Include left-side of branch.
-        // console.log('append i:', leaves[i])
         path.push(leaves[i])
         target = branch
       }

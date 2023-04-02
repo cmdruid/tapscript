@@ -39,7 +39,7 @@ export async function unit_tests(t : Test) : Promise<void> {
       const leaves = data.map(e => Tree.getLeaf(e, 0xc0))
       const script = Buff.raw(data[index]).hex
       const target = Tree.getLeaf(script)
-      const block  = Tree.getPath(pubkey, target, leaves)
+      const block  = Tree.getPath(pubkey, target, { tree: leaves })
       t.equal(block, cblock, 'Control block should match')
     }
   }),

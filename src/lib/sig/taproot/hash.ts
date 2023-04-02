@@ -1,111 +1,18 @@
-import { Buff, Stream }  from '@cmdcode/buff-utils'
-import * as ENC          from '../tx/encode.js'
-import { encodeScript }  from '../script/encode.js'
-import { normalizeData } from '../script/decode.js'
-import { checkTapPath }  from '../tree/proof.js'
-import { sign, verify }  from './signer.js'
-import { safeThrow }     from '../utils.js'
-import { getTapLeaf }    from '../tree/script.js'
-import { Address }       from '../addr/index.js'
-import { decodeTx }      from '../tx/decode.js'
-import { normalizeTx }   from '../tx/utils.js'
+import { Buff }         from '@cmdcode/buff-utils'
+import * as ENC         from '../../tx/encode.js'
+import { Tx }           from '../../tx/index.js'
+import { Script }       from '../../script/index.js'
+import { encodeScript } from '../../script/encode.js'
+import { HashConfig }   from '../types.js'
 
 import {
   TxData,
   InputData,
   OutputData,
-  WitnessData,
-  Bytes
-} from '../../schema/types.js'
-
-interface HashConfig {
-  extension     ?: Bytes   // Include a tapleaf hash with your signature hash.
-  pubkey        ?: Bytes   // Verify using this pubkey instead of the tapkey.
-  sigflag       ?: number  // Set the signature type flag.
-  separator_pos ?: number  // If using OP_CODESEPARATOR, specify the latest opcode position.
-  extflag       ?: number  // Set the extention version flag (future use).
-  key_version   ?: number  // Set the key version flag (future use).
-}
+  ScriptData
+} from '../../../schema/types.js'
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
-
-export function signTx (
-  prvkey  : string | Uint8Array,
-  txdata  : TxData | string | Uint8Array,
-  index   : number,
-  config  : HashConfig = {}
-) : string {
-  const { sigflag = 0x00 } = config
-  const hash = hashTx(txdata, index, config)
-  const sig  = sign(prvkey, hash)
-
-  return (sigflag === 0x00)
-    ? Buff.raw(sig).hex
-    : Buff.join([ sig, sigflag ]).hex
-}
-
-export async function verifyTx (
-  txdata  : TxData | string | Uint8Array,
-  index   : number,
-  config  : HashConfig = {},
-  shouldThrow = false
-) : Promise<boolean> {
-  const tx = normalizeTx(txdata)
-  const { witness } = tx.input[index]
-
-  if (!Array.isArray(witness) || witness.length < 1) {
-    return safeThrow('Invalid witness data: ' + String(witness), shouldThrow)
-  }
-
-  const annex = normalizeData(witness[witness.length - 1])
-
-  if (annex[0] === 0x50) witness.pop()
-
-  if (witness.length < 1) {
-    return safeThrow('Invalid witness data: ' + String(witness), shouldThrow)
-  }
-
-  const stream    = new Stream(normalizeData(witness[0]))
-  const signature = stream.read(64).raw
-  const prevout   = tx.input[index].prevout
-  const tapkey    = normalizeData(prevout?.scriptPubKey).slice(2)
-
-  let target, cblock
-
-  if (stream.size === 1) {
-    config.sigflag = stream.read(1).num
-    if (config.sigflag === 0x00) {
-      return safeThrow('0x00 is not a valid appended sigflag!', shouldThrow)
-    }
-  }
-
-  if (witness.length > 1) {
-    // Check if cblock present.
-    cblock = normalizeData(witness.pop())
-  }
-
-  if (witness.length > 1 && cblock instanceof Uint8Array) {
-    const script  = encodeScript(witness.pop())
-    const version = cblock[0] & 0xfe
-    target = await getTapLeaf(script, version)
-    config.extension = target
-  }
-
-  const hash = hashTx(tx, index, config)
-
-  if (!verify(signature, hash, tapkey, true)) {
-    return safeThrow('Invalid signature!', shouldThrow)
-  }
-
-  if (
-    cblock !== undefined && target !== undefined &&
-    !await checkTapPath(tapkey, cblock, target)
-  ) {
-    return safeThrow('Invalid cblock!', shouldThrow)
-  }
-
-  return true
-}
 
 export function hashTx (
   txdata  : TxData | string | Uint8Array,
@@ -116,7 +23,7 @@ export function hashTx (
     typeof txdata === 'string' ||
     txdata instanceof Uint8Array
   ) {
-    txdata = decodeTx(txdata)
+    txdata = Tx.decode(txdata)
   }
   // Unpack configuration.
   const {
@@ -128,7 +35,7 @@ export function hashTx (
   } = config
 
   // Unpack txdata object.
-  const { version, input = [], output = [], locktime } = txdata
+  const { version, vin: input = [], vout: output = [], locktime } = txdata
 
   if (index >= input.length) {
     // If index is out of bounds, throw error.
@@ -193,7 +100,7 @@ export function hashTx (
       ENC.encodeTxid(txid),
       ENC.encodePrevOut(vout),
       ENC.encodeValue(value),
-      encodeScript(scriptPubKey),
+      Script.encode(scriptPubKey),
       ENC.encodeSequence(sequence)
     )
   } else {
@@ -255,13 +162,8 @@ export function hashScripts (
   prevouts : OutputData[]
 ) : Uint8Array {
   const stack = []
-  for (const { address, scriptPubKey } of prevouts) {
-    if (typeof address === 'string') {
-      const script = Address.convert(address)
-      stack.push(encodeScript(script))
-    } else {
-      stack.push(encodeScript(scriptPubKey))
-    }
+  for (const { scriptPubKey } of prevouts) {
+    stack.push(encodeScript(scriptPubKey))
   }
   return Buff.join(stack).digest
 }
@@ -272,7 +174,7 @@ export function hashOutputs (
   const stack = []
   for (const { value, scriptPubKey } of vout) {
     stack.push(ENC.encodeValue(value))
-    stack.push(encodeScript(scriptPubKey))
+    stack.push(Script.encode(scriptPubKey))
   }
   return Buff.join(stack).digest
 }
@@ -282,12 +184,12 @@ export function hashOutput (
 ) : Uint8Array {
   return Buff.join([
     ENC.encodeValue(vout.value),
-    encodeScript(vout.scriptPubKey)
+    Script.encode(vout.scriptPubKey)
   ]).digest
 }
 
 function getAnnexData (
-  witness ?: WitnessData
+  witness ?: ScriptData[]
 ) : Uint8Array | undefined {
   // If no witness exists, return undefined.
   if (witness === undefined) return

@@ -1,5 +1,6 @@
 import { Buff, Stream } from '@cmdcode/buff-utils'
 import { getOpCode }    from './words.js'
+import { isHex }        from '../check.js'
 
 import {
   ScriptData,
@@ -12,14 +13,14 @@ const MAX_WORD_SIZE = 0x208
 export function encodeScript (
   script : ScriptData = [],
   varint = true
-) : Uint8Array {
+) : Buff {
   let buff = Buff.num(0)
 
   if (Array.isArray(script)) {
     buff = Buff.raw(encodeWords(script))
   }
 
-  if (typeof script === 'string') {
+  if (isHex(script)) {
     buff = Buff.hex(script)
   }
 
@@ -31,7 +32,7 @@ export function encodeScript (
     buff = buff.prefixSize('be')
   }
 
-  return buff.raw
+  return buff
 }
 
 export function encodeWords (
@@ -55,28 +56,24 @@ export function encodeWord (
   // Initialize buff variable.
   let buff = new Uint8Array()
 
-  if (typeof (word) === 'string') {
-    if (word.startsWith('OP_')) {
-      // If word is an opcode, return a
-      // number value without size prefix.
-      return Buff.num(getOpCode(word), 1)
-    }
-    if (word.startsWith('STR_')) {
-      // If word is marked as a string,
-      // encode to uint8 array.
-      buff = Buff.str(word.slice(3))
-    }
-    // Else, encode word as hex string.
-    buff = Buff.hex(word)
+  if (
+    typeof (word) === 'string' &&
+    word.startsWith('OP_')
+  ) {
+    // If word is an opcode, return a
+    // number value without size prefix.
+    return Buff.num(getOpCode(word), 1)
   }
-  if (typeof (word) === 'number') {
-    // If word is a number value,
-    // encode to uint8 array.
-    buff = Buff.num(word)
+
+  // If not an opcode, encode as bytes.
+  buff = Buff.bytes(word)
+
+  if (buff.length === 1 && buff[0] <= 16) {
+    // Number values 0-16 must be treated as opcodes.
+    if (buff[0] !== 0) buff[0] &= 0x50
+    return buff
   }
-  if (word instanceof Uint8Array) {
-    buff = word
-  }
+
   if (buff.length > MAX_WORD_SIZE) {
     const words = splitWord(buff)
     return encodeWords(words)

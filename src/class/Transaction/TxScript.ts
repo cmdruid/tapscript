@@ -1,22 +1,18 @@
-import { Buff } from '@cmdcode/buff-utils'
-
+import { Buff }         from '@cmdcode/buff-utils'
 import { encodeScript } from '../../lib/script/encode.js'
 import { decodeScript } from '../../lib/script/decode.js'
+import { ScriptData }   from '../../schema/types.js'
+import { Tree }         from '../../lib/tree/index.js'
 
-import { ScriptData } from '../../schema/types.js'
-
-type ScriptFormat = 'p2sh' | 'p2w'
+type ScriptFormat = 'p2sh' | 'p2w' | 'p2tr'
 
 export default class TxScript {
   readonly _buff : Buff
-  format : ScriptFormat
 
   constructor(
     script : ScriptData,
-    format : ScriptFormat = 'p2w'
   ) {
-    this._buff  = Buff.raw(encodeScript(script))
-    this.format = format
+    this._buff = Buff.raw(encodeScript(script))
   }
 
   get raw () : Uint8Array {
@@ -31,19 +27,17 @@ export default class TxScript {
     return decodeScript(this._buff, 'asm')
   }
 
-  get hash () : string {
-    switch (this.format) {
+  getHash (format : ScriptFormat, version ?: number) : string {
+    switch (format) {
       case 'p2w':
         return this._buff.toHash('hash256').hex
       case 'p2sh':
         return this._buff.toHash('hash160').hex
+      case 'p2tr':
+        return Tree.getLeaf(this._buff, version)
       default:
-        throw new Error('Unrecognized format: ' + this.format)
+        throw new Error('Unrecognized format: ' + format)
     }
-  }
-
-  get isEmpty () : boolean {
-    return this.raw.length < 1
   }
 
   toJSON() : string[] {

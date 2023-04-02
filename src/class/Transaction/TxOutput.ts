@@ -1,17 +1,19 @@
-import TxScript       from './TxScript.js'
-import { OutputData } from '../../schema/types.js'
-import { Address } from '../../lib/addr/index.js'
+import TxScript from './TxScript.js'
+import { Tx }   from '../../lib/tx/index.js'
+
+import { OutputData, OutputType } from '../../schema/types.js'
 
 export default class TxOutput {
   value : bigint
   scriptPubKey : TxScript
 
   constructor (txout : OutputData) {
-    const { address, value = 0, scriptPubKey = [] } = txout
-    const script = (typeof address === 'string')
-      ? Address.convert(address)
-      : scriptPubKey
-    this.value = BigInt(value)
+    const script = Tx.parse.scriptPubKey(txout)
+    this.value = BigInt(txout.value)
     this.scriptPubKey = new TxScript(script)
   }
+
+  // get type () : OutputType {
+  //   return getScriptType(this.scriptPubKey)
+  // }
 }

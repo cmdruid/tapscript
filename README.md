@@ -300,8 +300,8 @@ Tap.tx = {
 
 interface TxData {
   version  : number           // The transaction verion.
-  input    : InputData[]      // Ann array of transaction inputs.
-  output   : OutputData[]     // An array of transaction outputs.
+  vin      : InputData[]      // Ann array of transaction inputs.
+  vout     : OutputData[]     // An array of transaction outputs.
   locktime : LockData         // The locktime of the transaction.
 }
 
@@ -340,7 +340,7 @@ This is an example transaction in JSON format.
 ```ts
 const txdata = {
   version : 2
-  input: [
+  vin: [
     {
       txid     : '1351f611fa0ae6124d0f55c625ae5c929ca09ae93f9e88656a4a82d160d99052',
       vout     : 0,
@@ -353,7 +353,7 @@ const txdata = {
       witness  : []
     }
   ],
-  output : [
+  vout : [
     { 
       value: 9000, 
       address: 'bcrt1pqksclnx3jz0nx9lym4l3zft7gs5gsjgzk8r5vmp5ul6fpc8xyldqaxu8ys'
@@ -416,7 +416,7 @@ const cblock = await Tree.getPath(pubkey, tapleaf)
 // Construct our redeem transaction.
 const txdata = {
   version : 2
-  input: [
+  vin: [
     {
       txid     : 'replace with the txid of your previous transaction.',
       vout     : 'replace with the vout index spending to the previous address.',
@@ -428,7 +428,7 @@ const txdata = {
       witness  : []
     }
   ],
-  output : [
+  vout : [
     { 
       value: 'replace with the amount sent from the previous transaction, minus fees (for the miners)', 
       address: 'replace with an address of your choice!'

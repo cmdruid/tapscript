@@ -6,30 +6,23 @@ import {
   isValidWord
 } from './words.js'
 
-import { ScriptData } from '../../schema/types.js'
-
 export function decodeScript (
-  script  : string | Uint8Array,
-  format ?: 'asm' | 'hex'
+  script : string | Uint8Array,
+  varint = false
 ) : string[] {
-  return decodeWords(Buff.normalize(script), format)
-}
-
-export function normalizeData (
-  script ?: ScriptData
-) : Uint8Array {
-  if (script === undefined) {
-    throw new Error('Script data is undefined!')
+  let buff = Buff.bytes(script)
+  if (varint) {
+    const len = buff.stream.readSize('be')
+    if (buff.length !== len) {
+      throw new Error(`Varint does not match stream size: ${len} !== ${buff.length}`)
+    }
+    buff = buff.slice(1)
   }
-  if (Array.isArray(script)) {
-    throw new Error('Script data is an array!')
-  }
-  return Buff.normalize(script)
+  return decodeWords(buff)
 }
 
 export function decodeWords (
-  words : Uint8Array,
-  fmt = 'asm'
+  words : Uint8Array
 ) : string[] {
   const stream = new Stream(words)
 
@@ -70,10 +63,7 @@ export function decodeWords (
         if (!isValidWord(word)) {
           throw new Error(`Invalid OPCODE: ${word}`)
         }
-        stack.push((fmt === 'asm')
-          ? getOpLabel(word)
-          : Buff.num(word).hex
-        )
+        stack.push(getOpLabel(word))
         break
       default:
         throw new Error(`Word type undefined: ${word}`)
