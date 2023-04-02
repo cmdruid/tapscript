@@ -6,7 +6,7 @@ import { ScriptData }   from '../../schema/types.js'
 
 function toAsm (
   script ?: ScriptData
-) : ScriptData {
+) : string[] {
   if (Array.isArray(script)) {
     script = encodeScript(script)
   }
@@ -21,7 +21,7 @@ function toAsm (
 
 function toBytes (
   script ?: ScriptData
-) : Uint8Array {
+) : Buff {
   if (
     script instanceof Uint8Array ||
     isHex(script)
@@ -34,7 +34,7 @@ function toBytes (
 
 function toParam (
   script : ScriptData
-) : Uint8Array {
+) : Buff {
   if (!Array.isArray(script)) {
     return Buff.bytes(script)
   }

@@ -15,7 +15,7 @@ export async function verifyTx (
   const tx = Tx.fmt.toJson(txdata)
   const { throws = false } = config
   const { prevout, witness = [] } = tx.vin[index]
-  const witnessData = Tx.parse.witness(witness)
+  const witnessData = Tx.utils.parseWitness(witness)
 
   const { script, params } = witnessData
 

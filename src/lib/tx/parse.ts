@@ -85,7 +85,7 @@ function parseParams (
   return params
 }
 
-function parseWitness (
+export function parseWitness (
   data : ScriptData[] = []
 ) : WitnessData {
   const items  = [ ...data ]
@@ -94,8 +94,4 @@ function parseWitness (
   const script = parseWitScript(items)
   const params = parseParams(items)
   return { annex, cblock, script, params }
-}
-
-export const TxParse = {
-  witness: parseWitness
 }

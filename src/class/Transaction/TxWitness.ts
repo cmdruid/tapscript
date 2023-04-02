@@ -1,6 +1,6 @@
-import { Buff }    from '@cmdcode/buff-utils'
-import { TxParse } from '../../lib/tx/parse.js'
-import { Script }  from '../../lib/script/index.js'
+import { Buff }         from '@cmdcode/buff-utils'
+import { parseWitness } from '../../lib/tx/parse.js'
+import { Script }       from '../../lib/script/index.js'
 import { Bytes, InputType, ScriptData, WitnessData } from '../../schema/types.js'
 
 
@@ -15,7 +15,7 @@ export default class TxWitness {
     format ?: InputType
   ) {
     this._data  = data
-    this._meta  = TxParse.witness(data)
+    this._meta  = parseWitness(data)
     this.format = format
   }
 

@@ -34,8 +34,7 @@ export interface WitnessData {
 }
 
 export type SequenceData = string | number
-export type ScriptData   = Bytes  | WordArray
 export type LockData     = number
+export type ScriptData   = Bytes  | Word[]
 export type Bytes        = string | Uint8Array
 export type Word         = string | number | Uint8Array
-export type WordArray    = Word[]

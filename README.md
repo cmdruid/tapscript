@@ -122,7 +122,13 @@ Tap.Address = {
   // Work with Pay-to-Witness addresses (Bech32 encoded).
   p2w   : => AddressTool,
   // Work with Pay-to-Taproot addresses (Bech32m encoded).
-  p2tr  : => AddressTool
+  p2tr  : => AddressTool,
+  // Get the type of an address.
+  getType  : (address : string) => string,
+  // Decode any address format into the original key / hash.
+  decode   : (address : string) => Buff,
+  // Convert any address into its scriptPubKey format.
+  toScript : (address : string) => Buff
 }
 
 interface AddressTool {
@@ -147,6 +153,12 @@ Tap.script = {
   encode : (script : ScriptData, varint = true) => string,
   // Decode a hex formatted script into JSON.
   decode : (script : string) => ScriptData
+  // Normalize script / data to a particular format:
+  fmt : { 
+    toAsm()   => string[]  // Convert to string array of opcodes / hex data (asm format).
+    toBytes() => Buff      // Convert to buffer object (script hex)
+    toParam() => Buff      // Convert to buffer object (non-script witness data).
+  }
 }
 ```
 
@@ -187,6 +199,8 @@ interface HashConfig {
   key_version   ?: number  // Set the key version flag (future use).
 }
 ```
+
+> Note: There is also a `Tap.sig.segwit` tool for signing and validating segwit (BIP1043) transactions.
 
 ### Tree Tool
 
@@ -291,11 +305,21 @@ Tap.tx = {
     txdata       : TxData,  // The transaction JSON.
     omitWitness ?: boolean  // If you wish to omit the witness data.
   ) => string,
-
   // Parses a hex-encoded transaction into a JSON object.
-  decode : (
-    bytes : string | Uint8Array
-  ) => TxData
+  decode : (bytes : string | Uint8Array) => TxData,
+  // Normalize transaction data to a particular format.
+  fmt : {
+    // Convert transaction data into JSON format.
+    toJson  : (txdata ?: TxData | Bytes) => TxData,
+    // Convert transaction data into a byte format.
+    toBytes : (txdata ?: TxData | Bytes) => Buff
+  },
+  utils : {
+    // Get the transaction Id of a transaction.
+    getTxid      : (txdata : TxData | Bytes) => Buff,
+    // Parse an array of witness data into named values.
+    parseWitness : (witness : ScriptData[])  => WitnessData
+  }
 }
 
 interface TxData {
@@ -311,7 +335,7 @@ interface InputData {
   prevout   ?: OutputData     // The output data of the UTXO being spent.
   scriptSig ?: ScriptData     // The ScriptSig field (mostly deprecated).
   sequence  ?: SequenceData   // The sequence field for the input.
-  witness   ?: WitnessData    // An array of witness data for the input.
+  witness   ?: ScriptData[]   // An array of witness data for the input.
 }
 
 interface OutputData {
@@ -320,13 +344,18 @@ interface OutputData {
   address      ?: string      // (optional) provide a locking script
 }                             // that is encoded as an address.
 
-type SequenceData = string | number
-type ScriptData   = Bytes  | WordArray
-type WitnessData  = ScriptData[]
-type LockData     = number
-type WordArray    = Word[]
-type Word         = string | number | Uint8Array
-type Bytes        = string | Uint8Array
+export interface WitnessData {
+  annex  : Uint8Array | null  // The annex data (if present) or null.
+  cblock : Uint8Array | null  // The control block (if present) or null.
+  script : Uint8Array | null  // The redeem script (if present) or null.
+  params : Bytes[]            // Any remaining witness arguments.
+}
+
+export type SequenceData = string | number
+export type LockData     = number
+export type ScriptData   = Bytes  | Word[]
+export type Word         = string | number | Uint8Array
+export type Bytes        = string | Uint8Array
 ```
 
 ## Examples

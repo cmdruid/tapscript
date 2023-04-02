@@ -1,12 +1,7 @@
 import { Buff, Stream } from '@cmdcode/buff-utils'
 import { getOpCode }    from './words.js'
 import { isHex }        from '../check.js'
-
-import {
-  ScriptData,
-  WordArray,
-  Word
-} from '../../schema/types.js'
+import { ScriptData, Word } from '../../schema/types.js'
 
 const MAX_WORD_SIZE = 0x208
 
@@ -36,7 +31,7 @@ export function encodeScript (
 }
 
 export function encodeWords (
-  wordArray : WordArray
+  wordArray : Word[]
 ) : Uint8Array {
   const words = []
   for (const word of wordArray) {
@@ -97,7 +92,7 @@ function encodeSize (size : number) : Uint8Array {
   }
 }
 
-function splitWord (word : Uint8Array) : WordArray {
+function splitWord (word : Uint8Array) : Word[] {
   const words = []
   const buff  = new Stream(word)
   while (buff.size > MAX_WORD_SIZE) {
