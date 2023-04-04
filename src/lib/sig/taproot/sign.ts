@@ -33,15 +33,16 @@ export function sign (
    * https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
    */
   // Normalize our message into bytes.
-  const m = Buff.normalize(message)
+  const m = Buff.bytes(message)
   // Let d' equal the integer value of secret key.
   const dp = new Field(secret)
   // Let P equal d' * G
   const P  = dp.point
+  console.log('eveny:', P.hasEvenY)
   // If P has an odd Y coordinate, return negated version of d'.
   const d  = (P.hasEvenY) ? dp.big : dp.negated.big
   // Hash the auxiliary data according to BIP 0340.
-  const a  = hashTag('BIP0340/aux', Buff.normalize(rand))
+  const a  = hashTag('BIP0340/aux', Buff.bytes(rand))
   // Let t equal the byte-wise xor of (d) and (a).
   const t  = d ^ a.big
   // Let our nonce value equal the tagged hash('BIP0340/nonce', t || P || m).
@@ -50,6 +51,7 @@ export function sign (
   const kp = new Field(n)
   // Let R equal k' * G.
   const R  = kp.point
+  console.log('eveny:', R.hasEvenY)
   // If R has an odd Y coordinate, return negated version of k'.
   const k  = (R.hasEvenY) ? kp.big : kp.negated.big
   // Let e equal the tagged hash('BIP0340/challenge' || R || P || m) mod n.
@@ -72,8 +74,9 @@ export function verify (
    */
   // Get the Point value for pubkey.
   const P = new Point(pubkey)
+  console.log('P:', P.hex)
   // Normalize the message into bytes.
-  const m = Buff.normalize(message)
+  const m = Buff.bytes(message)
   // Convert signature into a stream object.
   const stream = Buff.bytes(signature).stream
   // Check if the signature size is at least 64 bytes.
@@ -107,5 +110,6 @@ export function verify (
     safeThrow('Signature R value is infinite!', shouldThrow)
   }
   // Return if x coordinate of R value equals r.
+  console.log(R.x, r.big)
   return R.x === r.big
 }

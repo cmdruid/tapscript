@@ -1,20 +1,26 @@
-import * as TAPSCR  from './script.js'
-import * as TAPTWK  from './tweak.js'
-import * as TAPCHK  from './proof.js'
+import * as SCR  from './script.js'
+import * as TWK  from './tweak.js'
+import * as CHK  from './proof.js'
 
-export const Tree = {
-  getTag    : TAPSCR.getTapTag,
-  getLeaf   : TAPSCR.getTapLeaf,
-  getBranch : TAPSCR.getTapBranch,
-  getRoot   : TAPSCR.getTapRoot,
-  getPath   : TAPCHK.getTapPath,
-  checkPath : TAPCHK.checkTapPath
+export const TapTree = {
+  getTag    : SCR.getTapTag,
+  getLeaf   : SCR.getTapLeaf,
+  getBranch : SCR.getTapBranch,
+  getRoot   : SCR.getTapRoot
 }
 
-export const Tweak = {
-  getPubkey   : TAPTWK.getTapPubkey,
-  getSeckey   : TAPTWK.getTapSeckey,
-  getTweak    : TAPTWK.getTapTweak,
-  tweakSeckey : TAPTWK.tweakPrvkey,
-  tweakPubkey : TAPTWK.tweakPubkey
+export const TapKey = {
+  tapPubKey   : CHK.getTapPubKey,
+  tapSecKey   : CHK.getTapSecKey,
+  checkScript : CHK.checkTapScript,
+  checkData   : CHK.checkTapData,
+  checkLeaf   : CHK.checkTapLeaf
+}
+
+export const TapTweak = {
+  getPubKey   : TWK.getTweakedPub,
+  getSecKey   : TWK.getTweakedSec,
+  getTweak    : TWK.getTapTweak,
+  tweakSecKey : TWK.tweakSecKey,
+  tweakPubKey : TWK.tweakSecKey
 }

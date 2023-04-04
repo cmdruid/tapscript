@@ -34,6 +34,8 @@ export function hashTx (
     separator_pos = 0xFFFFFFFF
   } = config
 
+  console.log('config:', config)
+
   // Unpack txdata object.
   const { version, vin: input = [], vout: output = [], locktime } = txdata
 

@@ -19,7 +19,7 @@ export async function verifyTx (
 
   const { script, params } = witnessData
 
-  let pub : Uint8Array | null = null
+  let pub : Buff | null = null
 
   if (params.length < 1) {
     return safeThrow('Invalid witness data: ' + String(witness), throws)

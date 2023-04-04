@@ -3,7 +3,7 @@ import { Buff }         from '@cmdcode/buff-utils'
 import test_vectors     from './unit.vectors.json' assert { type: 'json' }
 import { encodeScript } from '../../../src/lib/script/encode.js'
 
-import { Tree, Tweak, Script, Address } from '../../../src/index.js'
+import { Key, Tree, Tweak, Script, Address } from '../../../src/index.js'
 
 export async function unit_tests(t : Test) : Promise<void> {
   t.test('Testing tapleaf creation:', async t => {
@@ -39,7 +39,7 @@ export async function unit_tests(t : Test) : Promise<void> {
       const leaves = data.map(e => Tree.getLeaf(e, 0xc0))
       const script = Buff.raw(data[index]).hex
       const target = Tree.getLeaf(script)
-      const block  = Tree.getPath(pubkey, target, { tree: leaves })
+      const [ _, block ] = Key.tapPubKey(pubkey, target, { tree: leaves })
       t.equal(block, cblock, 'Control block should match')
     }
   }),
@@ -50,7 +50,7 @@ export async function unit_tests(t : Test) : Promise<void> {
       const tapkey  = Address.P2TR.decode(address)
       const script  = Script.encode(scripts[index])
       const target  = Tree.getLeaf(script)
-      const isValid = Tree.checkPath(tapkey, cblock, target)
+      const isValid = Key.checkLeaf(tapkey, target, cblock)
       t.true(isValid, 'Control block should be valid.')
     }
   })

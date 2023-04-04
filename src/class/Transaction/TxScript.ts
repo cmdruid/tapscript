@@ -24,7 +24,7 @@ export default class TxScript {
   }
 
   get asm () : string[] {
-    return decodeScript(this._buff, 'asm')
+    return decodeScript(this._buff)
   }
 
   getHash (format : ScriptFormat, version ?: number) : string {

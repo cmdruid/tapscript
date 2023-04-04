@@ -47,7 +47,7 @@ function parseBlock (
     data.length > 1            &&
     item instanceof Uint8Array &&
     item.length > 32           &&
-    LEAF_VERSIONS.includes(item[0])
+    LEAF_VERSIONS.includes(item[0] & 0xfe)
   ) {
     data.pop()
     return Buff.raw(item)
@@ -60,12 +60,15 @@ function parseWitScript (
   data : ScriptData[]
 ) : Uint8Array | null {
   if (data.length > 1) {
-    const item   = data.at(-1)
+    const item = data.at(-1)
     try {
       const script = Script.fmt.toBytes(item)
       data.pop()
       return script
-    } catch { return null }
+    } catch (err) {
+      console.log(err)
+      return null
+    }
   }
   return null
 }
@@ -93,5 +96,7 @@ export function parseWitness (
   const cblock = parseBlock(items)
   const script = parseWitScript(items)
   const params = parseParams(items)
+  console.log('items:', items)
+  console.log('block:', annex, cblock, script, params)
   return { annex, cblock, script, params }
 }

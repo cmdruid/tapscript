@@ -400,7 +400,7 @@ Creating an inscription is a three-step process:
  3. Create a redeem transaction, which claims the previous funds (and publishes the data).
 
 ```ts
-import { Address, Script, Tree, Tweak, Tx } from '@cmdcode/tapscript'
+import { Address, Script, Sig, Tree, Tweak, Tx } from '@cmdcode/tapscript'
 
 /** 
  * Creating an Inscription. 
@@ -419,15 +419,17 @@ const mimetype = ec.encode('image/png')  // The mimetype of the file.
 const imgdata  = getFile('image.png')    // Fake method that fetches the file (and returns bytes). 
 
 const script   = [
-  // A basic "inscription" script. The encoder will also 
-  // break up data blobs and use 'OP_PUSHDATA' when needed.
+  // A basic "inscription" script. The script encoder will automatically 
+  // break up large blobs of data and insert 'OP_PUSHDATA' where needed.
   pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF'
 ]
 
+// Encode the script as hex data.
+const scripthex  = Script.encode(script)
 // Convert the script into a tapleaf.
-const tapleaf    = await Tree.getLeaf(Script.encode(script))
+const tapleaf    = await Tree.getLeaf(scripthex)
 // Pass your pubkey and your leaf in order to get the tweaked pubkey.
-const [ tapkey ] = await Tweak.getPubkey(pubkey, [ leaf ])
+const [ tapkey ] = await Tweak.getPubkey(pubkey, leaf)
 // Encode the tweaked pubkey as a bech32m taproot address.
 const address    = Address.P2TR.encode(tapkey)
 
@@ -451,7 +453,7 @@ const txdata = {
       vout     : 'replace with the vout index spending to the previous address.',
       prevout  : {
         value: 'replace with the amount sent to this address from the previous transaction',
-        address: address
+        scriptPubKey: Address.toScript(address)
       },
       sequence : 0xfffffffd,
       witness  : []
@@ -460,7 +462,7 @@ const txdata = {
   vout : [
     { 
       value: 'replace with the amount sent from the previous transaction, minus fees (for the miners)', 
-      address: 'replace with an address of your choice!'
+      scriptPubKey: Address.toScript('replace with an address of your choice!')
     }
   ],
   locktime: 0
@@ -471,6 +473,9 @@ const sig = Sig.taproot.sign(prvkey, txdata, 0, { extension: tapleaf })
 
 // Set our witness data to include the signature, the spending script, and the proof (cblock).
 txdata[0].witness = [ sig, script, cblock ]
+
+// Optional: Verify your transaction.
+Sig.taproot.verify(txdata, 0, { pubkey })
 
 // Encode the transaction as a hex string.
 const txhex = Tx.encode(txdata)

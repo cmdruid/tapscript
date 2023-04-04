@@ -1,9 +1,6 @@
 import { Test } from 'tape'
 import { Buff } from '@cmdcode/buff-utils'
-import * as CHK from '../../../src/lib/tree/proof.js'
-import * as TAP from '../../../src/lib/tree/script.js'
-import * as TWK from '../../../src/lib/tree/tweak.js'
-
+import { Key, Tree, Tweak } from '../../../src/index.js'
 import tree_vectors     from './tree.vectors.json' assert { type: 'json' }
 import { encodeScript } from '../../../src/lib/script/encode.js'
 
@@ -41,17 +38,17 @@ export function tweak_test(t : Test) : void {
       if (scripts.length === 0) {
         t.test('Testing empty key tweak.', t => {
           t.plan(1)
-          const [ tapkey ] = TWK.getTapPubkey(internalPubkey)
+          const [ tapkey ] = Key.tapPubKey(internalPubkey)
           t.equal(tapkey, tweakedPubkey, 'Tweaked pubs should match.')
         })
       } else {
         t.test('Testing key: ' + tweakedPubkey, t => {
           t.plan(3)
-          const root = TAP.getTapRoot(leafHashes)
+          const root = Tree.getRoot(leafHashes)
           t.equal(Buff.raw(root).hex, merkleRoot, 'Root hash should match.')
-          const taptweak = TWK.getTapTweak(internalPubkey, merkleRoot as string)
+          const taptweak = Tweak.getTweak(internalPubkey, merkleRoot as string)
           t.equal(Buff.raw(taptweak).hex, tweak, 'Tweak hash should match.')
-          const [ tapkey ] = TWK.getTapPubkey(internalPubkey, leafHashes)
+          const [ tapkey ]= Key.tapPubKey(internalPubkey, root)
           t.equal(tapkey, tweakedPubkey, 'Tweaked pubs should match.')
         })
 
@@ -61,16 +58,15 @@ export function tweak_test(t : Test) : void {
           t.test('Testing leaf: ' + leaves[i], t => {
             t.plan(2)
             const cbyte   = Buff.hex(cblocks[i]).slice(0, 1).num
-            const parity  = (cbyte % 2 === 0) ? 0 : 1
             const version = cbyte & 0xfe
             const script  = Buff.raw(encodeScript(scripts[i])).hex
 
-            const tapleaf = TAP.getTapLeaf(script, version)
+            const tapleaf = Tree.getLeaf(script, version)
             t.equal(tapleaf, leaves[i], 'Leaf hash should match.')
 
             const target = leaves[i]
-            const block  = CHK.getTapPath(internalPubkey, target, { tree: leafHashes, version, parity })
-            t.equal(block, cblocks[i], 'Control blocks should be equal.')
+            const [ _, cblock ] = Key.tapPubKey(internalPubkey, target, { tree: leafHashes, version })
+            t.equal(cblock, cblocks[i], 'Control blocks should be equal.')
           })
         }
       }

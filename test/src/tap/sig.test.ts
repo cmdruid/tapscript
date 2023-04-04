@@ -7,7 +7,7 @@ import * as HASH         from '../../../src/lib/sig/taproot/hash.js'
 import { TapRootSigner as SIG } from '../../../src/lib/sig/taproot/index.js'
 import { sign, verify }  from '../../../src/lib/sig/taproot/sign.js'
 import test_vectors      from './sig.vectors.json' assert { type: 'json' }
-import { Tweak }         from '../../../src/index.js'
+import { Key, Tweak }         from '../../../src/index.js'
 
 const schnorr = Noble.schnorr
 
@@ -41,11 +41,11 @@ export async function test_signatures(t : Test) : Promise<void> {
       const { txinIndex, hashType, internalPrivkey, merkleRoot } = given
       const { sigHash, tweak, internalPubkey, tweakedPrivkey }   = intermediary
       // Test our ability to create the tweak.
-      const taptweak = Tweak.getTweak(internalPubkey, merkleRoot ?? new Uint8Array())
-      t.equal(Buff.raw(taptweak).hex, tweak, 'The tap tweak should match.')
-      // Test our ability to tweak the private key.
-      const tweakedPrv  = Tweak.tweakSeckey(internalPrivkey, tweak)
-      t.equal(Buff.raw(tweakedPrv).hex, tweakedPrivkey, 'The tweaked prvkey should match.')
+      const taptweak = Tweak.getTweak(internalPubkey, merkleRoot ?? undefined)
+      t.equal(taptweak.hex, tweak, 'The tap tweak should match.')
+      // Test our ability to tweak the private key.\
+      const [ tweakedPrv, cblock ] = Key.tapSecKey(internalPrivkey, merkleRoot ?? undefined)
+      t.equal(tweakedPrv, tweakedPrivkey, 'The tweaked prvkey should match.')
       // Test our ability to calculate the signature hash.
       const actual_hash = SIG.hash(tx, txinIndex, { sigflag: hashType })
       t.equal(Buff.raw(actual_hash).hex, sigHash, 'The signature hashes should match.')

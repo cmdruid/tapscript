@@ -1,7 +1,21 @@
 export type TapKey = [
   key    : string,
-  parity : number
+  cblock : string
 ]
+
+export interface TapConfig {
+  version   ?: number
+  tree      ?: TapTree
+  isPrivate ?: boolean
+  throws    ?: boolean
+}
+
+export interface CtrlBlock {
+  version : number
+  parity  : number
+  intkey  : Uint8Array
+  paths   : string[]
+}
 
 export type TapTree = Array<string | string[]>
 
@@ -10,9 +24,3 @@ export type TapProof = [
   target : string | null,
   path   : string[]
 ]
-
-export interface ProofConfig {
-  version ?: number
-  parity  ?: 0 | 1
-  tree    ?: TapTree
-}

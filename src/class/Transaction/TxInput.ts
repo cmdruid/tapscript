@@ -3,7 +3,7 @@ import TxScript      from './TxScript.js'
 import TxSequence    from './TxSequence.js'
 import TxOutput      from './TxOutput.js'
 import TxWitness     from './TxWitness.js'
-import { InputData, InputType } from '../../schema/types.js'
+import { InputData } from '../../schema/types.js'
 
 export default class TxInput {
   public txid      : string

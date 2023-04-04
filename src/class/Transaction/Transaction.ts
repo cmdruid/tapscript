@@ -5,7 +5,7 @@ import TxLocktime   from './TxLocktime.js'
 import { encodeTx } from '../../lib/tx/encode.js'
 import { decodeTx } from '../../lib/tx/decode.js'
 import { TxData }   from '../../schema/types.js'
-import { Schema }   from '../../schema/check.js'
+// import { Schema }   from '../../schema/check.js'
 
 export default class Transaction {
   public version  : number
@@ -24,7 +24,7 @@ export default class Transaction {
       txdata = decodeTx(txdata)
     }
 
-    const schema = Schema.TxData
+    // const schema = Schema.TxData
     const data   = txdata // schema.parse(txdata)
 
     this.version  = data.version

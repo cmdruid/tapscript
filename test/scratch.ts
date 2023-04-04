@@ -1,62 +1,60 @@
 import fs            from 'fs/promises'
 import path          from 'path'
 import { SecretKey } from '@cmdcode/crypto-utils'
-import { Address, Script, Sig, Transaction, Tree, Tweak, Tx, TxData } from '../src/index.js'
+import { Address, Script, Sig, Transaction, Tree, Key, Tx, TxData } from '../src/index.js'
 import { Buff } from '@cmdcode/buff-utils'
 
 const ec       = new TextEncoder()
 const fpath    = path.join(process.cwd(), '/test')
 const imgdata  = await fs.readFile(path.join(fpath, '/image.png')).then(e => new Uint8Array(e))
 
-/** 
+/**
  * Creating an Inscription. 
  */
 
 // Provide your secret key.
 const seckey = new SecretKey('39879f30a087ff472784bafe74b0acfe9bf9ad02639c40211a8a722b6629def6')
-const pubkey = seckey.pub.raw
+const pubkey = seckey.pub.buff
 
 // We have to provide the 'ord' marker,
 // a mimetype for the data, and the blob
 // of data itself (as hex or a Uint8Array).
 const marker   = ec.encode('ord')        // The 'ord' marker.
 const mimetype = ec.encode('image/png')  // The mimetype of the file.
-//const imgdata  = getFile('image.png')    // Imaginary method that fetches the file. 
+//const imgdata = getFile('image.png')    // Imaginary method that fetches the file. 
 
 // A basic "inscription" script. The encoder will also 
 // break up data blobs and use 'OP_PUSHDATA' when needed.
 const script = [
-  pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF'
+  pubkey.slice(1), 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF'
 ]
 
 // Convert the script into a tapleaf.
 const leaf = Tree.getLeaf(Script.encode(script))
 // Pass your pubkey and your leaf in order to get the tweaked pubkey.
-const [ tapkey ] = Tweak.getPubkey(pubkey, leaf)
+const [ tapkey, cblock ] = Key.tapPubKey(pubkey, leaf)
 // Encode the tweaked pubkey as a bech32m taproot address.
 const address = Address.P2TR.encode(tapkey, 'regtest')
 
 // Once you send funds to this address, please make a note of 
 // the transaction's txid, and vout index for this address.
 console.log('Your taproot address:', address)
-console.log('leaf:', leaf)
-console.log('tapkey:', tapkey)
-console.log('pubkey:', Buff.raw(pubkey).hex)
+console.log('Pubkey:', pubkey.hex)
+console.log('Leaf:', leaf)
+console.log('Tapkey:', tapkey)
+console.log('cblock:', cblock)
 
 /** 
  * Publishing an Inscription. 
  */
-
-// Get the 'cblock' string (which is the proof used to verify the leaf is in the tree).
-const cblock = Tree.getPath(pubkey, leaf)
 
 // Construct our redeem transaction.
 const txdata : TxData = {
   version : 2,
   vin: [
     {
-      txid     : 'dc2ff1454bd7b4f7763f82c32a5312fda4080cc08e57293c9078c9797ecb55b9',
-      vout     : 1,
+      txid     : 'b3ff7183388b7547abfae27b753f54e48f71ae6f23bab40de8de3284825b9359',
+      vout     : 0,
       prevout  : {
         value: 100000,
         scriptPubKey: Address.toScript(address)
@@ -67,7 +65,7 @@ const txdata : TxData = {
   vout : [
     { 
       value: 90000, 
-      scriptPubKey: Address.toScript('bcrt1q2tlvgse50z9ch3wtpl45xhfcz2ywk2t57px94c')
+      scriptPubKey: Address.toScript('bcrt1q0f79up09fhttdn49p52en58medd4rhz0qxkz9d')
     }
   ],
   locktime: 0
@@ -94,7 +92,7 @@ console.log('Your raw transaction hex:', txhex)
 // console.dir(tx, { depth: null })
 
 const testtx = {
-  version: 2,
+  version: 1,
   vin: [
     {
       txid: '9c4e333b5f116359b5f5578fe4a74c6f58b3bab9d28149a583da86f6bf0ce27d',
