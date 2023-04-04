@@ -1,8 +1,8 @@
 import { Buff, Stream }  from '@cmdcode/buff-utils'
-import { checkTapLeaf }  from '../../tree/proof.js'
+import { checkPath }     from '../../tap/key.js'
 import { verify }        from './sign.js'
 import { safeThrow }     from '../../utils.js'
-import { getTapLeaf }    from '../../tree/script.js'
+import { getTapLeaf }    from '../../tap/tree.js'
 import { Tx }            from '../../tx/index.js'
 import { hashTx }        from './hash.js'
 import { TxData }        from '../../../schema/types.js'
@@ -17,10 +17,10 @@ export async function verifyTx (
   const tx = Tx.fmt.toJson(txdata)
   const { throws = false } = config
   const { prevout, witness = [] } = tx.vin[index]
-  const witnessData = Tx.utils.parseWitness(witness)
+  const witnessData = Tx.utils.readWitness(witness)
   const { cblock, script, params } = witnessData
 
-  let pub : Buff | null = null
+  let pub : Buff
 
   if (params.length < 1) {
     return safeThrow('Invalid witness data: ' + String(witness), throws)
@@ -46,7 +46,7 @@ export async function verifyTx (
     const target     = getTapLeaf(script, version)
     config.extension = target
 
-    if (!checkTapLeaf(tapkey, target, cblock, { throws })) {
+    if (!checkPath(tapkey, target, cblock, { throws })) {
       return safeThrow('cblock verification failed!', throws)
     }
   }
@@ -56,10 +56,8 @@ export async function verifyTx (
   } else if (params.length > 1 && params[1].length === 32) {
     pub = Buff.bytes(params[1])
   } else {
-    pub = tapkey
+    pub = Buff.bytes(tapkey)
   }
-
-  console.log('pub:', pub.hex)
 
   const rawsig    = Script.fmt.toParam(params[0])
   const stream    = new Stream(rawsig)

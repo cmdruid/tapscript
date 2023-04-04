@@ -25,7 +25,7 @@ interface CliConfig {
   network ?: string
 }
 
-const DEFAULT_SORTER   = (a : UTXO, b : UTXO) => Math.random() > 0.5 ? 1 : -1
+const DEFAULT_SORTER   = () => Math.random() > 0.5 ? 1 : -1
 const DEFAULT_TEMPLATE = { version : 1, input : [], output : [], locktime : 0 }
 
 export class CLI {

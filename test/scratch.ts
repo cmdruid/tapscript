@@ -1,8 +1,7 @@
 import fs            from 'fs/promises'
 import path          from 'path'
 import { SecretKey } from '@cmdcode/crypto-utils'
-import { Address, Script, Sig, Transaction, Tree, Key, Tx, TxData } from '../src/index.js'
-import { Buff } from '@cmdcode/buff-utils'
+import { Address, Script, Signer, Tap, Tx, TxData } from '../src/index.js'
 
 const ec       = new TextEncoder()
 const fpath    = path.join(process.cwd(), '/test')
@@ -28,21 +27,19 @@ const mimetype = ec.encode('image/png')  // The mimetype of the file.
 const script = [
   pubkey.slice(1), 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF'
 ]
-
-// Convert the script into a tapleaf.
-const leaf = Tree.getLeaf(Script.encode(script))
+const target = Tap.tree.getLeaf(Script.encode(script))
 // Pass your pubkey and your leaf in order to get the tweaked pubkey.
-const [ tapkey, cblock ] = Key.tapPubKey(pubkey, leaf)
+const [ tapkey, cblock ] = Tap.getPubKey(pubkey, { target })
 // Encode the tweaked pubkey as a bech32m taproot address.
-const address = Address.P2TR.encode(tapkey, 'regtest')
+const address = Address.p2tr.encode(tapkey, 'regtest')
 
 // Once you send funds to this address, please make a note of 
 // the transaction's txid, and vout index for this address.
-console.log('Your taproot address:', address)
-console.log('Pubkey:', pubkey.hex)
-console.log('Leaf:', leaf)
-console.log('Tapkey:', tapkey)
-console.log('cblock:', cblock)
+// console.log('Your taproot address:', address)
+// console.log('Pubkey:', pubkey.hex)
+// console.log('Leaf:', leaf)
+// console.log('Tapkey:', tapkey)
+// console.log('cblock:', cblock)
 
 /** 
  * Publishing an Inscription. 
@@ -71,18 +68,18 @@ const txdata : TxData = {
   locktime: 0
 }
 
-const sig = Sig.taproot.sign(seckey, txdata, 0, { extension: leaf })
+const sig = Signer.taproot.sign(seckey, txdata, 0, { extension: target })
 
 txdata.vin[0].witness = [ sig, script, cblock ]
 
-Sig.taproot.verify(txdata, 0, { pubkey, throws: true })
+Signer.taproot.verify(txdata, 0, { pubkey, throws: true })
 
 // console.dir(txdata, { depth: null })
 
 const txhex = Tx.encode(txdata).hex
 
 // console.log('Your transaction:', txdata)
-console.log('Your raw transaction hex:', txhex)
+// console.log('Your raw transaction hex:', txhex)
 
 
 // console.log(test)

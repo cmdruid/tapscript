@@ -1,7 +1,7 @@
-import { SegwitSigner }  from './segwit/index.js'
-import { TapRootSigner } from './taproot/index.js'
+import { SWSigner } from './segwit/index.js'
+import { TRSigner } from './taproot/index.js'
 
-export const Sig = {
-  segwit  : SegwitSigner,
-  taproot : TapRootSigner
+export const Signer = {
+  segwit  : SWSigner,
+  taproot : TRSigner
 }

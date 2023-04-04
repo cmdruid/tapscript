@@ -10,6 +10,13 @@ export type AddressType = [
   tool    : KeyTool | ScriptTool
 ]
 
+export interface AddressData {
+  prefix  : string
+  type    : keyof AddressTools
+  network : Networks
+  tool    : KeyTool | ScriptTool
+}
+
 export interface AddressTool {
   check  : (address : string, network ?: Networks) => boolean
   decode : (address : string, network ?: Networks) => Buff

@@ -6,7 +6,7 @@ import { P2SH }   from './p2sh.js'
 import { P2W }    from './p2w.js'
 import { P2TR }   from './p2tr.js'
 
-import { AddressType } from './schema.js'
+import { AddressData, AddressType } from './schema.js'
 
 export const ADDRESS_TYPES : AddressType[] = [
   [ '1',      'p2pkh', 'main',    P2PKH ],
@@ -22,24 +22,25 @@ export const ADDRESS_TYPES : AddressType[] = [
   [ 'bcrt1p', 'p2tr',  'regtest', P2TR  ]
 ]
 
-export function getAddressType (
+export function readAddress (
   address : string
-) : AddressType {
-  for (const type of ADDRESS_TYPES) {
-    if (address.startsWith(type[0])) {
-      return type
+) : AddressData {
+  for (const row of ADDRESS_TYPES) {
+    if (address.startsWith(row[0])) {
+      const [ prefix, type, network, tool ] = row
+      return { prefix, type, network, tool }
     }
   }
   throw new Error('Unable to detect address type!')
 }
 
 export function decodeAddress (address : string) : Buff {
-  const [ _, __, network, tool ] = getAddressType(address)
+  const { network, tool } = readAddress(address)
   return tool.decode(address, network)
 }
 
 export function convertAddress (address : string) : Buff {
-  const [ _, __, network, tool ] = getAddressType(address)
+  const { network, tool } = readAddress(address)
   const decoded = tool.decode(address, network).hex
   return Script.encode(tool.script(decoded), false)
 }

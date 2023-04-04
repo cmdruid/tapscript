@@ -43,12 +43,16 @@ export function getTapRoot (
 }
 
 export function merkleize (
-  taptree : TapTree,
-  target  : string | null = null,
-  path    : string[] = []
+  taptree  : TapTree,
+  target  ?: string,
+  path     : string[] = []
 ) : TapProof {
   const leaves : string[] = []
   const tree   : string[] = []
+
+  if (taptree.length < 1) {
+    throw new Error('Tree is empty!')
+  }
 
   // If there are nested leaves, resolve them.
   for (let i = 0; i < taptree.length; i++) {

@@ -3,24 +3,25 @@ import { Field, Point } from '@cmdcode/crypto-utils'
 import { hashTx }       from './hash.js'
 import { HashConfig }   from '../types.js'
 import { TxData }       from '../../../schema/types.js'
+import { xOnlyPub }     from '../../tap/utils.js'
 import { hashTag, safeThrow } from '../../utils.js'
 
 const FIELD_SIZE  = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2Fn
 const CURVE_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141n
 
 export function signTx (
-  prvkey  : string | Uint8Array,
+  seckey  : string | Uint8Array,
   txdata  : TxData | string | Uint8Array,
   index   : number,
   config  : HashConfig = {}
-) : string {
+) : Buff {
   const { sigflag = 0x00 } = config
   const hash = hashTx(txdata, index, config)
-  const sig  = sign(prvkey, hash)
+  const sig  = sign(seckey, hash)
 
   return (sigflag === 0x00)
-    ? Buff.raw(sig).hex
-    : Buff.join([ sig, sigflag ]).hex
+    ? Buff.raw(sig)
+    : Buff.join([ sig, sigflag ])
 }
 
 export function sign (
@@ -38,7 +39,6 @@ export function sign (
   const dp = new Field(secret)
   // Let P equal d' * G
   const P  = dp.point
-  console.log('eveny:', P.hasEvenY)
   // If P has an odd Y coordinate, return negated version of d'.
   const d  = (P.hasEvenY) ? dp.big : dp.negated.big
   // Hash the auxiliary data according to BIP 0340.
@@ -51,7 +51,6 @@ export function sign (
   const kp = new Field(n)
   // Let R equal k' * G.
   const R  = kp.point
-  console.log('eveny:', R.hasEvenY)
   // If R has an odd Y coordinate, return negated version of k'.
   const k  = (R.hasEvenY) ? kp.big : kp.negated.big
   // Let e equal the tagged hash('BIP0340/challenge' || R || P || m) mod n.
@@ -73,8 +72,7 @@ export function verify (
    * https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
    */
   // Get the Point value for pubkey.
-  const P = new Point(pubkey)
-  console.log('P:', P.hex)
+  const P = new Point(xOnlyPub(pubkey))
   // Normalize the message into bytes.
   const m = Buff.bytes(message)
   // Convert signature into a stream object.
@@ -110,6 +108,5 @@ export function verify (
     safeThrow('Signature R value is infinite!', shouldThrow)
   }
   // Return if x coordinate of R value equals r.
-  console.log(R.x, r.big)
   return R.x === r.big
 }

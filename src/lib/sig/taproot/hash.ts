@@ -6,6 +6,7 @@ import { encodeScript } from '../../script/encode.js'
 import { HashConfig }   from '../types.js'
 
 import {
+  Bytes,
   TxData,
   InputData,
   OutputData,
@@ -15,10 +16,10 @@ import {
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
 export function hashTx (
-  txdata  : TxData | string | Uint8Array,
+  txdata  : TxData | Bytes,
   index   : number,
   config  : HashConfig = {}
-) : Uint8Array {
+) : Buff {
   if (
     typeof txdata === 'string' ||
     txdata instanceof Uint8Array
@@ -33,8 +34,6 @@ export function hashTx (
     key_version   = 0x00,
     separator_pos = 0xFFFFFFFF
   } = config
-
-  console.log('config:', config)
 
   // Unpack txdata object.
   const { version, vin: input = [], vout: output = [], locktime } = txdata
@@ -117,7 +116,7 @@ export function hashTx (
 
   if (extension !== undefined) {
     digest.push(
-      Buff.normalize(extension),
+      Buff.bytes(extension),
       Buff.num(key_version),
       Buff.num(separator_pos, 4)
     )

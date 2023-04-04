@@ -87,26 +87,27 @@ This library provides a suite of tools for working with scripts, taproot, key tw
 Encode, decode, check, and convert various address types.  
 [**Script Tool**](###-Script-Tool)  
 Encode scripts into hex, or decode into a script array.  
-[**Sig Tool**](###-Sig-Tool)  
+[**Signer Tool**](###-Signer-Tool)  
 Produce signatures and validate signed transactions.  
-[**Tree Tool**](###-Tree-Tool)  
-Build and validate trees of data (and scripts).  
-[**Tweak Tool**](###-Tweak-Tool)  
-Tweak key-pairs and make commitments to a taproot tree.  
+[**Tap Tool**](###-Tap-Tool)  
+Build, tweak, and validate trees of data / scripts.  
 [**Tx Tool**](###-Tx-Tool)  
 Encode transactions into hex, or decode into a JSON object.  
 
 ### Import
 
 Example import into a browser-based project:
-
 ```html
 <script src="https://unpkg.com/@cmdcode/tapscript"></script>
-<script> const BTON = window.bton </script>
+<script> const { Address, Script, Signer, Tap, Tx } = window.tapscript </script>
 ```
-Example import into a nodejs-based project:
+Example import into a commonjs project:
 ```ts
-import * as Tap from '@cmdcode/tapscript'
+const { Address, Script, Signer, Tap, Tx } = require('@cmdcode/tapscript')
+```
+Example import into an ES module project:
+```ts
+import { Address, Script, Signer, Tap, Tx } from '@cmdcode/tapscript'
 ```
 
 ### Address Tool
@@ -114,7 +115,7 @@ import * as Tap from '@cmdcode/tapscript'
 This tool allows you to encode, decode, check, an convert various address types.
 
 ```ts
-Tap.Address = {
+Address = {
   // Work with Pay-to-Pubkey-Hash addresses (Base58 encoded).
   p2pkh : => AddressTool,
   // Work with Pay-to-Script-Hash addresses (Base58 encoded).
@@ -123,10 +124,10 @@ Tap.Address = {
   p2w   : => AddressTool,
   // Work with Pay-to-Taproot addresses (Bech32m encoded).
   p2tr  : => AddressTool,
-  // Get the type of an address.
-  getType  : (address : string) => string,
   // Decode any address format into the original key / hash.
   decode   : (address : string) => Buff,
+  // Get the type of an address.
+  parse    : (address : string) => AddressData,
   // Convert any address into its scriptPubKey format.
   toScript : (address : string) => Buff
 }
@@ -141,6 +142,15 @@ interface AddressTool {
   // Return the scriptPubKey script for an address type.
   script : (key : string) => string[]
 }
+
+interface AddressData {
+  prefix  : string
+  type    : keyof AddressTools
+  network : Networks
+  tool    : AddressTool
+}
+
+type Networks = 'main' | 'testnet' | 'signet' | 'regtest'
 ```
 
 ### Script Tool
@@ -148,11 +158,11 @@ interface AddressTool {
 This tool helps with parsing / serializing scripts.
 
 ```ts
-Tap.script = {
+Script = {
   // Encode a JSON formatted script into hex.
   encode : (script : ScriptData, varint = true) => string,
   // Decode a hex formatted script into JSON.
-  decode : (script : string) => ScriptData
+  decode : (script : string, varint = false)    => ScriptData
   // Normalize script / data to a particular format:
   fmt : { 
     toAsm()   => string[]  // Convert to string array of opcodes / hex data (asm format).
@@ -167,83 +177,136 @@ Tap.script = {
 This tool helps with signatures and validation.
 
 ```ts
-Tap.sig.taproot = {
+Signer.taproot = {
   // Calculate the signature hash for a transaction.
   hash : (
-    txdata  : TxData | string | Uint8Array,
+    txdata  : TxData | Bytes,
     index   : number,
     config  : HashConfig = {}
   ) => Uint8Array,
   // Sign a transaction using your *tweaked* private key.
   sign : (
-    prvkey  : string | Uint8Array,
-    txdata  : TxData | string | Uint8Array,
+    seckey  : Bytes,
+    txdata  : TxData | Bytes,
     index   : number,
     config  : HashConfig = {}
   ) => Uint8Array,
   // Verify a transaction using the included tapkey (or specify a pubkey).
   verify : (
-    txdata  : TxData | string | Uint8Array,
+    txdata  : TxData | Bytes,
     index   : number,
-    config  : HashConfig = {},
-    shouldThrow = false
+    config  : HashConfig = {}
   ) => boolean
 }
 
 interface HashConfig {
-  extension     ?: Bytes   // Include a tapleaf hash with your signature hash.
-  pubkey        ?: Bytes   // Verify using this pubkey instead of the tapkey.
-  sigflag       ?: number  // Set the signature type flag.
-  separator_pos ?: number  // If using OP_CODESEPARATOR, specify the latest opcode position.
-  extflag       ?: number  // Set the extention version flag (future use).
-  key_version   ?: number  // Set the key version flag (future use).
+  extension     ?: Bytes    // Hash and sign using this tapleaf.
+  pubkey        ?: Bytes    // Verify using this pubkey instead of the tapkey.
+  script        ?: Bytes    // Hash and sign using this script (for segwit spends).
+  sigflag       ?: number   // Set the signature type flag.
+  separator_pos ?: number   // If using OP_CODESEPARATOR, specify the latest opcode position.
+  extflag       ?: number   // Set the extention version flag (future use).
+  key_version   ?: number   // Set the key version flag (future use).
+  throws        ?: boolean  // Should throw an exception on failure.
 }
 ```
 
-> Note: There is also a `Tap.sig.segwit` tool for signing and validating segwit (BIP1043) transactions.
+> Note: There is also a nearly identical `Signer.segwit` tool for signing and validating segwit (BIP1043) transactions.
+
+### Tap Tool
+
+```ts
+Tap = {
+  // Returns the tweaked public key (and cblock) for a given tree (and target).
+  getPubKey : (pubkey : Bytes, config ?: TapConfig) => TapKey,
+  // Returns the tweaked secret key (and cblock) for a given tree (and target).
+  getSecKey : (seckey : Bytes, config ?: TapConfig) => TapKey,
+  // Checks the validity of a given leaf target and control block.
+  checkPath : (tapkey : Bytes, target : Bytes, cblock : Bytes, config ?: TapConfig) => boolean,
+  // Gives access to the various sub-tools (described below).
+  tree  : TreeTool,
+  tweak : TweakTool,
+  util  : UtilTool
+}
+
+interface TapConfig {
+  isPrivate ?: boolean
+  target    ?: Bytes
+  tree      ?: TapTree
+  throws    ?: boolean
+  version   ?: number
+}
+
+type TapKey = [
+  tapkey : string,  // The tweaked public key.
+  cblock : string   // The control block needed for spending the tapleaf target.
+]
+```
+
+#### Examples
+
+Example of tapping a key with no scripts (key-spend).
+
+```ts
+const [ tapkey ] = Tap.getPubKey(pubkey)
+```
+
+Example of tapping a key with a single script and returning a proof.
+
+```ts
+// Encode the script as bytes.
+const bytes = Script.encode([ 'script' ])
+// Convert the bytes into a tapleaf.
+const target = Tap.tree.getLeaf(bytes)
+// Provide the tapleaf as a target for generating the proof.
+const [ tapkey, cblock ] = Tap.getPubKey(pubkey, { target })
+```
+
+Example of tapping a key with many scripts.
+
+```ts
+const scripts = [
+  [ 'scripta' ],
+  [ 'scriptb' ],
+  [ 'scriptc' ]
+]
+
+// Convert the scripts into an array of tap leaves.
+const tree = scripts
+  .map(e => Script.encode(e))
+  .map(e => Tap.tree.getLeaf(e))
+
+// Optional: You can also add data to the tree.
+const bytes = encodeData('some data')
+const leaf  = Tap.tree.getLeaf(bytes)
+tree.push(leaf)
+
+// Select a target leaf for generating the proof.
+const target = tree[0]
+
+// Provide the tree and target leaf as arguments.
+const [ tapkey, cblock ] = Tap.getPubKey(pubkey, { tree, target })
+```
 
 ### Tree Tool
 
-This tool helps with creating a tree of scripts / data, plus creating the proofs to validate / spend them.
+This tool helps with creating a tree of scripts / data, plus the proofs to validate items in the tree.
 
 ```ts
 Tap.tree = {
   // Returns a 'hashtag' used for padding. Mainly for internal use.
-  getTag : (tag : string) => Uint8Array,
-
+  getTag    : (tag : string) => Buff,
   // Returns a 'tapleaf' used for building a tree. 
-  getLeaf : (
-    data     : string | Uint8Array,
-    version ?: number
-  ) => string,
-
+  getLeaf   : (data : Bytes, version ?: number) => string,
   // Returns a 'branch' which combines two leaves (or branches).
-  getBranch : (
-    leafA : string,
-    leafB : string
-  ) => string,
-
+  getBranch : (leafA : string, leafB : string) => string,
   // Returns the root hash of a tree.
-  getRoot : (
-    leaves : TapTree
-  ) => Uint8Array,
-
-  // Returns the 'control block' path needed for validating a tapleaf.
-  getPath : (
-    pubkey  : string | Uint8Array,
-    target  : string,
-    taptree : TapTree = [ target ],
-    version ?: number 
-    parity  ?: 0 | 1  
-  ) => string,
-
-  // Checks if a path is valid for a given tapleaf.
-  checkPath : (
-    tapkey : string | Uint8Array,
-    cblock : string | Uint8Array,
-    target : string
-  ) => boolean,
+  getRoot   : (leaves : TapTree) => Buff,
 }
+
+// A tree is an array of leaves, formatted as strings.
+// These arrays can also be nested in multiple layers.
+type TapTree = Array<string | string[]>
 ```
 
 ### Tweak Tool
@@ -252,46 +315,35 @@ This tool helps with tweaking public / secret (private) keys.
 
 ```ts
 Tap.tweak = {
-  // Return a tweaked private key using the provided TapTree.
-  getSeckey : (
-    seckey : string | Uint8Array,
-    leaves : TapTree = []
-  ) => string,
-
-  // Return a tweaked public key using the provided TapTree.
-  getPubkey : (
-  pubkey : string | Uint8Array,
-  leaves : TapTree = []
-) : TapKey,
-
+  // Return a tweaked private key using the provided raw data.
+  getSeckey   : (seckey: Bytes, data ?: Bytes | undefined) => Buff,
+  // Return a tweaked public key using the provided raw data.
+  getPubkey   : (pubkey: Bytes, data ?: Bytes | undefined) => Buff,
   // Return a 'taptweak' which is used for key tweaking.
-  getTweak : (
-    pubkey : string | Uint8Array,
-    tweak  : string | Uint8Array
-  ) => Uint8Array,
-
+  getTweak    : (key : Bytes, data ?: Bytes, isPrivate ?: boolean) => Buff,
   // Return a tweaked secret key using the provided tweak.
-  tweakSeckey : (
-    prvkey : string | Uint8Array,
-    tweak  : string | Uint8Array
-  ) => Uint8Array,
-
+  tweakSeckey : (seckey: Bytes, tweak: Bytes) => Buff,
   // Return a tweaked public key using the provided tweak.
-  tweakPubkey : (
-    pubkey : string | Uint8Array,
-    tweak  : string | Uint8Array
-  ) => Uint8Array
+  tweakPubkey : (seckey: Bytes, tweak: Bytes) => Buff
+}
+```
+
+### Util Tool
+
+This tool provides helper methods for reading and parsing data related to taproot.
+
+```ts
+Tap.util = {
+  readCtrlBlock : (cblock : Bytes) => CtrlBlock,
+  readParityBit : (parity ?: string | number) => number
 }
 
-// A tree is an array of leaves, formatted as strings.
-// These arrays can also be nested in multiple layers.
-type TapTree = Array<string | string[]>
-
-type TapKey = [
-  tapkey : string,  // The tweaked public key.
-  parity : number   // 0 or 1 depending on whether the key was even / odd.
-]
-
+interface CtrlBlock {
+  version : number
+  parity  : number
+  intkey  : Buff
+  paths   : string[]
+}
 ```
 
 ### Tx Tool
@@ -299,7 +351,7 @@ type TapKey = [
 This tool helps with parsing / serializing transaction data.
 
 ```ts
-Tap.tx = {
+Tx = {
   // Serializes a JSON transaction into a hex-encoded string.
   encode : (
     txdata       : TxData,  // The transaction JSON.
@@ -314,11 +366,11 @@ Tap.tx = {
     // Convert transaction data into a byte format.
     toBytes : (txdata ?: TxData | Bytes) => Buff
   },
-  utils : {
+  util : {
     // Get the transaction Id of a transaction.
-    getTxid      : (txdata : TxData | Bytes) => Buff,
+    getTxid     : (txdata : TxData | Bytes) => Buff,
     // Parse an array of witness data into named values.
-    parseWitness : (witness : ScriptData[])  => WitnessData
+    readWitness : (witness : ScriptData[])  => WitnessData
   }
 }
 
@@ -344,25 +396,21 @@ interface OutputData {
   address      ?: string      // (optional) provide a locking script
 }                             // that is encoded as an address.
 
-export interface WitnessData {
+interface WitnessData {
   annex  : Uint8Array | null  // The annex data (if present) or null.
   cblock : Uint8Array | null  // The control block (if present) or null.
   script : Uint8Array | null  // The redeem script (if present) or null.
   params : Bytes[]            // Any remaining witness arguments.
 }
 
-export type SequenceData = string | number
-export type LockData     = number
-export type ScriptData   = Bytes  | Word[]
-export type Word         = string | number | Uint8Array
-export type Bytes        = string | Uint8Array
+type SequenceData = string | number
+type LockData     = number
+type ScriptData   = Bytes  | Word[]
+type Word         = string | number | Uint8Array
+type Bytes        = string | Uint8Array
 ```
 
-## Examples
-
-Here are a few examples to help demonstrate using the library. Please feel free to contribute more!
-
-### Transaction Object
+#### Transaction Object
 
 This is an example transaction in JSON format.
 
@@ -392,6 +440,10 @@ const txdata = {
 }
 ```
 
+## Example Transactions
+
+Here are a few examples to help demonstrate using the library. Please feel free to contribute more!
+
 ### Create / Publish an Inscription
 
 Creating an inscription is a three-step process:
@@ -400,7 +452,7 @@ Creating an inscription is a three-step process:
  3. Create a redeem transaction, which claims the previous funds (and publishes the data).
 
 ```ts
-import { Address, Script, Sig, Tree, Tweak, Tx } from '@cmdcode/tapscript'
+import { Address, Script, Signer, Tap, Tx } from '@cmdcode/tapscript'
 
 /** 
  * Creating an Inscription. 
@@ -409,7 +461,7 @@ import { Address, Script, Sig, Tree, Tweak, Tx } from '@cmdcode/tapscript'
 // Provide your secret key.
 const seckey = 'your secret key (in bytes)'
 // There's a helper method to derive your pubkey.
-const pubkey = 'your public key (in bytes)'
+const pubkey = 'your x-only public key (in bytes)'
 
 // We have to provide the 'ord' marker,
 // a mimetype for the data, and the blob
@@ -425,13 +477,13 @@ const script   = [
 ]
 
 // Encode the script as hex data.
-const scripthex  = Script.encode(script)
+const bytes = Script.encode(script)
 // Convert the script into a tapleaf.
-const tapleaf    = await Tree.getLeaf(scripthex)
+const target = Tap.tree.getLeaf(sbytes)
 // Pass your pubkey and your leaf in order to get the tweaked pubkey.
-const [ tapkey ] = await Tweak.getPubkey(pubkey, leaf)
+const [ tapkey, cblock ] = Tap.getPubKey(pubkey, { target })
 // Encode the tweaked pubkey as a bech32m taproot address.
-const address    = Address.P2TR.encode(tapkey)
+const address = Address.p2tr.encode(tapkey)
 
 // Once you send funds to this address, please make a note of 
 // the transaction's txid, and vout index for this address.
@@ -440,9 +492,6 @@ console.log('Your taproot address:', address)
 /** 
  * Publishing an Inscription. 
  */
-
-// Get the 'cblock' string (which is the proof used to verify the leaf is in the tree).
-const cblock = await Tree.getPath(pubkey, tapleaf)
 
 // Construct our redeem transaction.
 const txdata = {
@@ -469,16 +518,16 @@ const txdata = {
 }
 
 // Create a signature for our transaction (and commit to the tapleaf we are using).
-const sig = Sig.taproot.sign(prvkey, txdata, 0, { extension: tapleaf })
+const sig = Signer.taproot.sign(seckey, txdata, 0, { extension: target })
 
 // Set our witness data to include the signature, the spending script, and the proof (cblock).
 txdata[0].witness = [ sig, script, cblock ]
 
-// Optional: Verify your transaction.
-Sig.taproot.verify(txdata, 0, { pubkey })
+// Optional: Verify your transaction (and specify the pubkey to use).
+Signer.taproot.verify(txdata, 0, { pubkey })
 
 // Encode the transaction as a hex string.
-const txhex = Tx.encode(txdata)
+const txhex = Tx.encode(txdata).hex
 
 // Output our transaction data to console.
 console.log('Your transaction:', txdata)

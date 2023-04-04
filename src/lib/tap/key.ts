@@ -3,54 +3,62 @@ import { SecretKey }         from '@cmdcode/crypto-utils'
 import { getTweakedKey }     from './tweak.js'
 import { safeThrow }         from '../utils.js'
 import { xOnlyPub }          from './utils.js'
-import { Script }            from '../script/index.js'
-import { Bytes, ScriptData } from '../../schema/types.js'
-import { getTapBranch, getTapLeaf, merkleize }  from './script.js'
+import { getTapBranch, merkleize }      from './tree.js'
 import { CtrlBlock, TapConfig, TapKey } from './types.js'
+import { Bytes } from '../../schema/types.js'
 
 const DEFAULT_VERSION = 0xc0
 
 export function getTapSecKey (
-  seckey : Bytes,
-  data  ?: Bytes,
-  config : TapConfig = {}
+  seckey  : Bytes,
+  config  : TapConfig = {}
 ) : TapKey {
-  return getTapKey(seckey, data, { ...config, isPrivate: true })
+  return getTapKey(seckey, { ...config, isPrivate: true })
 }
 
 export function getTapPubKey (
-  pubkey : Bytes,
-  data  ?: Bytes,
-  config : TapConfig = {}
+  pubkey  : Bytes,
+  config  : TapConfig = {}
 ) : TapKey {
-  return getTapKey(pubkey, data, { ...config, isPrivate: false })
+  return getTapKey(pubkey, { ...config, isPrivate: false })
 }
 
 function getTapKey (
   intkey : Bytes,
-  data  ?: Bytes,
   config : TapConfig = {}
 ) : TapKey {
-  const { version = DEFAULT_VERSION, isPrivate = false, tree = [] } = config
+  const {
+    isPrivate = false,
+    tree      = [],
+    version   = DEFAULT_VERSION
+  } = config
 
   const pubkey = (isPrivate)
     ? new SecretKey(intkey).pub.rawX
     : xOnlyPub(intkey)
 
-  if (data === undefined) {
-    const tapkey = getTweakedKey(intkey, data, isPrivate)
-    return [ xOnlyPub(tapkey).hex, '' ]
-  }
+  let { target } = config
 
-  const target = Buff.bytes(data).hex
-  // Make sure the tree contains at least one leaf.
-  if (tree.length < 1) {
-    tree.push(target)
+  if (target !== undefined) target = Buff.bytes(target).hex
+
+  let tapkey, ctrlpath : string[] = []
+
+  if (tree.length > 0) {
+    // Merkelize the leaves into a root hash (with proof).
+    const [ root, _t, path ] = merkleize(tree, target)
+    // Get the control path from the merkelized output.
+    ctrlpath = path
+    // Get the tapped key from the internal key.
+    tapkey = getTweakedKey(intkey, root, isPrivate)
+  } else {
+    if (target !== undefined) {
+      // Get the tapped key from the single tapleaf.
+      tapkey = getTweakedKey(intkey, target, isPrivate)
+    } else {
+      // Get the tapped key from an empty tweak.
+      tapkey = getTweakedKey(intkey, undefined, isPrivate)
+    }
   }
-  // Merkelize the leaves into a root hash (with proof).
-  const [ root, _t, path ] = merkleize(tree, target)
-  // Get the tapped key from the internal key.
-  const tapkey = getTweakedKey(intkey, root, isPrivate)
   // Get the parity bit for the (public) tapkey.
   const parity : number = (isPrivate)
     ? new SecretKey(tapkey).point.raw[0]
@@ -61,44 +69,26 @@ function getTapKey (
   // the control bit and the (x-only) pubkey.
   const block = [ cbit, pubkey ]
   // If there is more than one path, add to block.
-  if (tree.length > 1) {
-    path.forEach(e => block.push(Buff.hex(e)))
+  if (ctrlpath.length > 0) {
+    ctrlpath.forEach(e => block.push(Buff.hex(e)))
   }
   // Merge the data together into one array.
   const cblock = Buff.join(block)
-  // Check that the path is valid.
-  if (!checkTapLeaf(tapkey, target, cblock, config)) {
-    throw new Error('Path checking failed! Unable to generate path.')
+  // If target is not undefined:
+  if (target !== undefined) {
+    // Check that the path is valid.
+    if (!checkPath(tapkey, target, cblock, config)) {
+      throw new Error('Path checking failed! Unable to generate path.')
+    }
   }
   return [ xOnlyPub(tapkey).hex, cblock.hex ]
 }
 
-export function checkTapScript (
-  tapkey  : Bytes,
-  script  : ScriptData,
-  cblock  : Bytes,
-  config ?: TapConfig
-) : boolean {
-  const sbytes = Script.encode(script)
-  return checkTapData(tapkey, sbytes, cblock, config)
-}
-
-export function checkTapData (
-  tapkey  : Bytes,
-  data    : Bytes,
-  cblock  : Bytes,
-  config ?: TapConfig
-) : boolean {
-  const { version } = readCtrlBlock(cblock)
-  const target = getTapLeaf(data, version)
-  return checkTapLeaf(tapkey, target, cblock, config)
-}
-
-export function checkTapLeaf (
-  tapkey  : Bytes,
-  tapleaf : Bytes,
-  cblock  : Bytes,
-  config  : TapConfig = {}
+export function checkPath (
+  tapkey : Bytes,
+  target : Bytes,
+  cblock : Bytes,
+  config : TapConfig = {}
 ) : boolean {
   const { isPrivate = false, throws = false } = config
   const { parity, paths, intkey } = readCtrlBlock(cblock)
@@ -113,7 +103,7 @@ export function checkTapLeaf (
     return safeThrow('Invalid tapkey: ' + extkey.hex, throws)
   }
 
-  let branch = Buff.bytes(tapleaf).hex
+  let branch = Buff.bytes(target).hex
 
   for (const path of paths) {
     branch = getTapBranch(branch, path)
@@ -121,10 +111,10 @@ export function checkTapLeaf (
 
   const k = getTweakedKey(intkey, branch)
 
-  console.log('branch:', branch)
-  console.log('intkey:', Buff.raw(intkey).hex)
-  console.log('extkey:', extkey.hex)
-  console.log('tapkey:', k.hex)
+  // console.log('branch:', branch)
+  // console.log('intkey:', Buff.raw(intkey).hex)
+  // console.log('extkey:', extkey.hex)
+  // console.log('tapkey:', k.hex)
 
   return (Buff.raw(k).hex === Buff.raw(extkey).hex)
 }

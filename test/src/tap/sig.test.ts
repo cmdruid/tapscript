@@ -1,13 +1,13 @@
 import { Test }  from 'tape'
 import { Buff }  from '@cmdcode/buff-utils'
-import { Noble } from '@cmdcode/crypto-utils'
+import { Noble, SecretKey } from '@cmdcode/crypto-utils'
 
-import { decodeTx }      from '../../../src/lib/tx/decode.js'
-import * as HASH         from '../../../src/lib/sig/taproot/hash.js'
-import { TapRootSigner as SIG } from '../../../src/lib/sig/taproot/index.js'
-import { sign, verify }  from '../../../src/lib/sig/taproot/sign.js'
-import test_vectors      from './sig.vectors.json' assert { type: 'json' }
-import { Key, Tweak }         from '../../../src/index.js'
+import { decodeTx }        from '../../../src/lib/tx/decode.js'
+import * as HASH           from '../../../src/lib/sig/taproot/hash.js'
+import { TRSigner as SIG } from '../../../src/lib/sig/taproot/index.js'
+import { sign, verify }    from '../../../src/lib/sig/taproot/sign.js'
+import test_vectors        from './sig.vectors.json' assert { type: 'json' }
+import { Tap }             from '../../../src/index.js'
 
 const schnorr = Noble.schnorr
 
@@ -34,37 +34,44 @@ export async function test_computehash(t : Test) : Promise<void> {
 export async function test_signatures(t : Test) : Promise<void> {
   t.test('Test vectors for signature hash construction.', async t => {
     const vectors = spends
-    t.plan(vectors.length * 8)
+    t.plan(vectors.length * 11)
     tx.vin.map((e, i) => e.prevout = utxos[i])
-    for (const { given, intermediary } of vectors) {
+    for (const { given, intermediary, expected } of vectors) {
       // Unpack our vector data.
       const { txinIndex, hashType, internalPrivkey, merkleRoot } = given
       const { sigHash, tweak, internalPubkey, tweakedPrivkey }   = intermediary
+      const { witness : [ witsig ] } = expected
       // Test our ability to create the tweak.
-      const taptweak = Tweak.getTweak(internalPubkey, merkleRoot ?? undefined)
+      const taptweak = Tap.tweak.getTweak(internalPubkey, merkleRoot ?? undefined)
       t.equal(taptweak.hex, tweak, 'The tap tweak should match.')
       // Test our ability to tweak the private key.\
-      const [ tweakedPrv, cblock ] = Key.tapSecKey(internalPrivkey, merkleRoot ?? undefined)
-      t.equal(tweakedPrv, tweakedPrivkey, 'The tweaked prvkey should match.')
+      const tweakedPrv = Tap.tweak.tweakSecKey(internalPrivkey, taptweak)
+      t.equal(tweakedPrv.hex, tweakedPrivkey, 'The tweaked prvkey should match.')
       // Test our ability to calculate the signature hash.
       const actual_hash = SIG.hash(tx, txinIndex, { sigflag: hashType })
-      t.equal(Buff.raw(actual_hash).hex, sigHash, 'The signature hashes should match.')
+      t.equal(actual_hash.hex, sigHash, 'The signature hashes should match.')
       // Test our ability to sign the transaction.
-      const tweakedpub    = Noble.getPublicKey(tweakedPrivkey, true).slice(1)
+      const pubkey        = new SecretKey(tweakedPrivkey).point.buff
+      const tweakedpub    = Buff.raw(Noble.getPublicKey(tweakedPrivkey, true))
+      t.equal(pubkey.hex, tweakedpub.hex, 'The tweaked pubkeys should be equal.')
       const signature     = SIG.sign(tweakedPrivkey, tx, txinIndex, { sigflag: hashType, throws : true })
-      const schnorrVerify = schnorr.verify(signature, actual_hash, tweakedpub)
+      const testsig       = sign(tweakedPrivkey, sigHash)
+      const isVerify      = verify(testsig, sigHash, tweakedpub)
+      t.true(isVerify, 'Signature made with sign should be valid using verify.')
+      const schnorrVerify = await schnorr.verify(signature.slice(0, 64), sigHash, tweakedpub.slice(1))
       t.true(schnorrVerify, 'The signTx signature should be valid using schnorr.')
       const sigVerify     = verify(signature, actual_hash, tweakedpub)
-      t.true(sigVerify, 'The signTx signature should be valid using TESTSIG.verify.')
+      t.true(sigVerify, 'The signTx signature should be valid using verify.')
+      const vectVerify    = verify(witsig, sigHash, tweakedpub)
+      t.true(vectVerify, 'The vector signature should be valid using verify.')
+      const checkVerify   = schnorr.verify(witsig, sigHash, tweakedpub)
+      t.true(checkVerify, 'The vector signature should be valid using schnorr.')
       const schnorrSig    = await schnorr.sign(actual_hash, tweakedPrivkey)
       const testVerify    = verify(schnorrSig, actual_hash, tweakedpub)
-      t.true(testVerify, 'The schnorr signature should be valid using TESTSIG.verify.')
+      t.true(testVerify, 'The schnorr signature should be valid using verify.')
       tx.vin[txinIndex].witness = [ signature ]
       const isVerified    = await SIG.verify(tx, txinIndex, { sigflag: hashType, throws : true })
       t.true(isVerified, 'The signature should pass verifyTx')
-      const testsig       = sign(tweakedPrivkey, sigHash).raw
-      const isVerify      = verify(testsig, sigHash, tweakedpub)
-      t.true(isVerify, 'Signature made with TESTSIG should be valid using TESTSIG.verify.')
     }
   })
 }

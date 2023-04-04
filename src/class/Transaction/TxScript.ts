@@ -2,7 +2,7 @@ import { Buff }         from '@cmdcode/buff-utils'
 import { encodeScript } from '../../lib/script/encode.js'
 import { decodeScript } from '../../lib/script/decode.js'
 import { ScriptData }   from '../../schema/types.js'
-import { Tree }         from '../../lib/tree/index.js'
+import { TapTree }      from '../../lib/tap/index.js'
 
 type ScriptFormat = 'p2sh' | 'p2w' | 'p2tr'
 
@@ -34,7 +34,7 @@ export default class TxScript {
       case 'p2sh':
         return this._buff.toHash('hash160').hex
       case 'p2tr':
-        return Tree.getLeaf(this._buff, version)
+        return TapTree.getLeaf(this._buff, version)
       default:
         throw new Error('Unrecognized format: ' + format)
     }

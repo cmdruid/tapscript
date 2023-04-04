@@ -1,13 +1,19 @@
+import { Bytes, ScriptData } from '../../schema/types.js'
+
 export type TapKey = [
   key    : string,
   cblock : string
 ]
 
 export interface TapConfig {
-  version   ?: number
-  tree      ?: TapTree
+  data      ?: Bytes
   isPrivate ?: boolean
+  script    ?: ScriptData
+  tapleaf   ?: Bytes
+  target    ?: Bytes
   throws    ?: boolean
+  tree      ?: TapTree
+  version   ?: number
 }
 
 export interface CtrlBlock {
@@ -21,6 +27,6 @@ export type TapTree = Array<string | string[]>
 
 export type TapProof = [
   root   : string,
-  target : string | null,
+  target : string | undefined,
   path   : string[]
 ]

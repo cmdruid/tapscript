@@ -66,7 +66,6 @@ function parseWitScript (
       data.pop()
       return script
     } catch (err) {
-      console.log(err)
       return null
     }
   }
@@ -88,7 +87,7 @@ function parseParams (
   return params
 }
 
-export function parseWitness (
+export function readWitness (
   data : ScriptData[] = []
 ) : WitnessData {
   const items  = [ ...data ]
@@ -96,7 +95,5 @@ export function parseWitness (
   const cblock = parseBlock(items)
   const script = parseWitScript(items)
   const params = parseParams(items)
-  console.log('items:', items)
-  console.log('block:', annex, cblock, script, params)
   return { annex, cblock, script, params }
 }
