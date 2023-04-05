@@ -1,5 +1,5 @@
-import { Buff, Bytes }     from '@cmdcode/buff-utils'
-import { Networks }        from '../../schema/types.js'
+import { Buff }            from '@cmdcode/buff-utils'
+import { Bytes, Networks } from '../../schema/types.js'
 import { BECH32_PREFIXES } from './schema.js'
 
 const VALID_PREFIXES = [ 'bc1q', 'tb1q', 'bcrt1q' ]
@@ -17,12 +17,8 @@ export function encode (
   key     : Bytes,
   network : Networks = 'main'
 ) : string {
-  let bytes = Buff.bytes(key)
   const prefix = BECH32_PREFIXES[network]
-  if (bytes.length !== 33 && bytes.length !== 32) {
-    throw new Error('Key length is an invalid size: ' + String(bytes.length))
-  }
-  if (bytes.length === 33) bytes = bytes.toHash('hash160')
+  const bytes  = convert(key)
   return bytes.toBech32(prefix, 0)
 }
 
@@ -33,8 +29,20 @@ export function decode (address : string) : Buff {
   return Buff.bech32(address)
 }
 
-export function script (key : string) : string[] {
-  return [ 'OP_0', key ]
+export function script (keyhash : Bytes) : string[] {
+  const bytes = Buff.bytes(keyhash)
+  return [ 'OP_0', bytes.hex ]
+}
+
+function convert (key : Bytes) : Buff {
+  const bytes = Buff.bytes(key)
+  if (bytes.length === 33) {
+    return bytes.toHash('hash160')
+  }
+  if (bytes.length === 32) {
+    return bytes
+  }
+  throw new Error('Key length is an invalid size: ' + String(bytes.length))
 }
 
 export const P2W = { check, encode, decode, script }

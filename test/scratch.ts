@@ -1,92 +1,14 @@
-import fs            from 'fs/promises'
-import path          from 'path'
-import { SecretKey } from '@cmdcode/crypto-utils'
+import { Buff } from '@cmdcode/buff-utils'
 import { Address, Script, Signer, Tap, Tx, TxData } from '../src/index.js'
 
-const ec       = new TextEncoder()
-const fpath    = path.join(process.cwd(), '/test')
-const imgdata  = await fs.readFile(path.join(fpath, '/image.png')).then(e => new Uint8Array(e))
+const pkhash = '35c0e7f2d502c44460c0461acfbe924e0dc88d41'
+const script = [ 'OP_DUP', 'OP_HASH160', pkhash, 'OP_EQUALVERIFY', 'OP_CHECKSIG' ]
 
-/**
- * Creating an Inscription. 
- */
+const sbytes = Script.encode(script, false)
+console.log(sbytes.hex)
 
-// Provide your secret key.
-const seckey = new SecretKey('39879f30a087ff472784bafe74b0acfe9bf9ad02639c40211a8a722b6629def6')
-const pubkey = seckey.pub.buff
-
-// We have to provide the 'ord' marker,
-// a mimetype for the data, and the blob
-// of data itself (as hex or a Uint8Array).
-const marker   = ec.encode('ord')        // The 'ord' marker.
-const mimetype = ec.encode('image/png')  // The mimetype of the file.
-//const imgdata = getFile('image.png')    // Imaginary method that fetches the file. 
-
-// A basic "inscription" script. The encoder will also 
-// break up data blobs and use 'OP_PUSHDATA' when needed.
-const script = [
-  pubkey.slice(1), 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF'
-]
-const target = Tap.tree.getLeaf(Script.encode(script))
-// Pass your pubkey and your leaf in order to get the tweaked pubkey.
-const [ tapkey, cblock ] = Tap.getPubKey(pubkey, { target })
-// Encode the tweaked pubkey as a bech32m taproot address.
-const address = Address.p2tr.encode(tapkey, 'regtest')
-
-// Once you send funds to this address, please make a note of 
-// the transaction's txid, and vout index for this address.
-// console.log('Your taproot address:', address)
-// console.log('Pubkey:', pubkey.hex)
-// console.log('Leaf:', leaf)
-// console.log('Tapkey:', tapkey)
-// console.log('cblock:', cblock)
-
-/** 
- * Publishing an Inscription. 
- */
-
-// Construct our redeem transaction.
-const txdata : TxData = {
-  version : 2,
-  vin: [
-    {
-      txid     : 'b3ff7183388b7547abfae27b753f54e48f71ae6f23bab40de8de3284825b9359',
-      vout     : 0,
-      prevout  : {
-        value: 100000,
-        scriptPubKey: Address.toScript(address)
-      },
-      sequence : 0xfffffffd
-    }
-  ],
-  vout : [
-    { 
-      value: 90000, 
-      scriptPubKey: Address.toScript('bcrt1q0f79up09fhttdn49p52en58medd4rhz0qxkz9d')
-    }
-  ],
-  locktime: 0
-}
-
-const sig = Signer.taproot.sign(seckey, txdata, 0, { extension: target })
-
-txdata.vin[0].witness = [ sig, script, cblock ]
-
-Signer.taproot.verify(txdata, 0, { pubkey, throws: true })
-
-// console.dir(txdata, { depth: null })
-
-const txhex = Tx.encode(txdata).hex
-
-// console.log('Your transaction:', txdata)
-// console.log('Your raw transaction hex:', txhex)
-
-
-// console.log(test)
-
-// const tx = new Transaction(txdata)
-
-// console.dir(tx, { depth: null })
+const asm = Script.decode(sbytes)
+console.log(asm)
 
 const testtx = {
   version: 1,
@@ -197,5 +119,3 @@ const testtx = {
   ],
   locktime: 500000000
 }
-
-// const test = Tx.fmt.toJson(testtx)

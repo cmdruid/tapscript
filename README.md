@@ -79,7 +79,7 @@ Tapscript uses key tweaking in order to lock coins to the root hash of our scrip
 
 You can also create tweaked keys using an internal pubkey that has a provably unknown secret key. This is useful for locking coins so that they cannot ever be spent with a tweaked key, and *must* be redeemed using a script!
 
-## Library Index
+## Tool Index
 
 This library provides a suite of tools for working with scripts, taproot, key tweaking, signatures and transactions. Use the links below to jump to the documentation for a certain tool.
 
@@ -124,10 +124,8 @@ Address = {
   p2w   : => AddressTool,
   // Work with Pay-to-Taproot addresses (Bech32m encoded).
   p2tr  : => AddressTool,
-  // Decode any address format into the original key / hash.
-  decode   : (address : string) => Buff,
-  // Get the type of an address.
-  parse    : (address : string) => AddressData,
+  // Decode any address format into a detailed object.
+  decode   : (address : string) => AddressData,
   // Convert any address into its scriptPubKey format.
   toScript : (address : string) => Buff
 }
@@ -144,13 +142,49 @@ interface AddressTool {
 }
 
 interface AddressData {
-  prefix  : string
-  type    : keyof AddressTools
+  data    : Buff
   network : Networks
-  tool    : AddressTool
+  prefix  : string
+  script  : string[]
+  type    : keyof AddressTools
 }
 
 type Networks = 'main' | 'testnet' | 'signet' | 'regtest'
+```
+
+#### Examples
+
+Example of using the main `Address` API.
+
+```ts
+const address = 'bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk'
+// You can decode any address, extract data, or convert to a scriptPubKey format.
+const decoded = Address.decode(address)
+// Example of the decoded data object.
+{ 
+  prefix  : 'bcrt1q', 
+  type    : 'p2w', 
+  network : 'regtest', 
+  data    : 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07',
+  script  : [ 'OP_0', 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07' ]
+}
+// You can also quickly convert any address into a scriptPubKey format.
+const bytes = Address.toScript(address)
+// Bytes: 0014f44f76cbfd5b4c536d11d78b6700b8737c9eab07
+```
+
+Example of using the AddressTool API for a given address type.
+
+```ts
+// Example 33-byte public key.
+const pubkey  = '03d5af2a3e89cb72ff9ca1b36091ca46e4d4399abc5574b13d3e56bca6c0784679'
+// You can encode / decode / convert keys and script hashes.
+const address = Address.p2w.encode(pubkey, 'regtest')
+// Address: bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk
+const bytes   = Address.p2w.decode(address)
+// KeyHash: f44f76cbfd5b4c536d11d78b6700b8737c9eab07
+const script  = Address.p2w.script(bytes)
+// script: script: [ 'OP_0', 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07' ]
 ```
 
 ### Script Tool
@@ -164,10 +198,13 @@ Script = {
   // Decode a hex formatted script into JSON.
   decode : (script : string, varint = false)    => ScriptData
   // Normalize script / data to a particular format:
-  fmt : { 
-    toAsm()   => string[]  // Convert to string array of opcodes / hex data (asm format).
-    toBytes() => Buff      // Convert to buffer object (script hex)
-    toParam() => Buff      // Convert to buffer object (non-script witness data).
+  fmt : {
+    // Convert script to opcodes / hex data (asm format).
+    toAsm()   => string[]  (asm format).
+    // Convert script to bytes (script hex).
+    toBytes() => Buff
+     // Convert non-script witness data to bytes.
+    toParam() => Buff  
   }
 }
 ```

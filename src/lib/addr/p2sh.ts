@@ -1,5 +1,5 @@
 import { Buff } from '@cmdcode/buff-utils'
-import { Networks, ScriptData } from '../../schema/types.js'
+import { Bytes, Networks, ScriptData } from '../../schema/types.js'
 import { Script } from '../script/index.js'
 
 export function check (
@@ -21,8 +21,9 @@ export function encode (
   network : Networks = 'main'
 ) : string {
   const prefix = (network === 'main') ? Buff.num(0x05) : Buff.num(0xC4)
-  const bytes  = Buff.bytes(Script.encode(script))
-  return bytes.toHash('hash160').prepend(prefix).tob58check()
+  const bytes = Script.encode(script, false)
+  const hash  = Buff.bytes(bytes).toHash('hash160')
+  return hash.prepend(prefix).tob58check()
 }
 
 export function decode (
@@ -32,11 +33,12 @@ export function decode (
   if (!check(address, network)) {
     throw new TypeError('Invalid p2sh address!')
   }
-  return Buff.b58check(address)
+  return Buff.b58check(address).slice(1)
 }
 
-export function script (key : string) : string[] {
-  return [ 'OP_HASH160', key, 'OP_EQUAL' ]
+export function script (keyhash : Bytes) : string[] {
+  const bytes = Buff.bytes(keyhash)
+  return [ 'OP_HASH160', bytes.hex, 'OP_EQUAL' ]
 }
 
 export const P2SH = { check, encode, decode, script }

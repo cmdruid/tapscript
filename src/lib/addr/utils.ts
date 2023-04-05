@@ -22,25 +22,21 @@ export const ADDRESS_TYPES : AddressType[] = [
   [ 'bcrt1p', 'p2tr',  'regtest', P2TR  ]
 ]
 
-export function readAddress (
+export function decodeAddress (
   address : string
 ) : AddressData {
   for (const row of ADDRESS_TYPES) {
     if (address.startsWith(row[0])) {
       const [ prefix, type, network, tool ] = row
-      return { prefix, type, network, tool }
+      const data   = tool.decode(address, network)
+      const script = tool.script(data)
+      return { prefix, type, network, data, script }
     }
   }
   throw new Error('Unable to detect address type!')
 }
 
-export function decodeAddress (address : string) : Buff {
-  const { network, tool } = readAddress(address)
-  return tool.decode(address, network)
-}
-
 export function convertAddress (address : string) : Buff {
-  const { network, tool } = readAddress(address)
-  const decoded = tool.decode(address, network).hex
-  return Script.encode(tool.script(decoded), false)
+  const { script } = decodeAddress(address)
+  return Script.encode(script, false)
 }

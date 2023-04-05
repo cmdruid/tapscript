@@ -1,30 +1,31 @@
 /* eslint-disable quote-props */
 
-import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { Networks, ScriptData } from '../../schema/types.js'
+import { Buff } from '@cmdcode/buff-utils'
+import { Bytes, Networks, ScriptData } from '../../schema/types.js'
 
 export type AddressType = [
   prefix  : string,
   type    : keyof AddressTools,
   network : Networks,
-  tool    : KeyTool | ScriptTool
+  tool    : AddressTool
 ]
 
 export interface AddressData {
-  prefix  : string
-  type    : keyof AddressTools
+  data    : Buff
   network : Networks
-  tool    : KeyTool | ScriptTool
+  prefix  : string
+  script  : string[]
+  type    : keyof AddressTools
 }
 
 export interface AddressTool {
   check  : (address : string, network ?: Networks) => boolean
   decode : (address : string, network ?: Networks) => Buff
-  script : (hash    : string) => string[]
+  script : (keyhash : Bytes) => string[]
 }
 
 export interface KeyTool extends AddressTool {
-  encode : (key : Bytes,  network ?: Networks) => string
+  encode : (key : Bytes, network ?: Networks) => string
 }
 
 export interface ScriptTool extends AddressTool {

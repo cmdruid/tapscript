@@ -4,7 +4,7 @@ import path from 'path'
 import { Buff }      from '@cmdcode/buff-utils'
 import { SecretKey } from '@cmdcode/crypto-utils'
 
-import { Address, Script, Sig, Tree, Tweak, TxData } from '../../../src/index.js'
+import { Address, Script, Signer, Tap, TxData } from '../../../src/index.js'
 
 const ec      = new TextEncoder()
 const seckey  = SecretKey.random()
@@ -12,7 +12,7 @@ const pubkey  = seckey.pub.rawX
 const fpath   = path.join(process.cwd(), '/test')
 const imgdata = await fs.readFile(path.join(fpath, '/image.png')).then(e => new Uint8Array(e))
 const chksum  = (await fs.readFile(path.join(fpath, '/checksum'))).toString()
-
+ 
 const marker   = ec.encode('ord')
 const mimetype = ec.encode('image/png')
 const recvAddr = '51206364d5d918f22e75d4e2dea50ec28792829d0b4546b9bc8a02d4b3965f638000'
@@ -23,11 +23,11 @@ const hexscript = Script.encode(script, false).hex
 
 if (hexscript !== chksum) throw new Error('Script does not match checksum!')
 
-const leaf = Tree.getLeaf(Script.encode(script))
+const leaf = Tap.tree.getLeaf(Script.encode(script))
 // Pass your pubkey and your leaf in order to get the tweaked pubkey.
-const [ tapkey ] = Tweak.getPubkey(pubkey, leaf)
+const [ tapkey, cblock ] = Tap.getPubKey(pubkey, { target: leaf })
 // Encode the tweaked pubkey as a bech32m taproot address.
-const address = Address.P2TR.encode(tapkey, 'regtest')
+const address = Address.p2tr.encode(tapkey, 'regtest')
 
 // Once you send funds to this address, please make a note of 
 // the transaction's txid, and vout index for this address.
@@ -36,9 +36,6 @@ console.log('Your taproot address:', address)
 /** 
  * Publishing an Inscription. 
  */
-
-// Get the 'cblock' string (which is the proof used to verify the leaf is in the tree).
-const cblock = Tree.getPath(pubkey, leaf)
 
 // Construct our redeem transaction.
 const txdata : TxData = {
@@ -63,8 +60,8 @@ const txdata : TxData = {
   locktime: 0
 }
 
-const sig = Sig.taproot.sign(seckey, txdata, 0, { extension: leaf })
+const sig = Signer.taproot.sign(seckey, txdata, 0, { extension: leaf })
 
 txdata.vin[0].witness = [ sig, script, cblock ]
 
-Sig.taproot.verify(txdata, 0, { pubkey, throws: true })
+Signer.taproot.verify(txdata, 0, { pubkey, throws: true })
