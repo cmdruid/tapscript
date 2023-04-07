@@ -149,7 +149,6 @@ export function hashAmounts (
 ) : Uint8Array {
   const stack = []
   for (const { value } of prevouts) {
-    console.log(value)
     stack.push(ENC.encodeValue(value))
   }
   return Buff.join(stack).digest
