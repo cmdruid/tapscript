@@ -51,21 +51,26 @@ export function encodeWord (
   // Initialize buff variable.
   let buff = new Uint8Array()
 
-  if (
-    typeof (word) === 'string' &&
-    word.startsWith('OP_')
-  ) {
-    // If word is an opcode, return a
-    // number value without size prefix.
-    return Buff.num(getOpCode(word), 1)
+  if (typeof (word) === 'string') {
+    if (word.startsWith('OP_')) {
+      // If word is an opcode, return a
+      // number value without size prefix.
+      return Buff.num(getOpCode(word), 1)
+    } else if (isHex(word)) {
+      // If word is valid hex, encode as hex.
+      buff = Buff.hex(word)
+    } else {
+      // Else, encode word as UTF8 string.
+      buff = Buff.str(word)
+    }
+  } else {
+    // If not a string, encode as bytes.
+    buff = Buff.bytes(word)
   }
-
-  // If not an opcode, encode as bytes.
-  buff = Buff.bytes(word)
 
   if (buff.length === 1 && buff[0] <= 16) {
     // Number values 0-16 must be treated as opcodes.
-    if (buff[0] !== 0) buff[0] &= 0x50
+    if (buff[0] !== 0) buff[0] += 0x50
     return buff
   }
 

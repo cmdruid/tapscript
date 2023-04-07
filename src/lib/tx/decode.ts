@@ -70,7 +70,8 @@ function readInput (stream : Stream) : InputData {
     txid      : stream.read(32).reverse().toHex(),
     vout      : stream.read(4).reverse().toNum(),
     scriptSig : readScript(stream, true),
-    sequence  : stream.read(4).reverse().toHex()
+    sequence  : stream.read(4).reverse().toHex(),
+    witness   : []
   }
 }
 
@@ -95,7 +96,7 @@ function readWitness (stream : Stream) : string[] {
   const count = stream.readSize()
   for (let i = 0; i < count; i++) {
     const word = readData(stream, true)
-    stack.push(word)
+    stack.push(word ?? '')
   }
   return stack
 }
@@ -103,13 +104,13 @@ function readWitness (stream : Stream) : string[] {
 function readData (
   stream  : Stream,
   varint ?: boolean
-) : string {
+) : string | null {
   const size = (varint === true)
     ? stream.readSize('be')
     : stream.size
   return size > 0
     ? stream.read(size).hex
-    : Buff.num(0).hex
+    : null
 }
 
 function readScript (
@@ -117,7 +118,7 @@ function readScript (
   varint ?: boolean
 ) : string | string[] {
   const data = readData(stream, varint)
-  return (data !== '00') ? data : []
+  return (data !== null) ? data : []
 }
 
 function readLocktime (stream : Stream) : number {

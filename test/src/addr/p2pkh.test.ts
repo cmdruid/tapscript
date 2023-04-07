@@ -13,21 +13,27 @@ export function p2pkh_test(t : Test) : void {
   const ref_object  = { prefix: 'm', type: 'p2pkh', network: 'testnet', data: Buff.hex(ref_hash) , script: ref_script }
 
   t.test('P2PKH unit test', t => {
-    t.plan(5)
+    t.plan(7)
 
-    const address = Address.p2pkh.encode(ref_pubkey, 'regtest')
-    t.equal(address, ref_address)
+    const addr1 = Address.p2pkh.fromPubKey(ref_pubkey, 'regtest')
+    t.equal(addr1, ref_address, 'Pubkey should encode into proper address.')
 
-    const bytes = Address.p2pkh.decode(address, 'regtest')
-    t.equal(bytes.hex, ref_hash)
+    const addr2 = Address.p2pkh.encode(ref_hash, 'regtest')
+    t.equal(addr2, ref_address, 'Hash should encode into proper address')
 
-    const asm = Address.p2pkh.script(bytes)
-    t.deepEqual(asm, ref_script)
+    const bytes = Address.p2pkh.decode(ref_address, 'regtest')
+    t.equal(bytes.hex, ref_hash, 'Address should decode into proper hash.')
 
-    const data = Address.decode(address)
-    t.deepEqual(data, ref_object)
+    const asm = Address.p2pkh.scriptPubKey(ref_hash)
+    t.deepEqual(asm, ref_script, 'scriptPubKey should match reference script.')
 
-    const script = Address.toScript(address)
-    t.equal(script.hex, ref_hexdata)
+    const data = Address.decode(ref_address)
+    t.deepEqual(data, ref_object, 'Address should produce proper AddressData')
+
+    const script = Address.toScriptPubKey(ref_address)
+    t.equal(script.hex, ref_hexdata, 'Address should produce proper scriptPubKey.')
+
+    const addr3 = Address.fromScriptPubKey(ref_script, 'regtest')
+    t.equal(addr3, ref_address, 'scriptPubKey should produce proper address.')
   })
 }

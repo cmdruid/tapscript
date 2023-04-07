@@ -1,8 +1,17 @@
 import { Buff }   from '@cmdcode/buff-utils'
 import { isHex }  from '../check.js'
 import { Script } from '../script/index.js'
+import { TxFmt } from './format.js'
 
-import { Bytes, ScriptData, WitnessData } from '../../schema/types.js'
+import { Bytes, OutputType, ScriptData, ScriptPubKeyData, TxData, WitnessData } from '../../schema/types.js'
+
+const OUTPUT_TYPES : Array<[ string, RegExp ]> = [
+  [ 'p2pkh',   /^76a914(?<hash>\w{40})88ac$/ ],
+  [ 'p2sh',    /^a914(?<hash>\w{40})87$/     ],
+  [ 'p2w-pkh', /^0014(?<hash>\w{40})$/       ],
+  [ 'p2w-sh',  /^0020(?<hash>\w{64})$/       ],
+  [ 'p2tr',    /^5120(?<hash>\w{64})$/       ]
+]
 
 const LEAF_VERSIONS = [
   0xc0, 0xc2, 0xc4, 0xc6, 0xc8, 0xca, 0xcc, 0xce,
@@ -15,7 +24,7 @@ const LEAF_VERSIONS = [
 
 function parseAnnex (
   data : ScriptData[]
-) : Uint8Array | null {
+) : Buff | null {
   let item = data.at(-1)
 
   if (isHex(item)) {
@@ -36,7 +45,7 @@ function parseAnnex (
 
 function parseBlock (
   data : ScriptData[]
-) : Uint8Array | null {
+) : Buff | null {
   let item = data.at(-1)
 
   if (isHex(item)) {
@@ -58,7 +67,7 @@ function parseBlock (
 
 function parseWitScript (
   data : ScriptData[]
-) : Uint8Array | null {
+) : Buff | null {
   if (data.length > 1) {
     const item = data.at(-1)
     try {
@@ -96,4 +105,24 @@ export function readWitness (
   const script = parseWitScript(items)
   const params = parseParams(items)
   return { annex, cblock, script, params }
+}
+
+export function readScriptPubKey (
+  script : ScriptData
+) : ScriptPubKeyData {
+  const hex = Script.fmt.toBytes(script, false).hex
+  for (const [ keytype, pattern ] of OUTPUT_TYPES) {
+    const type = keytype as OutputType
+    const { groups } = pattern.exec(hex) ?? {}
+    const { hash   } = groups ?? {}
+    if (isHex(hash)) {
+      return { type, data: Buff.hex(hash) }
+    }
+  }
+  return { type: 'raw', data: Buff.hex(hex) }
+}
+
+export function getTxid (txdata : TxData | string | Uint8Array) : string {
+  const data = TxFmt.toBytes(txdata)
+  return data.toHash('hash256').reverse().hex
 }

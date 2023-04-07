@@ -13,21 +13,27 @@ export function p2sh_test(t : Test) : void {
   const ref_object  = { prefix: '2', type: 'p2sh', network: 'testnet', data: Buff.hex(ref_hash) , script: ref_script }
 
   t.test('P2SH unit test', t => {
-    t.plan(5)
+    t.plan(7)
 
-    const address = Address.p2sh.encode(ref_preimg, 'regtest')
-    t.equal(address, ref_address)
+    const addr1 = Address.p2sh.fromScript(ref_preimg, 'regtest')
+    t.equal(addr1, ref_address, 'Script should encode into proper address.')
 
-    const bytes = Address.p2sh.decode(address, 'regtest')
-    t.equal(bytes.hex, ref_hash)
+    const addr2 = Address.p2sh.encode(ref_hash, 'regtest')
+    t.equal(addr2, ref_address, 'Hash should encode into proper address')
 
-    const asm = Address.p2sh.script(bytes)
-    t.deepEqual(asm, ref_script)
+    const bytes = Address.p2sh.decode(ref_address, 'regtest')
+    t.equal(bytes.hex, ref_hash, 'Address should decode into proper hash.')
 
-    const data = Address.decode(address)
-    t.deepEqual(data, ref_object)
+    const asm = Address.p2sh.scriptPubKey(ref_hash)
+    t.deepEqual(asm, ref_script, 'scriptPubKey should match reference script.')
 
-    const script = Address.toScript(address)
-    t.equal(script.hex, ref_hexdata)
+    const data = Address.decode(ref_address)
+    t.deepEqual(data, ref_object, 'Address should produce proper AddressData')
+
+    const script = Address.toScriptPubKey(ref_address)
+    t.equal(script.hex, ref_hexdata, 'Address should produce proper scriptPubKey.')
+
+    const addr3 = Address.fromScriptPubKey(ref_script, 'regtest')
+    t.equal(addr3, ref_address, 'scriptPubKey should produce proper address.')
   })
 }

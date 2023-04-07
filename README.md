@@ -92,7 +92,11 @@ Produce signatures and validate signed transactions.
 [**Tap Tool**](###-Tap-Tool)  
 Build, tweak, and validate trees of data / scripts.  
 [**Tx Tool**](###-Tx-Tool)  
-Encode transactions into hex, or decode into a JSON object.  
+Encode transactions into hex, or decode into a JSON object.
+
+### About Buff
+
+This library makes heavy use of the [Buff](https://github.com/cmdruid/buff-utils) tool for converting between data types. Buff is an extention of the Uint8Array type, so all Buff objects can naturally be treated as Uint8Array objects. Buff objects however incude an extensive API for converting into different types (*for ex: buff.hex for hex strings*). Please check the above link for more information on how to use Buff.
 
 ### Import
 
@@ -117,17 +121,19 @@ This tool allows you to encode, decode, check, an convert various address types.
 ```ts
 Address = {
   // Work with Pay-to-Pubkey-Hash addresses (Base58 encoded).
-  p2pkh : => AddressTool,
+  p2pkh  : => AddressTool,
   // Work with Pay-to-Script-Hash addresses (Base58 encoded).
-  p2sh  : => AddressTool,
-  // Work with Pay-to-Witness addresses (Bech32 encoded).
-  p2w   : => AddressTool,
+  p2sh   : => AddressTool,
+  // Work with Pay-to-Witness PubKey-Hash addresses (Bech32 encoded).
+  p2wpkh : => AddressTool,
+  // Work with Pay-to-Witness Script-Hash addresses (Bech32 encoded).
+  p2wsh  : => AddressTool,
   // Work with Pay-to-Taproot addresses (Bech32m encoded).
-  p2tr  : => AddressTool,
+  p2tr   : => AddressTool,
   // Decode any address format into a detailed object.
   decode   : (address : string) => AddressData,
   // Convert any address into its scriptPubKey format.
-  toScript : (address : string) => Buff
+  toScriptPubKey : (address : string) => Buff
 }
 
 interface AddressTool {
@@ -138,7 +144,11 @@ interface AddressTool {
   // Decode an address into a pubkey or script hash.
   decode : (address : string, network ?: Networks) => Buff
   // Return the scriptPubKey script for an address type.
-  script : (key : string) => string[]
+  scriptPubKey : (key : string) => string[]
+  // Return an address based on a public key (PKH type addresses only).
+  fromPubKey (pubkey : Bytes, network ?: Networks) : => string
+  // Return an address based on a script key (SH type addresses only).
+  fromScript (script : ScriptData, network ?: Networks) : => string
 }
 
 interface AddressData {
@@ -168,9 +178,11 @@ const decoded = Address.decode(address)
   data    : 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07',
   script  : [ 'OP_0', 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07' ]
 }
-// You can also quickly convert any address into a scriptPubKey format.
-const bytes = Address.toScript(address)
+// You can also quickly convert between address and scriptPubKey formats.
+const bytes = Address.toScriptPubKey(address)
 // Bytes: 0014f44f76cbfd5b4c536d11d78b6700b8737c9eab07
+const address = Address.fromScriptPubKey(scriptPubKey)
+// Address : bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk
 ```
 
 Example of using the AddressTool API for a given address type.
@@ -179,11 +191,13 @@ Example of using the AddressTool API for a given address type.
 // Example 33-byte public key.
 const pubkey  = '03d5af2a3e89cb72ff9ca1b36091ca46e4d4399abc5574b13d3e56bca6c0784679'
 // You can encode / decode / convert keys and script hashes.
-const address = Address.p2w.encode(pubkey, 'regtest')
+const address = Address.p2w.fromPubKey(pubkey, 'regtest')
+// Address: bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk
+const address = Address.p2w.encode(keyhash, 'regtest')
 // Address: bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk
 const bytes   = Address.p2w.decode(address)
 // KeyHash: f44f76cbfd5b4c536d11d78b6700b8737c9eab07
-const script  = Address.p2w.script(bytes)
+const script  = Address.p2w.scriptPubKey(bytes)
 // script: script: [ 'OP_0', 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07' ]
 ```
 
@@ -248,7 +262,67 @@ interface HashConfig {
 }
 ```
 
-> Note: There is also a nearly identical `Signer.segwit` tool for signing and validating segwit (BIP1043) transactions.
+#### Example
+
+Example of a basic pay-to-taproot key spend (similar to pay-to-pubkey):
+
+```ts
+// Sample secret / public key pair.
+const seckey  = '730fff80e1413068a05b57d6a58261f07551163369787f349438ea38ca80fac6'
+const pubkey  = '0307b8ae49ac90a048e9b53357a2354b3334e9c8bee813ecb98e99a7e07e8c3ba3'
+
+// For key-spends, we need to tweak both the secret key and public key.
+const [ tseckey ] = Tap.getSecKey(seckey)
+const [ tpubkey ] = Tap.getPubKey(pubkey)
+
+// Our taproot address is the encoded version of our public tapkey.
+const address = Address.p2tr.encode(tpubkey, 'regtest')
+
+// NOTE: For the next step, you need to send 100_000 sats to the above address.
+// Make note of the txid of this transaction, plus the index of the output that
+// you are spending.
+
+const txdata = Tx.create({
+  vin  : [{
+    // The txid of your funding transaction.
+    txid: 'fbde7872cc1aca4bc93ac9a923f14c3355b4216cac3f43b91663ede7a929471b',
+    // The index of the output you are spending.
+    vout: 0,
+    // For Taproot, we need to specify this data when signing.
+    prevout: {
+      // The value of the output we are spending.
+      value: 100000,
+      // This is the script that our taproot address decodes into.
+      scriptPubKey: [ 'OP_1', tpubkey ]
+    },
+  }],
+  vout : [{
+    // We are locking up 99_000 sats (minus 1000 sats for fees.)
+    value: 99000,
+    // We are locking up funds to this address.
+    scriptPubKey: Address.toScriptPubKey('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y')
+  }]
+})
+
+// For this example, we are signing for input 0.
+
+// Provide your tweaked secret key with the transaction, 
+// plus the index # of the input you are signing for.
+const sig = Signer.taproot.sign(tseckey, txdata, 0)
+
+// Add your signature to the witness data for that input.
+txdata.vin[0].witness = [ sig ]
+
+// For verification, provided your 
+await Signer.taproot.verify(txdata, 0, { throws: true })
+
+console.log('Your address:', address)
+console.log('Your txhex:', Tx.encode(txdata).hex)
+```
+
+You can find more examples in the main **Examples** section further down.
+
+> Note: There is also an identical `Signer.segwit` tool for signing and validating segwit (BIP0143) transactions. The segwit signer currently does not support the use of OP_CODESEAPRATOR. Any scripts containing this opcode will throw an exception by default.
 
 ### Tap Tool
 
@@ -383,6 +457,20 @@ interface CtrlBlock {
 }
 ```
 
+#### Example
+
+```ts
+const cblock = 'c1187791b6f712a8ea41c8ecdd0ee77fab3e85263b37e1ec18a3651926b3a6cf27'
+const { intkey, parity, paths, version } = Tap.util.readCtrlBlock(cblock)
+// Expected output, with key formatted as hex instead of bytes (for readability).
+{
+  intkey: '187791b6f712a8ea41c8ecdd0ee77fab3e85263b37e1ec18a3651926b3a6cf27',
+  parity: 3,
+  paths: [],
+  version: 192
+}
+```
+
 ### Tx Tool
 
 This tool helps with parsing / serializing transaction data.
@@ -405,17 +493,19 @@ Tx = {
   },
   util : {
     // Get the transaction Id of a transaction.
-    getTxid     : (txdata : TxData | Bytes) => Buff,
+    getTxid : (txdata : TxData | Bytes) => Buff,
+    // Parse a scriptPubKey and get the type plus hash data.
+    readScriptPubKey : (script : ScriptData) => ScriptPubKeyData,
     // Parse an array of witness data into named values.
     readWitness : (witness : ScriptData[])  => WitnessData
   }
 }
 
 interface TxData {
-  version  : number           // The transaction verion.
-  vin      : InputData[]      // Ann array of transaction inputs.
-  vout     : OutputData[]     // An array of transaction outputs.
-  locktime : LockData         // The locktime of the transaction.
+  version  ?: number           // The transaction verion. Defaults to version 2.
+  vin       : InputData[]      // An array of transaction inputs.
+  vout      : OutputData[]     // An array of transaction outputs.
+  locktime ?: LockData         // The locktime of the transaction. Defautls to 0.
 }
 
 interface InputData {
@@ -429,15 +519,19 @@ interface InputData {
 
 interface OutputData {
   value : number | bigint     // The satoshi value of the output.
-  scriptPubKey ?: ScriptData  // The locking script data.
-  address      ?: string      // (optional) provide a locking script
-}                             // that is encoded as an address.
+  scriptPubKey : ScriptData   // The locking script data.
+}
+
+export interface ScriptPubKeyData {
+  type : OutputType
+  data : Buff
+}
 
 interface WitnessData {
-  annex  : Uint8Array | null  // The annex data (if present) or null.
-  cblock : Uint8Array | null  // The control block (if present) or null.
-  script : Uint8Array | null  // The redeem script (if present) or null.
-  params : Bytes[]            // Any remaining witness arguments.
+  annex  : Buff | null  // The annex data (if present) or null.
+  cblock : Buff | null  // The control block (if present) or null.
+  script : Buff | null  // The redeem script (if present) or null.
+  params : Bytes[]      // Any remaining witness arguments.
 }
 
 type SequenceData = string | number
@@ -453,21 +547,21 @@ This is an example transaction in JSON format.
 
 ```ts
 const txdata = {
-  version : 2
+  version: 2
   vin: [
     {
-      txid     : '1351f611fa0ae6124d0f55c625ae5c929ca09ae93f9e88656a4a82d160d99052',
-      vout     : 0,
-      prevout  : { 
+      txid: '1351f611fa0ae6124d0f55c625ae5c929ca09ae93f9e88656a4a82d160d99052',
+      vout: 0,
+      prevout: { 
         value: 10000,
         scriptPubkey: '512005a18fccd1909f3317e4dd7f11257e4428884902b1c7466c34e7f490e0e627da'
         
       },
-      sequence : 0xfffffffd,
-      witness  : []
+      sequence: 0xfffffffd,
+      witness: []
     }
   ],
-  vout : [
+  vout: [
     { 
       value: 9000, 
       address: 'bcrt1pqksclnx3jz0nx9lym4l3zft7gs5gsjgzk8r5vmp5ul6fpc8xyldqaxu8ys'
@@ -611,7 +705,7 @@ Feel free to fork and make contributions. Suggestions are welcome!
 This library contains minimal dependencies.  
 
 **Buff-Utils**  
-A swiss-army-knife of byte manipulation tools.  
+The swiss-army-knife of byte manipulation.  
 https://github.com/cmdruid/buff-utils
 
 **Crypto-Utils**  

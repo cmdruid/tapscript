@@ -1,3 +1,4 @@
+import { Buff } from '@cmdcode/buff-utils'
 import { Bytes, ScriptData } from '../../schema/types.js'
 
 export type TapKey = [
@@ -19,7 +20,7 @@ export interface TapConfig {
 export interface CtrlBlock {
   version : number
   parity  : number
-  intkey  : Uint8Array
+  intkey  : Buff
   paths   : string[]
 }
 

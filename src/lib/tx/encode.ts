@@ -1,22 +1,25 @@
 import { Buff }         from '@cmdcode/buff-utils'
 import { encodeScript } from '../script/encode.js'
+import { createTx }     from './utils.js'
 
 import {
-  TxData,
   InputData,
   OutputData,
   SequenceData,
-  ScriptData
+  ScriptData,
+  TxTemplate,
+  LockData,
+  ValueData
 } from '../../schema/types.js'
 
 export function encodeTx (
-  txdata       : TxData,
+  txdata : TxTemplate,
   omitWitness ?: boolean
 ) : Buff {
   /** Convert a JSON-based Bitcoin transaction
    * into hex-encoded bytes.
    * */
-  const { version, vin, vout, locktime } = txdata
+  const { version, vin, vout, locktime } = createTx(txdata)
 
   const useWitness = (omitWitness !== true && checkForWitness(vin))
 
@@ -68,12 +71,9 @@ export function encodePrevOut (vout : number) : Uint8Array {
 }
 
 export function encodeSequence (
-  seq : SequenceData = 0xFFFFFFFF
+  sequence : SequenceData = 0xFFFFFFFF
 ) : Uint8Array {
-  const sequence = (typeof seq === 'string')
-    ? Buff.hex(seq, 4)
-    : Buff.num(seq, 4)
-  return sequence.reverse()
+  return Buff.bytes(sequence).reverse()
 }
 
 function encodeInputs (arr : InputData[]) : Uint8Array {
@@ -82,17 +82,20 @@ function encodeInputs (arr : InputData[]) : Uint8Array {
     const { txid, vout, scriptSig, sequence } = vin
     raw.push(encodeTxid(txid))
     raw.push(encodePrevOut(vout))
-    raw.push(encodeScript(scriptSig))
+    raw.push(encodeScript(scriptSig, true))
     raw.push(encodeSequence(sequence))
   }
   return Buff.join(raw)
 }
 
 export function encodeValue (
-  value : number | bigint
+  value : ValueData
 ) : Uint8Array {
   if (typeof value === 'number') {
-    value = BigInt(value)
+    if (value % 1 !== 0) {
+      throw new Error('Value must be an integer:' + String(value))
+    }
+    return Buff.num(value, 8).reverse()
   }
   return Buff.big(value, 8).reverse()
 }
@@ -111,7 +114,7 @@ function encodeOutput (
   const { value, scriptPubKey } = vout
   const raw : Uint8Array[] = []
   raw.push(encodeValue(value))
-  raw.push(encodeScript(scriptPubKey))
+  raw.push(encodeScript(scriptPubKey, true))
   return Buff.join(raw)
 }
 
@@ -120,14 +123,38 @@ function encodeWitness (
 ) : Uint8Array {
   const buffer : Uint8Array[] = []
   if (Array.isArray(data)) {
-    buffer.push(Buff.varInt(data.length))
+    const count = Buff.varInt(data.length)
+    buffer.push(count)
     for (const entry of data) {
-      buffer.push(encodeScript(entry))
+      buffer.push(encodeData(entry))
     }
     return Buff.join(buffer)
   } else { return Buff.normalize(data) }
 }
 
-export function encodeLocktime (num : number) : Uint8Array {
-  return Buff.num(num, 4).reverse()
+function encodeData (data : ScriptData) : Buff {
+  return (!isEmpty(data))
+    ? encodeScript(data, true)
+    : new Buff(0)
+}
+
+function isEmpty (data : ScriptData) : boolean {
+  if (Array.isArray(data)) {
+    return data.length === 0
+  }
+  if (typeof data === 'string') {
+    if (data === '') return true
+  }
+  const bytes = Buff.bytes(data)
+  return bytes.length === 1 && bytes[0] === 0
+}
+
+export function encodeLocktime (locktime : LockData) : Uint8Array {
+  if (typeof locktime === 'string') {
+    return Buff.hex(locktime, 4)
+  }
+  if (typeof locktime === 'number') {
+    return Buff.num(locktime, 4).reverse()
+  }
+  throw new Error('Unrecognized format: ' + String(locktime))
 }

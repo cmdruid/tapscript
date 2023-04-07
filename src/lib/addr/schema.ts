@@ -1,13 +1,14 @@
 /* eslint-disable quote-props */
 
 import { Buff } from '@cmdcode/buff-utils'
-import { Bytes, Networks, ScriptData } from '../../schema/types.js'
+import { Bytes, Networks, OutputType, ScriptData } from '../../schema/types.js'
 
 export type AddressType = [
   prefix  : string,
-  type    : keyof AddressTools,
+  type    : OutputType,
   network : Networks,
-  tool    : AddressTool
+  size    : number,
+  format  : 'base58' | 'bech32' | 'bech32m'
 ]
 
 export interface AddressData {
@@ -15,28 +16,22 @@ export interface AddressData {
   network : Networks
   prefix  : string
   script  : string[]
-  type    : keyof AddressTools
+  type    : OutputType
 }
 
 export interface AddressTool {
   check  : (address : string, network ?: Networks) => boolean
+  encode : (input   : Bytes, network ?: Networks) => string
   decode : (address : string, network ?: Networks) => Buff
-  script : (keyhash : Bytes) => string[]
+  scriptPubKey : (keyhash : Bytes) => string[]
 }
 
-export interface KeyTool extends AddressTool {
-  encode : (key : Bytes, network ?: Networks) => string
+export interface AddrKeyTool extends AddressTool {
+  fromPubKey : (pubkey : Bytes, network ?: Networks) => string
 }
 
-export interface ScriptTool extends AddressTool {
-  encode : (script : ScriptData, network ?: Networks) => string
-}
-
-export interface AddressTools {
-  p2pkh : KeyTool
-  p2sh  : ScriptTool
-  p2w   : KeyTool
-  p2tr  : KeyTool
+export interface AddrScriptTool extends AddressTool {
+  fromScript : (script : ScriptData, network ?: Networks) => string
 }
 
 export const BECH32_PREFIXES : Record<Networks, string> = {

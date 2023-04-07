@@ -25,9 +25,9 @@ export default class Transaction {
     }
 
     // const schema = Schema.TxData
-    const data   = txdata // schema.parse(txdata)
+    const data    = txdata // schema.parse(txdata)
 
-    this.version  = data.version
+    this.version  = data.version ?? 2
     this.vin      = data.vin?.map(e => new TxInput(e))   ?? []
     this.vout     = data.vout?.map(e => new TxOutput(e)) ?? []
     this.locktime = new TxLocktime(data.locktime)

@@ -1,5 +1,6 @@
 import { Buff } from '@cmdcode/buff-utils'
 import { Bytes, Networks } from '../../schema/types.js'
+import { checkSize } from '../utils.js'
 
 export function check (
   address : string,
@@ -15,15 +16,13 @@ export function check (
 }
 
 export function encode (
-  key     : Bytes,
+  input   : Bytes,
   network : Networks = 'main'
 ) : string {
-  const bytes  = Buff.bytes(key)
+  const bytes  = Buff.bytes(input)
   const prefix = (network === 'main') ? Buff.num(0x00) : Buff.num(0x6F)
-  if (bytes.length !== 33) {
-    throw new Error('Invalid key size: ' + String(bytes.length))
-  }
-  return bytes.toHash('hash160').prepend(prefix).tob58check()
+  checkSize(input, 20)
+  return bytes.prepend(prefix).tob58check()
 }
 
 export function decode (
@@ -36,9 +35,20 @@ export function decode (
   return Buff.b58check(address).slice(1)
 }
 
-export function script (keyhash : Bytes) : string[] {
-  const bytes = Buff.bytes(keyhash)
+export function scriptPubKey (input : Bytes) : string[] {
+  const bytes = Buff.bytes(input)
+  checkSize(bytes, 20)
   return [ 'OP_DUP', 'OP_HASH160', bytes.hex, 'OP_EQUALVERIFY', 'OP_CHECKSIG' ]
 }
 
-export const P2PKH = { check, encode, decode, script }
+export function fromPubKey (
+  pubkey   : Bytes,
+  network ?: Networks
+) : string {
+  const bytes = Buff.bytes(pubkey)
+  checkSize(bytes, 33)
+  const hash = bytes.toHash('hash160')
+  return encode(hash, network)
+}
+
+export const P2PKH = { check, encode, decode, scriptPubKey, fromPubKey }

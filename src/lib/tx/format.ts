@@ -2,10 +2,12 @@ import { Buff }     from '@cmdcode/buff-utils'
 import { isBytes }  from '../check.js'
 import { decodeTx } from './decode.js'
 import { encodeTx } from './encode.js'
-import { TxData }   from '../../schema/types.js'
+import { createTx } from './utils.js'
 
-function toJson (
-  txdata ?: TxData | string | Uint8Array
+import { Bytes, TxData, TxTemplate } from '../../schema/types.js'
+
+export function toJson (
+  txdata ?: Bytes | TxData | TxTemplate
 ) : TxData {
   if (isBytes(txdata)) {
     return decodeTx(txdata)
@@ -15,13 +17,13 @@ function toJson (
     !(txdata instanceof Uint8Array)
   ) {
     encodeTx(txdata)
-    return txdata
+    return createTx(txdata)
   }
   throw new Error('Invalid format: ' + String(typeof txdata))
 }
 
-function toBytes (
-  txdata ?: TxData | string | Uint8Array
+export function toBytes (
+  txdata ?: Bytes | TxData | TxTemplate
 ) : Buff {
   if (isBytes(txdata)) {
     decodeTx(txdata)

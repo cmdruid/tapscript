@@ -1,5 +1,12 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
 
+export function checkSize (input : Bytes, size : number) : void {
+  const bytes = Buff.bytes(input)
+  if (bytes.length !== size) {
+    throw new Error(`Invalid input size: ${bytes.hex} !== ${size}`)
+  }
+}
+
 export function safeThrow (
   errorMsg    : string,
   shouldThrow : boolean

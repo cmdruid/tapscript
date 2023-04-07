@@ -7,47 +7,75 @@ import { Tx }         from '../../tx/index.js'
 import {
   InputData,
   OutputData,
-  TxData,
+  TxTemplate,
   Bytes
 } from '../../../schema/types.js'
 
-const VALID_HASH_TYPES = [ 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
-const DEFAULT_SCRIPT   = ''
+const VALID_HASH_TYPES = [ 0x01, 0x02, 0x03 ]
 
 export function hashTx (
-  txdata : TxData | Bytes,
+  txdata : TxTemplate | Bytes,
   idx    : number,
   config : HashConfig = {}
 ) : Buff {
-  const { sigflag = 0x01, script = DEFAULT_SCRIPT } = config
-  if (!VALID_HASH_TYPES.includes(sigflag)) {
-    // Check if the sigflag type is valid.
+  // Unpack the sigflag from our config object.
+  const { sigflag = 0x01 } = config
+  // Check if the ANYONECANPAY flag is set.
+  const isAnypay = (sigflag & 0x80) === 0x80
+  // Save a normalized version of the sigflag.
+  const flag = sigflag % 0x80
+  // Check if the sigflag exists as a valid type.
+  if (!VALID_HASH_TYPES.includes(flag)) {
     throw new Error('Invalid hash type: ' + String(sigflag))
   }
+  // Normalize the tx into JSON format.
   const tx = Tx.fmt.toJson(txdata)
-  const { version, vin: input, vout: output, locktime } = tx
-  const { txid, vout, prevout, sequence } = input[idx]
-  const isAnypay = sigflag > 0x80
-  const stack    = [ ENC.encodeVersion(version) ]
-
-  if (prevout?.value === undefined) {
+  // Unpack the tx object.
+  const { version, vin, vout, locktime } = tx
+  // Unpack the chosen input for signing.
+  const { txid, vout: prevIdx, prevout, sequence } = vin[idx]
+  // Unpack the prevout for the chosen input.
+  const { value } = prevout ?? {}
+  // Check if a prevout value is provided.
+  if (value === undefined) {
     throw new Error('Prevout value is empty!')
   }
+  // Initialize our script variable from the config.
+  let script = config.script
+  // Check if a pubkey is provided (instead of a script).
+  if (
+    script === undefined &&
+    config.pubkey !== undefined
+  ) {
+    const pkhash = Buff.bytes(config.pubkey).toHash('hash160')
+    script = `76a914${pkhash.hex}88ac`
+  }
+  // Make sure that some form of script has been provided.
+  if (script === undefined) {
+    throw new Error('No pubkey / script has been set!')
+  }
+  // Throw if OP_CODESEPARATOR is used in a script.
+  if (Script.fmt.toAsm(script).includes('OP_CODESEPARATOR')) {
+    throw new Error('This library does not currently support the use of OP_CODESEPARATOR in segwit scripts.')
+  }
 
-  stack.push(
-    hashPrevouts(input, isAnypay),
-    hashSequence(input, sigflag),
+  const sighash = [
+    ENC.encodeVersion(version),
+    hashPrevouts(vin, isAnypay),
+    hashSequence(vin, flag, isAnypay),
     ENC.encodeTxid(txid),
-    ENC.encodePrevOut(vout),
+    ENC.encodePrevOut(prevIdx),
     Script.encode(script, true),
-    ENC.encodeValue(prevout.value),
+    ENC.encodeValue(value),
     ENC.encodeSequence(sequence),
-    hashOutputs(output, idx, sigflag),
+    hashOutputs(vout, idx, flag),
     ENC.encodeLocktime(locktime),
     Buff.num(sigflag, 4).reverse()
-  )
+  ]
 
-  return Buff.join(stack).toHash('hash256')
+  // console.log('sighash:', sighash.map(e => Buff.bytes(e).hex))
+
+  return Buff.join(sighash).toHash('hash256')
 }
 
 function hashPrevouts (
@@ -69,10 +97,11 @@ function hashPrevouts (
 }
 
 function hashSequence (
-  vin     : InputData[],
-  sigflag : number
+  vin      : InputData[],
+  sigflag  : number,
+  isAnyPay : boolean
 ) : Uint8Array {
-  if (sigflag !== 0x01) {
+  if (isAnyPay || sigflag !== 0x01) {
     return Buff.num(0, 32)
   }
 
@@ -94,7 +123,7 @@ function hashOutputs (
   if (sigflag === 0x01) {
     for (const { value, scriptPubKey } of vout) {
       stack.push(ENC.encodeValue(value))
-      stack.push(Script.encode(scriptPubKey))
+      stack.push(Script.encode(scriptPubKey, true))
     }
     return Buff.join(stack).toHash('hash256')
   }
@@ -102,7 +131,7 @@ function hashOutputs (
   if (sigflag === 0x03 && idx < vout.length) {
     const { value, scriptPubKey } = vout[idx]
     stack.push(ENC.encodeValue(value))
-    stack.push(Script.encode(scriptPubKey))
+    stack.push(Script.encode(scriptPubKey, true))
     return Buff.join(stack).toHash('hash256')
   }
 

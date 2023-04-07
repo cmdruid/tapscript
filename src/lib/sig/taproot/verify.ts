@@ -5,19 +5,19 @@ import { safeThrow }     from '../../utils.js'
 import { getTapLeaf }    from '../../tap/tree.js'
 import { Tx }            from '../../tx/index.js'
 import { hashTx }        from './hash.js'
-import { TxData }        from '../../../schema/types.js'
+import { TxTemplate }    from '../../../schema/types.js'
 import { Script }        from '../../script/index.js'
 import { HashConfig }    from '../types.js'
 
 export async function verifyTx (
-  txdata  : TxData | string | Uint8Array,
+  txdata  : TxTemplate | string | Uint8Array,
   index   : number,
   config  : HashConfig = {}
 ) : Promise<boolean> {
   const tx = Tx.fmt.toJson(txdata)
   const { throws = false } = config
   const { prevout, witness = [] } = tx.vin[index]
-  const witnessData = Tx.utils.readWitness(witness)
+  const witnessData = Tx.util.readWitness(witness)
   const { cblock, script, params } = witnessData
 
   let pub : Buff
@@ -32,7 +32,11 @@ export async function verifyTx (
     return safeThrow('Prevout scriptPubKey is empty!', throws)
   }
 
-  const tapkey = Script.fmt.toBytes(scriptPubKey).slice(3)
+  const { type, data: tapkey } = Tx.util.readScriptPubKey(scriptPubKey)
+
+  if (type !== 'p2tr') {
+    return safeThrow('Prevout script is not a valid taproot output:' + tapkey.hex, throws)
+  }
 
   if (tapkey.length !== 32) {
     return safeThrow('Invalid tapkey length: ' + String(tapkey.length), throws)

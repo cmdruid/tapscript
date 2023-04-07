@@ -7,25 +7,19 @@ import { HashConfig }   from '../types.js'
 
 import {
   Bytes,
-  TxData,
   InputData,
   OutputData,
-  ScriptData
+  ScriptData,
+  TxTemplate
 } from '../../../schema/types.js'
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
 export function hashTx (
-  txdata  : TxData | Bytes,
-  index   : number,
-  config  : HashConfig = {}
+  template : TxTemplate | Bytes,
+  index    : number,
+  config   : HashConfig = {}
 ) : Buff {
-  if (
-    typeof txdata === 'string' ||
-    txdata instanceof Uint8Array
-  ) {
-    txdata = Tx.decode(txdata)
-  }
   // Unpack configuration.
   const {
     extension,
@@ -36,7 +30,8 @@ export function hashTx (
   } = config
 
   // Unpack txdata object.
-  const { version, vin: input = [], vout: output = [], locktime } = txdata
+  const txdata = Tx.fmt.toJson(template)
+  const { version, vin: input, vout: output, locktime } = txdata
 
   if (index >= input.length) {
     // If index is out of bounds, throw error.
@@ -101,7 +96,7 @@ export function hashTx (
       ENC.encodeTxid(txid),
       ENC.encodePrevOut(vout),
       ENC.encodeValue(value),
-      Script.encode(scriptPubKey),
+      Script.encode(scriptPubKey, true),
       ENC.encodeSequence(sequence)
     )
   } else {
@@ -154,6 +149,7 @@ export function hashAmounts (
 ) : Uint8Array {
   const stack = []
   for (const { value } of prevouts) {
+    console.log(value)
     stack.push(ENC.encodeValue(value))
   }
   return Buff.join(stack).digest
@@ -164,7 +160,7 @@ export function hashScripts (
 ) : Uint8Array {
   const stack = []
   for (const { scriptPubKey } of prevouts) {
-    stack.push(encodeScript(scriptPubKey))
+    stack.push(encodeScript(scriptPubKey, true))
   }
   return Buff.join(stack).digest
 }
@@ -175,7 +171,7 @@ export function hashOutputs (
   const stack = []
   for (const { value, scriptPubKey } of vout) {
     stack.push(ENC.encodeValue(value))
-    stack.push(Script.encode(scriptPubKey))
+    stack.push(Script.encode(scriptPubKey, true))
   }
   return Buff.join(stack).digest
 }
@@ -185,7 +181,7 @@ export function hashOutput (
 ) : Uint8Array {
   return Buff.join([
     ENC.encodeValue(vout.value),
-    Script.encode(vout.scriptPubKey)
+    Script.encode(vout.scriptPubKey, true)
   ]).digest
 }
 

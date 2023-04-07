@@ -1,7 +1,10 @@
-import { TxFmt }  from './format.js'
-import { TxData } from '../../schema/types.js'
+import { InputData, TxData, TxTemplate } from '../../schema/types.js'
 
-export function getTxid (txdata : TxData | string | Uint8Array) : string {
-  const data = TxFmt.toBytes(txdata)
-  return data.toHash('hash256').reverse().hex
+export function createTx (template : TxTemplate) : TxData {
+  const { version = 2, vin = [], vout = [], locktime = 0 } = template
+  const inputs = vin.map(e => {
+    if (e.witness === undefined) e.witness = []
+    return e as InputData
+  })
+  return { version, vin: inputs, vout, locktime }
 }

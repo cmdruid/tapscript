@@ -1,12 +1,13 @@
-import * as Type  from '../../schema/types.js'
+import { Buff } from '@cmdcode/buff-utils'
+import { LockData }  from '../../schema/types.js'
 
 const LOCKTIME_THRESHOLD = 500000000
 
 export default class TxLocktime {
   public value : number
 
-  constructor (value ?: Type.LockData) {
-    this.value = value ?? 0
+  constructor (value : LockData = 0) {
+    this.value = Buff.bytes(value).num
   }
 
   get isTimelock () : boolean {

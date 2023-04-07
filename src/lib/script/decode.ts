@@ -12,7 +12,8 @@ export function decodeScript (
 ) : string[] {
   let buff = Buff.bytes(script)
   if (varint) {
-    const len = buff.stream.readSize('be')
+    const stream = buff.stream
+    const len = stream.readSize('be')
     if (buff.length !== len) {
       throw new Error(`Varint does not match stream size: ${len} !== ${buff.length}`)
     }

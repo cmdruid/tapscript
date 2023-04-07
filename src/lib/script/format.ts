@@ -5,29 +5,31 @@ import { encodeScript } from './encode.js'
 import { ScriptData }   from '../../schema/types.js'
 
 function toAsm (
-  script ?: ScriptData
+  script ?: ScriptData,
+  varint ?: boolean
 ) : string[] {
   if (Array.isArray(script)) {
-    script = encodeScript(script)
+    script = encodeScript(script, varint)
   }
   if (
     script instanceof Uint8Array ||
     isHex(script)
   ) {
-    return decodeScript(script)
+    return decodeScript(script, varint)
   }
   throw new Error('Invalid format: ' + String(typeof script))
 }
 
 function toBytes (
-  script ?: ScriptData
+  script ?: ScriptData,
+  varint ?: boolean
 ) : Buff {
   if (
     script instanceof Uint8Array ||
     isHex(script)
-  ) { script = decodeScript(script) }
+  ) { script = decodeScript(script, varint) }
   if (Array.isArray(script)) {
-    return encodeScript(script)
+    return encodeScript(script, varint)
   }
   throw new Error('Invalid format: ' + String(typeof script))
 }

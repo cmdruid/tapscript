@@ -2,7 +2,7 @@ import { Buff, Bytes }  from '@cmdcode/buff-utils'
 import { Field, Point } from '@cmdcode/crypto-utils'
 import { hashTx }       from './hash.js'
 import { HashConfig }   from '../types.js'
-import { TxData }       from '../../../schema/types.js'
+import { TxTemplate }   from '../../../schema/types.js'
 import { xOnlyPub }     from '../../tap/utils.js'
 import { hashTag, safeThrow } from '../../utils.js'
 
@@ -11,7 +11,7 @@ const CURVE_ORDER = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0
 
 export function signTx (
   seckey  : string | Uint8Array,
-  txdata  : TxData | string | Uint8Array,
+  txdata  : TxTemplate | string | Uint8Array,
   index   : number,
   config  : HashConfig = {}
 ) : Buff {
