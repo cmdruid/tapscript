@@ -39,8 +39,8 @@ export function scriptPubKey (input : Bytes) : string[] {
 }
 
 export function fromPubKey (
-  pubkey  : Bytes,
-  network : Networks
+  pubkey   : Bytes,
+  network ?: Networks
 ) : string {
   const bytes = xOnlyPub(pubkey)
   return encode(bytes, network)

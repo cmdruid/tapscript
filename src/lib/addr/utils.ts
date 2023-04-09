@@ -35,7 +35,7 @@ export const ADDRESS_TYPES : AddressType[] = [
 
 function decodeFormat (address : string, format : string) : Buff {
   switch (format) {
-    case 'base58'  : return Buff.b58check(address).slice(1)
+    case 'base58'  : return Buff.b58chk(address).slice(1)
     case 'bech32'  : return Buff.bech32(address)
     case 'bech32m' : return Buff.bech32(address)
     default: throw new Error('Invalid address format: ' + format)
@@ -85,7 +85,7 @@ export function fromScriptPubKey (
   return tool.encode(data, network)
 }
 
-export function toScriptPubKey (address : string) : Buff {
+export function toScriptPubKey (address : string) : ScriptData {
   const { script } = decodeAddress(address)
-  return Script.fmt.toBytes(script, false)
+  return Script.fmt.toAsm(script, false)
 }

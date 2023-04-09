@@ -15,10 +15,13 @@ export function signTx (
   index   : number,
   config  : HashConfig = {}
 ) : Buff {
+  // Set the signature flag type.
   const { sigflag = 0x00 } = config
+  // Calculate the transaction hash.
   const hash = hashTx(txdata, index, config)
+  // Sign the transaction hash with secret key.
   const sig  = sign(seckey, hash)
-
+  // Return the signature.
   return (sigflag === 0x00)
     ? Buff.raw(sig)
     : Buff.join([ sig, sigflag ])
@@ -30,7 +33,7 @@ export function sign (
   rand    : Bytes = Buff.random(32)
 ) : Buff {
   /**
-   * Implementation of signature algorithm as specified in BIP340.
+   * Implementation of signature algorithm as specified in BIP0340.
    * https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
    */
   // Normalize our message into bytes.
@@ -68,7 +71,7 @@ export function verify (
   shouldThrow = false
 ) : boolean {
    /**
-   * Implementation of verification algorithm as specified in BIP340.
+   * Implementation of verify algorithm as specified in BIP0340.
    * https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
    */
   // Get the Point value for pubkey.

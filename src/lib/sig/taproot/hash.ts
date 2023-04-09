@@ -29,7 +29,7 @@ export function hashTx (
     separator_pos = 0xFFFFFFFF
   } = config
 
-  // Unpack txdata object.
+  // Normalize and unpack the txdata object.
   const txdata = Tx.fmt.toJson(template)
   const { version, vin: input, vout: output, locktime } = txdata
 
@@ -57,70 +57,84 @@ export function hashTx (
   const annexBit  = (annex !== undefined) ? 1 : 0
   const extendBit = (extension !== undefined) ? 1 : 0
   const spendType = ((extflag + extendBit) * 2) + annexBit
-  const tag       = Buff.str('TapSighash').digest
+  const hashtag   = Buff.str('TapSighash').digest
 
-  // Begin building our digest.
-  const digest = [
-    tag,
-    tag,
-    Buff.num(0x00, 1),
-    Buff.num(sigflag, 1),
-    ENC.encodeVersion(version),
-    ENC.encodeLocktime(locktime)
+  // Begin building our preimage.
+  const preimage = [
+    hashtag,                      // Buffer input with
+    hashtag,                      // 2x hashed strings.
+    Buff.num(0x00, 1),            // Add zero-byte.
+    Buff.num(sigflag, 1),         // Commit to signature flag.
+    ENC.encodeVersion(version),   // Commit to tx version.
+    ENC.encodeLocktime(locktime)  // Commit to tx locktime.
   ]
 
   if (!isAnyPay) {
-    // If hash type ANYONE_CAN_PAY is unset,
-    // include a commitment to all inputs.
+    // If flag ANYONE_CAN_PAY is not set,
+    // then commit to all inputs.
     const prevouts = input.map(e => getPrevout(e))
-    digest.push(
-      hashOutpoints(input),
-      hashAmounts(prevouts),
-      hashScripts(prevouts),
-      hashSequence(input)
+    preimage.push(
+      hashOutpoints(input),   // Commit to txid/vout for each input.
+      hashAmounts(prevouts),  // Commit to prevout amount for each input.
+      hashScripts(prevouts),  // Commit to prevout script for each input.
+      hashSequence(input)     // Commit to sequence value for each input.
     )
   }
 
   if ((sigflag & 0x03) < 2 || (sigflag & 0x03) > 3) {
-    // If hash types SINGLE and NONE are unset,
+    // If neither SINGLE or NONE flags are set,
     // include a commitment to all outputs.
-    digest.push(hashOutputs(output))
+    preimage.push(hashOutputs(output))
   }
 
   // At this step, we include the spend type.
-  digest.push(Buff.num(spendType, 1))
+  preimage.push(Buff.num(spendType, 1))
 
   if (isAnyPay) {
+    // If ANYONE_CAN_PAY flag is set, then we will
+    // provide a commitment to the input being signed.
     const { value, scriptPubKey } = getPrevout(input[index])
-    digest.push(
-      ENC.encodeTxid(txid),
-      ENC.encodePrevOut(vout),
-      ENC.encodeValue(value),
-      Script.encode(scriptPubKey, true),
-      ENC.encodeSequence(sequence)
+    preimage.push(
+      ENC.encodeTxid(txid),               // Commit to the input txid.
+      ENC.encodePrevOut(vout),            // Commit to the input vout index.
+      ENC.encodeValue(value),             // Commit to the input's prevout value.
+      Script.encode(scriptPubKey, true),  // Commit to the input's prevout script.
+      ENC.encodeSequence(sequence)        // Commit to the input's sequence value.
     )
   } else {
-    digest.push(Buff.num(index, 4).reverse())
+    // Otherwise, we must have already included a commitment
+    // to all inputs in the tx, so simply add a commitment to
+    // the index of the input we are signing for.
+    preimage.push(Buff.num(index, 4).reverse())
   }
 
-  if (annex !== undefined) digest.push(annex)
+  if (annex !== undefined) {
+    // If an annex has been set, include it here.
+    preimage.push(annex)
+  }
 
   if ((sigflag & 0x03) === 0x03) {
-    digest.push(hashOutput(output[index]))
+    // If the SINGLE flag is set, then include a
+    // commitment to the output which is adjacent
+    // to the input that we are signing for.
+    preimage.push(hashOutput(output[index]))
   }
 
   if (extension !== undefined) {
-    digest.push(
-      Buff.bytes(extension),
-      Buff.num(key_version),
-      Buff.num(separator_pos, 4)
+    // If we are extending this signature to include
+    // other commitments (such as a tapleaf), then we
+    // will add it to the preimage here.
+    preimage.push(
+      Buff.bytes(extension),      // Extention data (in bytes).
+      Buff.num(key_version),      // Key version (reserved for future upgrades).
+      Buff.num(separator_pos, 4)  // If OP_CODESEPARATOR is used, this must be set.
     )
   }
 
-  // Useful for debugging the digest stack.
-  // console.log(digest.map(e => Buff.raw(e).hex))
+  // Useful for debugging the preimage stack.
+  // console.log(preimage.map(e => Buff.raw(e).hex))
 
-  return Buff.join(digest).digest
+  return Buff.join(preimage).digest
 }
 
 export function hashOutpoints (

@@ -1,5 +1,7 @@
 import { Buff }              from '@cmdcode/buff-utils'
 import { TapTree, TapProof } from './types.js'
+import { Bytes, ScriptData } from '../../schema/types.js'
+import { Script } from '../script/index.js'
 
 const DEFAULT_VERSION = 0xc0
 
@@ -9,7 +11,7 @@ export function getTapTag (tag : string) : Buff {
 }
 
 export function getTapLeaf (
-  data : string | Uint8Array,
+  data : Bytes,
   version = DEFAULT_VERSION
 ) : string {
   return Buff.join([
@@ -19,15 +21,23 @@ export function getTapLeaf (
   ]).digest.hex
 }
 
+export function getTapScript (
+  script   : ScriptData,
+  version ?: number
+) : string {
+  return getTapLeaf(Script.fmt.toBytes(script), version)
+}
+
 export function getTapBranch (
   leafA : string,
   leafB : string
 ) : string {
+  // Compare leaves in lexical order.
   if (leafB < leafA) {
-    // Ensure that both branches
-    // are sorted lexographically.
+    // Swap leaves if needed.
     [ leafA, leafB ] = [ leafB, leafA ]
   }
+  // Return digest of leaves as a branch hash.
   return Buff.join([
     getTapTag('TapBranch'),
     Buff.hex(leafA).raw,
@@ -54,7 +64,8 @@ export function merkleize (
     throw new Error('Tree is empty!')
   }
 
-  // If there are nested leaves, resolve them.
+  // If there are any nested leaves,
+  // resolve them before moving on.
   for (let i = 0; i < taptree.length; i++) {
     const leaf = taptree[i]
     if (Array.isArray(leaf)) {
@@ -74,7 +85,7 @@ export function merkleize (
   }
   // Ensure the tree is sorted.
   leaves.sort()
-  // Ensure the tree is balanced.
+  // Ensure the tree is balanced evenly.
   if (leaves.length % 2 !== 0) {
     // If uneven, duplicate the last leaf.
     leaves.push(leaves[leaves.length - 1])
@@ -90,11 +101,11 @@ export function merkleize (
     if (typeof target === 'string') {
       // Check if this branch is part of our proofs.
       if (target === leaves[i]) {
-        // Include right-side of branch.
+        // If so, include right-side of branch.
         path.push(leaves[i + 1])
         target = branch
       } else if (target === leaves[i + 1]) {
-        // Include left-side of branch.
+        // If so, include left-side of branch.
         path.push(leaves[i])
         target = branch
       }

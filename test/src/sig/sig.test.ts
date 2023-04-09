@@ -10,8 +10,8 @@ import {
 } from './taproot/sig.test.js'
 
 export default async function sig_tests (t : Test) : Promise<void> {
-  t.test('Segwit signature tests', t => {
-    sighash_vector_test(t)
+  t.test('Segwit signature tests', async t => {
+    await sighash_vector_test(t)
   })
   t.test('Taproot signature tests', async t => {
     test_computehash(t)

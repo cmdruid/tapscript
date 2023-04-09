@@ -39,8 +39,8 @@ export function scriptPubKey (input : Bytes) : string[] {
 }
 
 export function fromScript (
-  script  : ScriptData,
-  network : Networks
+  script   : ScriptData,
+  network ?: Networks
 ) : string {
   const bytes = Script.fmt.toBytes(script, false)
   const hash  = bytes.toHash('sha256')

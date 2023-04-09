@@ -24,7 +24,7 @@ export function encode (
   const prefix = (network === 'main') ? Buff.num(0x05) : Buff.num(0xC4)
   const bytes  = Buff.bytes(input)
   checkSize(bytes, 20)
-  return bytes.prepend(prefix).tob58check()
+  return bytes.prepend(prefix).tob58chk()
 }
 
 export function decode (
@@ -34,7 +34,7 @@ export function decode (
   if (!check(address, network)) {
     throw new TypeError(`Invalid p2sh address for network ${network}:` + address)
   }
-  return Buff.b58check(address).slice(1)
+  return Buff.b58chk(address).slice(1)
 }
 
 export function scriptPubKey (input : Bytes) : string[] {
@@ -43,8 +43,8 @@ export function scriptPubKey (input : Bytes) : string[] {
 }
 
 export function fromScript (
-  script  : ScriptData,
-  network : Networks
+  script   : ScriptData,
+  network ?: Networks
 ) : string {
   const bytes = Script.fmt.toBytes(script, false)
   return encode(bytes.toHash('hash160'), network)

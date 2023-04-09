@@ -22,7 +22,7 @@ export function encode (
   const bytes  = Buff.bytes(input)
   const prefix = (network === 'main') ? Buff.num(0x00) : Buff.num(0x6F)
   checkSize(input, 20)
-  return bytes.prepend(prefix).tob58check()
+  return bytes.prepend(prefix).tob58chk()
 }
 
 export function decode (
@@ -32,7 +32,7 @@ export function decode (
   if (!check(address, network)) {
     throw new TypeError('Invalid p2pkh address!')
   }
-  return Buff.b58check(address).slice(1)
+  return Buff.b58chk(address).slice(1)
 }
 
 export function scriptPubKey (input : Bytes) : string[] {

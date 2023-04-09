@@ -5,9 +5,9 @@ import sig_tests      from './src/sig/sig.test.js'
 import tx_tests       from './src/tx/tx.test.js'
 import { unit_tests } from './src/tap/unit.test.js'
 import { tweak_test } from './src/tap/tree.test.js'
+import example_tests  from './example/ex_test.js'
 
-
-tape('BTON Test Suite', async t => {
+tape('Tapscript Test Suite', async t => {
 
   t.test('Address Tests', t => {
     address_tests(t)
@@ -25,4 +25,6 @@ tape('BTON Test Suite', async t => {
     tweak_test(t)
     await unit_tests(t)
   })
+
+  await example_tests(t)
 })

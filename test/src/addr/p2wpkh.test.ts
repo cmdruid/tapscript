@@ -31,7 +31,7 @@ export function p2wpkh_test(t : Test) : void {
     t.deepEqual(data, ref_object, 'Address should produce proper AddressData')
 
     const script = Address.toScriptPubKey(ref_address)
-    t.equal(script.hex, ref_hexdata, 'Address should produce proper scriptPubKey.')
+    t.deepEqual(script, ref_script, 'Address should produce proper scriptPubKey.')
 
     const addr3 = Address.fromScriptPubKey(ref_script, 'regtest')
     t.equal(addr3, ref_address, 'scriptPubKey should produce proper address.')

@@ -66,12 +66,12 @@ export function encodeWord (
   } else {
     // If not a string, encode as bytes.
     buff = Buff.bytes(word)
-  }
 
-  if (buff.length === 1 && buff[0] <= 16) {
+    if (buff.length === 1 && buff[0] <= 16) {
     // Number values 0-16 must be treated as opcodes.
-    if (buff[0] !== 0) buff[0] += 0x50
-    return buff
+      if (buff[0] !== 0) buff[0] += 0x50
+      return buff
+    }
   }
 
   if (buff.length > MAX_WORD_SIZE) {

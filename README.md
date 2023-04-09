@@ -329,11 +329,18 @@ You can find more examples in the main **Examples** section further down.
 ```ts
 Tap = {
   // Returns the tweaked public key (and cblock) for a given tree (and target).
-  getPubKey : (pubkey : Bytes, config ?: TapConfig) => TapKey,
+  getPubKey    : (pubkey : Bytes, config ?: TapConfig)  => TapKey,
   // Returns the tweaked secret key (and cblock) for a given tree (and target).
-  getSecKey : (seckey : Bytes, config ?: TapConfig) => TapKey,
+  getSecKey    : (seckey : Bytes, config ?: TapConfig)  => TapKey,
+  // Converts a script into a tapleaf (for script-based spending).
+  encodeScript : (script: ScriptData, version?: number) => string,
   // Checks the validity of a given leaf target and control block.
-  checkPath : (tapkey : Bytes, target : Bytes, cblock : Bytes, config ?: TapConfig) => boolean,
+  checkPath    : (  
+    tapkey : Bytes, 
+    target : Bytes, 
+    cblock : Bytes, 
+    config ?: TapConfig  
+  ) => boolean,  
   // Gives access to the various sub-tools (described below).
   tree  : TreeTool,
   tweak : TweakTool,

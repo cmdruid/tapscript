@@ -38,8 +38,8 @@ export function scriptPubKey (input : Bytes) : string[] {
 }
 
 export function fromPubKey (
-  pubkey  : Bytes,
-  network : Networks
+  pubkey   : Bytes,
+  network ?: Networks
 ) : string {
   const bytes = Buff.bytes(pubkey)
   checkSize(bytes, 33)
