@@ -1,6 +1,6 @@
 {
   "name": "@cmdcode/tapscript",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A basic library for working with Tapscript, signatures and Bitcoin transactions.",
   "type": "module",
   "main": "./dist/main.js",
@@ -69,8 +69,8 @@
     "zod": "^3.20.6"
   },
   "dependencies": {
-    "@cmdcode/buff-utils": "^1.6.6",
-    "@cmdcode/crypto-utils": "^1.6.4"
+    "@cmdcode/buff-utils": "^1.6.10",
+    "@cmdcode/crypto-utils": "^1.7.3"
   },
   "browser": {
     "crypto": true
