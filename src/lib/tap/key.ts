@@ -34,7 +34,7 @@ function getTapKey (
   } = config
 
   const pubkey = (isPrivate)
-    ? new SecretKey(intkey).pub.rawX
+    ? new SecretKey(intkey).pub.x.raw
     : xOnlyPub(intkey)
 
   let { target } = config
@@ -94,7 +94,7 @@ export function checkPath (
   const { parity, paths, intkey } = readCtrlBlock(cblock)
 
   const pub = (isPrivate)
-    ? new SecretKey(tapkey).pub.rawX
+    ? new SecretKey(tapkey).pub.x.raw
     : xOnlyPub(tapkey)
 
   const extkey = Buff.join([ parity, pub ])

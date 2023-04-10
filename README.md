@@ -580,15 +580,18 @@ const txdata = {
 
 ## Example Transactions
 
-Here are a few examples to help demonstrate using the library. Please feel free to contribute more!
+Here are a few partial examples to help demonstrate using the library. Check out the [`test/example/taproot`](test/example/taproot/) directory to see a full implementation of each example.
 
-> Note: A number of these examples are also stored in test/examples for reference.
+Please feel free to contribute more!
 
 ### Basic Pay-to-Pubkey Spending
 
+Full example: [keyspend.test.ts](test/example/taproot/keyspend.test.ts)
+
 ```ts
 // Create a keypair to use for testing.
-const seckey = new SecretKey('ccd54b99acec77d0537b01431579baef998efac6b08e9564bc3047b20ec1bb4c')
+const secret = 'ccd54b99acec77d0537b01431579baef998efac6b08e9564bc3047b20ec1bb4c'
+const seckey = new SecretKey(secret, { type: 'taproot' })
 const pubkey = seckey.pub
 
 // For key spends, we need to get the tweaked versions
@@ -597,7 +600,7 @@ const [ tseckey ] = Tap.getSecKey(seckey)
 const [ tpubkey ] = Tap.getPubKey(pubkey)
 
 // Optional: You could also derive the public key from the tweaked secret key.
-const _tpubkey_example = new SecretKey(tseckey).pub.hexX
+const _tpubkey_example = new SecretKey(tseckey).pub.x.hex
 
 // A taproot address is simply the tweaked public key, encoded in bech32 format.
 const address = Address.p2tr.fromPubKey(tpubkey, 'regtest')
@@ -641,11 +644,12 @@ const isValid = await Signer.taproot.verify(txdata, 0)
 ```
 ### Basic Pay-to-TapScript
 
+Full example: [tapscript.test.ts](test/example/taproot/tapscript.test.ts)
+
 ```ts
-// Create a keypair to use for testing.
-const seckey = new SecretKey('0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712')
-// Make sure to use the x-only version of the public key.
-const pubkey = seckey.pub.hexX
+const secret = '0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712'
+const seckey = new SecretKey(secret, { type: 'taproot' })
+const pubkey = seckey.pub
 
 // Specify a basic script to use for testing.
 const script = [ pubkey, 'OP_CHECKSIG' ]
@@ -707,11 +711,13 @@ const isValid = await Signer.taproot.verify(txdata, 0, { pubkey })
 
 ### Create / Spend from a Tree of Scripts
 
+Full example: [taptree.test.ts](test/example/taproot/taptree.test.ts)
+
 ```ts
 // Create a keypair to use for testing.
-const seckey = new SecretKey('0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712')
-// Make sure to use the x-only version of the public key.
-const pubkey = seckey.pub.hexX
+const secret = '0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712'
+const seckey = new SecretKey(secret, { type: 'taproot' })
+const pubkey = seckey.pub
 
 // Specify an array of scripts to use for testing.
 const scripts = [
@@ -740,9 +746,9 @@ const [ tpubkey, cblock ] = Tap.getPubKey(pubkey, { tree, target })
 const address = Address.p2tr.fromPubKey(tpubkey, 'regtest')
 
 /* NOTE: To continue with this example, send 100_000 sats to the above address.
-  You will also need to make a note of the txid and vout of that transaction,
-  so that you can include that information below in the redeem tx.
-*/ 
+ * You will also need to make a note of the txid and vout of that transaction,
+ * so that you can include that information below in the redeem tx.
+ */ 
 
 const txdata = Tx.create({
   vin  : [{
@@ -787,87 +793,68 @@ Creating an inscription is a three-step process:
  2. Send funds to the bitcoin address.
  3. Create a redeem transaction, which claims the previous funds (and publishes the data).
 
+Full example: [inscribe.test.ts](test/example/taproot/inscribe.test.ts)
+
 ```ts
-import { Address, Script, Signer, Tap, Tx } from '@cmdcode/tapscript'
+// The 'marker' bytes. Part of the ordinal inscription format.
+const marker   = Buff.encode('ord')
+/* Specify the media type of the file. Applications use this when rendering 
+  * content. See: https://developer.mozilla.org/en-US/docs/Glossary/MIME_type 
+  */
+const mimetype = Buff.encode('image/png')
+// Create a keypair to use for testing.
+const secret = '0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712'
+const seckey = new SecretKey(secret, { type: 'taproot' })
+const pubkey = seckey.pub
+// Basic format of an 'inscription' script.
+const script  = [ pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF' ]
+// For tapscript spends, we need to convert this script into a 'tapleaf'.
+const tapleaf = Tap.encodeScript(script)
+// Generate a tapkey that includes our leaf script. Also, create a merlke proof 
+// (cblock) that targets our leaf and proves its inclusion in the tapkey.
+const [ tpubkey, cblock ] = Tap.getPubKey(pubkey, { target: tapleaf })
+// A taproot address is simply the tweaked public key, encoded in bech32 format.
+const address = Address.p2tr.fromPubKey(tpubkey, 'regtest')
 
-/** 
- * Creating an Inscription. 
- */
+/* NOTE: To continue with this example, send 100_000 sats to the above address.
+ * You will also need to make a note of the txid and vout of that transaction,
+ * so that you can include that information below in the redeem tx.
+ */ 
 
-// Provide your secret key.
-const seckey = 'your secret key (in bytes)'
-// There's a helper method to derive your pubkey.
-const pubkey = 'your x-only public key (in bytes)'
+const txdata = Tx.create({
+  vin  : [{
+    // Use the txid of the funding transaction used to send the sats.
+    txid: 'b8ed81aca92cd85458966de90bc0ab03409a321758c09e46090988b783459a4d',
+    // Specify the index value of the output that you are going to spend from.
+    vout: 0,
+    // Also include the value and script of that ouput.
+    prevout: {
+      // Feel free to change this if you sent a different amount.
+      value: 100_000,
+      // This is what our address looks like in script form.
+      scriptPubKey: [ 'OP_1', tpubkey ]
+    },
+  }],
+  vout : [{
+    // We are leaving behind 1000 sats as a fee to the miners.
+    value: 99_000,
+    // This is the new script that we are locking our funds to.
+    scriptPubKey: Address.toScriptPubKey('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y')
+  }]
+})
 
-// We have to provide the 'ord' marker,
-// a mimetype for the data, and the blob
-// of data itself (as hex or a Uint8Array).
-const marker   = ec.encode('ord')        // The 'ord' marker.
-const mimetype = ec.encode('image/png')  // The mimetype of the file.
-const imgdata  = getFile('image.png')    // Fake method that fetches the file (and returns bytes). 
+// For this example, we are signing for input 0 of our transaction,
+// using the untweaked secret key. We are also extending the signature 
+// to include a commitment to the tapleaf script that we wish to use.
+const sig = Signer.taproot.sign(seckey, txdata, 0, { extension: tapleaf })
 
-const script   = [
-  // A basic "inscription" script. The script encoder will automatically 
-  // break up large blobs of data and insert 'OP_PUSHDATA' where needed.
-  pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF'
-]
+// Add the signature to our witness data for input 0, along with the script
+// and merkle proof (cblock) for the script.
+txdata.vin[0].witness = [ sig, script, cblock ]
 
-// Encode the script as hex data.
-const bytes = Script.encode(script)
-// Convert the script into a tapleaf.
-const target = Tap.tree.getLeaf(sbytes)
-// Pass your pubkey and your leaf in order to get the tweaked pubkey.
-const [ tapkey, cblock ] = Tap.getPubKey(pubkey, { target })
-// Encode the tweaked pubkey as a bech32m taproot address.
-const address = Address.p2tr.encode(tapkey)
-
-// Once you send funds to this address, please make a note of 
-// the transaction's txid, and vout index for this address.
-console.log('Your taproot address:', address)
-
-/** 
- * Publishing an Inscription. 
- */
-
-// Construct our redeem transaction.
-const txdata = {
-  version : 2
-  vin: [
-    {
-      txid     : 'replace with the txid of your previous transaction.',
-      vout     : 'replace with the vout index spending to the previous address.',
-      prevout  : {
-        value: 'replace with the amount sent to this address from the previous transaction',
-        scriptPubKey: Address.toScript(address)
-      },
-      sequence : 0xfffffffd,
-      witness  : []
-    }
-  ],
-  vout : [
-    { 
-      value: 'replace with the amount sent from the previous transaction, minus fees (for the miners)', 
-      scriptPubKey: Address.toScript('replace with an address of your choice!')
-    }
-  ],
-  locktime: 0
-}
-
-// Create a signature for our transaction (and commit to the tapleaf we are using).
-const sig = Signer.taproot.sign(seckey, txdata, 0, { extension: target })
-
-// Set our witness data to include the signature, the spending script, and the proof (cblock).
-txdata[0].witness = [ sig, script, cblock ]
-
-// Optional: Verify your transaction (and specify the pubkey to use).
-Signer.taproot.verify(txdata, 0, { pubkey })
-
-// Encode the transaction as a hex string.
-const txhex = Tx.encode(txdata).hex
-
-// Output our transaction data to console.
-console.log('Your transaction:', txdata)
-console.log('Your raw transaction hex:', txhex)
+// Check if the signature is valid for the provided public key, and that the
+// transaction is also valid (the merkle proof will be validated as well).
+const isValid = await Signer.taproot.verify(txdata, 0, { pubkey, throws: true })
 
 // You can publish your transaction data using 'sendrawtransaction' in Bitcoin Core, or you 
 // can use an external API (such as https://mempool.space/docs/api/rest#post-transaction).

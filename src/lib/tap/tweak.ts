@@ -10,7 +10,7 @@ export function getTapTweak (
   isPrivate = false
 ) : Buff {
   const pub = (isPrivate)
-    ? new Field(key).point.rawX
+    ? new Field(key).point.x.raw
     : xOnlyPub(key)
   return Buff.join([ getTapTag('TapTweak'), pub, Buff.bytes(data) ]).digest
 }

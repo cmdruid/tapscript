@@ -51,7 +51,7 @@ export async function test_signatures(t : Test) : Promise<void> {
       const actual_hash = SIG.hash(tx, txinIndex, { sigflag: hashType })
       t.equal(actual_hash.hex, sigHash, 'The signature hashes should match.')
       // Test our ability to sign the transaction.
-      const pubkey        = new SecretKey(tweakedPrivkey).point.buff
+      const pubkey        = new SecretKey(tweakedPrivkey, { type: 'taproot'}).point.buff
       const tweakedpub    = Buff.raw(Noble.getPublicKey(tweakedPrivkey, true))
       t.equal(pubkey.hex, tweakedpub.hex, 'The tweaked pubkeys should be equal.')
       const signature     = SIG.sign(tweakedPrivkey, tx, txinIndex, { sigflag: hashType, throws : true })

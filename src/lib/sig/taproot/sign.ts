@@ -49,7 +49,7 @@ export function sign (
   // Let t equal the byte-wise xor of (d) and (a).
   const t  = d ^ a.big
   // Let our nonce value equal the tagged hash('BIP0340/nonce', t || P || m).
-  const n  = hashTag('BIP0340/nonce', t, P.rawX, m)
+  const n  = hashTag('BIP0340/nonce', t, P.x.raw, m)
   // Let k' equal our nonce mod N.
   const kp = new Field(n)
   // Let R equal k' * G.
@@ -57,11 +57,11 @@ export function sign (
   // If R has an odd Y coordinate, return negated version of k'.
   const k  = (R.hasEvenY) ? kp.big : kp.negated.big
   // Let e equal the tagged hash('BIP0340/challenge' || R || P || m) mod n.
-  const e  = new Field(hashTag('BIP0340/challenge', R.rawX, P.rawX, m))
+  const e  = new Field(hashTag('BIP0340/challenge', R.x.raw, P.x.raw, m))
   // Let s equal (k + ed) mod n.
   const s  = new Field(k + (e.big * d))
   // Return (R || s) as a signature
-  return Buff.join([ R.rawX, s.raw ])
+  return Buff.join([ R.x.raw, s.raw ])
 }
 
 export function verify (
@@ -97,7 +97,7 @@ export function verify (
     safeThrow('Signature s value greater than curve order!', shouldThrow)
   }
   // Let e equal the tagged hash('BIP0340/challenge' || R || P || m) mod n.
-  const e = new Field(hashTag('BIP0340/challenge', r.raw, P.rawX, m))
+  const e = new Field(hashTag('BIP0340/challenge', r.raw, P.x.raw, m))
   // Let R equal s * G - eP.
   const sG = new Field(s).point
   const eP = P.mul(e.big)
@@ -107,9 +107,9 @@ export function verify (
     safeThrow('Signature R value has odd Y coordinate!', shouldThrow)
   }
   // Reject if R value is infinite.
-  if (R.x === 0n) {
+  if (R.x.big === 0n) {
     safeThrow('Signature R value is infinite!', shouldThrow)
   }
   // Return if x coordinate of R value equals r.
-  return R.x === r.big
+  return R.x.big === r.big
 }

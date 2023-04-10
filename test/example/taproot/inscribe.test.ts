@@ -1,41 +1,57 @@
-import { Test } from 'tape'
+import { Test }      from 'tape'
+import { Buff }      from '@cmdcode/buff-utils'
 import { SecretKey } from '@cmdcode/crypto-utils'
-import { Address, Script, Signer, Tap, Tx, } from '../../../src/index.js'
+import { Address, Signer, Tap, Tx, } from '../../../src/index.js'
 
-export async function script_spend (t : Test) : Promise<void> {
-  t.test('Basic spend using tapscript.', async t => {
+import fs      from 'fs/promises'
+import { URL } from 'url'
+
+export async function inscription (t : Test) : Promise<void> {
+  t.test('Example of an inscription transaction.', async t => {
     // Switch this to true to enable console output.
     const VERBOSE = false
 
+    /* The code marked below is a quick example of how to load an image 
+    * within a NodeJS environment. It may not work in other environments.
+    *
+    * For examples of how to convert images into binary from within a browser
+    * environment, please check out the Web File API:
+    * https://developer.mozilla.org/en-US/docs/Web/API/File 
+    */
+    const imgpath = new URL('./image.png', import.meta.url).pathname
+    const imgdata = await fs.readFile(imgpath).then(e => new Uint8Array(e))
+    /* * */
+
+    // The 'marker' bytes. Part of the ordinal inscription format.
+    const marker   = Buff.encode('ord')
+    /* Specify the media type of the file. Applications use this when rendering 
+     * content. See: https://developer.mozilla.org/en-US/docs/Glossary/MIME_type 
+     */
+    const mimetype = Buff.encode('image/png')
     // Create a keypair to use for testing.
-    const seckey = new SecretKey('0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712')
-    // Make sure to use the x-only version of the public key.
-    const pubkey = seckey.pub.hexX
-
-    // Specify a basic script to use for testing.
-    const script = [ pubkey, 'OP_CHECKSIG' ]
-    const sbytes = Script.encode(script)
-
+    const secret = '0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712'
+    const seckey = new SecretKey(secret, { type: 'taproot' })
+    const pubkey = seckey.pub
+    // Basic format of an 'inscription' script.
+    const script = [ pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF' ]
     // For tapscript spends, we need to convert this script into a 'tapleaf'.
-    const tapleaf = Tap.tree.getLeaf(sbytes)
-
+    const tapleaf = Tap.encodeScript(script)
     // Generate a tapkey that includes our leaf script. Also, create a merlke proof 
     // (cblock) that targets our leaf and proves its inclusion in the tapkey.
     const [ tpubkey, cblock ] = Tap.getPubKey(pubkey, { target: tapleaf })
-
     // A taproot address is simply the tweaked public key, encoded in bech32 format.
     const address = Address.p2tr.fromPubKey(tpubkey, 'regtest')
     if (VERBOSE) console.log('Your address:', address)
 
     /* NOTE: To continue with this example, send 100_000 sats to the above address.
-      You will also need to make a note of the txid and vout of that transaction,
-      so that you can include that information below in the redeem tx.
-    */ 
+     * You will also need to make a note of the txid and vout of that transaction,
+     * so that you can include that information below in the redeem tx.
+     */ 
 
     const txdata = Tx.create({
       vin  : [{
         // Use the txid of the funding transaction used to send the sats.
-        txid: '181508e3be1107372f1ffcbd52de87b2c3e7c8b2495f1bc25f8cf42c0ae167c2',
+        txid: 'b8ed81aca92cd85458966de90bc0ab03409a321758c09e46090988b783459a4d',
         // Specify the index value of the output that you are going to spend from.
         vout: 0,
         // Also include the value and script of that ouput.
@@ -61,17 +77,17 @@ export async function script_spend (t : Test) : Promise<void> {
 
     // Add the signature to our witness data for input 0, along with the script
     // and merkle proof (cblock) for the script.
-    txdata.vin[0].witness = [ sig.hex, script, cblock ]
+    txdata.vin[0].witness = [ sig, script, cblock ]
 
     // Check if the signature is valid for the provided public key, and that the
     // transaction is also valid (the merkle proof will be validated as well).
-    const isValid = await Signer.taproot.verify(txdata, 0, { pubkey })
+    const isValid = await Signer.taproot.verify(txdata, 0, { pubkey, throws: true })
 
     if (VERBOSE) {
       console.log('Your txhex:', Tx.encode(txdata).hex)
       console.dir(txdata, { depth: null })
     }
-    
+
     t.plan(1)
     t.equal(isValid, true, 'Transaction should pass validation.')
   })
