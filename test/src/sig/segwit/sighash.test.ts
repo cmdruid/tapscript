@@ -1,7 +1,7 @@
-import { Test }   from 'tape'
-import { Buff }   from '@cmdcode/buff-utils'
-import { Noble }  from '@cmdcode/crypto-utils'
-import { Signer, TxData } from '../../../../src/index.js'
+import { Test }    from 'tape'
+import { Buff }    from '@cmdcode/buff-utils'
+import { secp256k1 as secp } from '@noble/curves/secp256k1'
+import { Signer, TxData }    from '../../../../src/index.js'
 import test_data  from './bip0143.vectors.json' assert { type: 'json' }
 
 export async function sighash_vector_test(t :Test) : Promise<void> {
@@ -31,12 +31,12 @@ export async function sighash_vector_test(t :Test) : Promise<void> {
 
       try {
         const txcopy = { ...txdata } as TxData
-        const sig = await Signer.segwit.sign(seckey, txcopy, index, config)
+        const sig = Signer.segwit.sign(seckey, txcopy, index, config)
         t.equal(sig.hex, signature, 'Signatures should be equal.')
-        const nobleVerify = Noble.verify(sig.slice(0, -1).hex, sigHash, pubkey)
+        const nobleVerify = secp.verify(sig.slice(0, -1).hex, sigHash, pubkey)
         t.equal(nobleVerify, true, 'Signature should be valid using Noble.')
         txcopy.vin[index].witness = [ sig, pubkey, redeemScript ]
-        const signerVerify = await Signer.segwit.verify(txcopy, index, config)
+        const signerVerify = Signer.segwit.verify(txcopy, index, config)
         t.equal(signerVerify, true, 'Signature should be valid using Signer.')
       } catch (err) {
         t.fail(err.message)

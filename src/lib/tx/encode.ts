@@ -1,6 +1,6 @@
 import { Buff }         from '@cmdcode/buff-utils'
 import { encodeScript } from '../script/encode.js'
-import { createTx }     from './utils.js'
+import { createTx }     from './create.js'
 
 import {
   InputData,
@@ -71,7 +71,7 @@ export function encodePrevOut (vout : number) : Uint8Array {
 }
 
 export function encodeSequence (
-  sequence : SequenceData = 0xFFFFFFFF
+  sequence : SequenceData = 0xFFFFFFFD
 ) : Uint8Array {
   return Buff.bytes(sequence).reverse()
 }

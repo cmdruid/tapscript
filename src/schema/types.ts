@@ -9,8 +9,18 @@ export type OutputType = 'p2pkh'  | 'p2sh'  | 'p2w-pkh' | 'p2w-sh' | 'p2tr' | 'r
 
 export interface TxTemplate {
   version  ?: number
-  vin      ?: InputTemplate[]
-  vout     ?: OutputData[]
+  vin      ?: Array<{
+    txid : string
+    vout : number
+    scriptSig ?: ScriptData
+    sequence  ?: SequenceData
+    witness   ?: ScriptData[]
+    prevout   ?: OutputData
+  }>
+  vout ?: Array<{
+    value        ?: ValueData
+    scriptPubKey ?: ScriptData
+  }>
   locktime ?: LockData
 }
 
@@ -21,22 +31,13 @@ export interface TxData {
   locktime : LockData
 }
 
-export interface InputTemplate {
-  txid : string
-  vout : number
-  scriptSig ?: ScriptData
-  sequence  ?: SequenceData
-  witness   ?: ScriptData[]
-  prevout   ?: OutputData
-}
-
 export interface InputData {
   txid : string
   vout : number
-  scriptSig ?: ScriptData
-  sequence  ?: SequenceData
-  witness    : ScriptData[]
-  prevout   ?: OutputData
+  scriptSig : ScriptData
+  sequence  : SequenceData
+  witness   : ScriptData[]
+  prevout  ?: OutputData
 }
 
 export interface OutputData {

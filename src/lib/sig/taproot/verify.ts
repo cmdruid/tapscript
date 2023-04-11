@@ -9,11 +9,11 @@ import { TxTemplate }    from '../../../schema/types.js'
 import { Script }        from '../../script/index.js'
 import { HashConfig }    from '../types.js'
 
-export async function verifyTx (
+export function verifyTx (
   txdata  : TxTemplate | string | Uint8Array,
   index   : number,
   config  : HashConfig = {}
-) : Promise<boolean> {
+) : boolean {
   const tx = Tx.fmt.toJson(txdata)
   const { throws = false } = config
   const { prevout, witness = [] } = tx.vin[index]

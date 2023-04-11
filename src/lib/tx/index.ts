@@ -1,7 +1,7 @@
 import { encodeTx } from './encode.js'
 import { decodeTx } from './decode.js'
 import { TxFmt }    from './format.js'
-import { createTx } from './utils.js'
+import { createTx } from './create.js'
 
 import {
   getTxid,

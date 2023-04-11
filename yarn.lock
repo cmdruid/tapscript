@@ -199,10 +199,10 @@
   resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.5.7.tgz#7eb626a81cb6726a84cc0215d3590cf3175732ee"
   integrity sha512-qgWBzRKoVnFOnlNqwSbdVxf3fwjQd1T5YLzE//o8S/oMpKnWz2wEWTulacajldhun1JGqNkWSOKumGXDlOYkuw==
 
-"@cmdcode/buff-utils@^1.6.10":
-  version "1.6.10"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.6.10.tgz#5e95377c3c615a3b0a5edae82b0e76c2226101f5"
-  integrity sha512-VD6gAXxs0GPMG02I6KL8uclG900cmczp/4sHF647WNapvy7W248Z6YeNqLiKS9v3Hhp8ReUpQz/vMQlsSDCbGQ==
+"@cmdcode/buff-utils@^1.7.1":
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.7.1.tgz#00333fc450bc2a9b8aaec5dda608a2965e013ce5"
+  integrity sha512-1YBCnqIZtWEmd5Qi8Kbs1T8SQUsU6PbZzCEa8CJYmT9UfxS/nJsd1v8bwl9sVYeUYlJHIbTx6FO9jB3fDXh6tA==
 
 "@cmdcode/crypto-utils@^1.6.4":
   version "1.6.4"
@@ -212,13 +212,10 @@
     "@cmdcode/buff-utils" "^1.5.2"
     "@cmdcode/secp256k1" "^1.0.7"
 
-"@cmdcode/crypto-utils@^1.8.0":
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-1.8.0.tgz#f3cf23f8f6f624f310b968b514a64cc8231314d7"
-  integrity sha512-k8ws+Mm/I351+Uu+F/Bqrco/1zfgkyzsNol/C3wgrE1PvZ2aVQsFZaFfBtT7h6wezkC5MJVCkMne34kWq1Txeg==
-  dependencies:
-    "@cmdcode/buff-utils" "^1.6.10"
-    "@cmdcode/secp256k1" "^1.0.7"
+"@cmdcode/crypto-utils@^1.8.4":
+  version "1.8.4"
+  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-1.8.4.tgz#d8b2c3cd6a03edd1107bc1b090d0ee9b3236211e"
+  integrity sha512-c0SVEI9fcugp93rfhauB3On78LnO+cvzXTrqBgB6B9YJE/9d1kOQuLc54MjnqQz6zzQmJGn5LU6VFBzlYlM4bw==
 
 "@cmdcode/keylink@^1.4.0":
   version "1.4.0"
@@ -232,6 +229,11 @@
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/@cmdcode/secp256k1/-/secp256k1-1.0.7.tgz#5cfa3a6e8cacb67ce7b69d07c7538df3aadabab5"
   integrity sha512-Os5BgDCqxYVw8e6w5oZ1PaNQBP6j1H/GceM+yIaz7XbGmM8KHWJhMEAy3tWjR/JHjWDJeXIs+a5T6+0OwAipTg==
+
+"@cmdcode/webcrypto@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@cmdcode/webcrypto/-/webcrypto-1.0.0.tgz#a576af0a98135a987a870656f75c9ff18a0957f0"
+  integrity sha512-CzzqkObnZ4lTrqkQcogslNhb7tnPz0nu0sfbf0fF7+EERlehNcUfzZ3wJjFy2uuo2Ou1dM8HHc8OdHC/vNKLhQ==
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
@@ -345,6 +347,18 @@
   dependencies:
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
+
+"@noble/curves@^0.9.1":
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-0.9.1.tgz#0ad33ebee0fdc870e1afcd74daa06f188e89b8fe"
+  integrity sha512-SpO5TViHvyBV8RrvGejzzl0+wbSm21q+hC6ZmK5NtqOjigR+WW9OohvKL0M3EHKvWzqaZ5Z7F46ejxAVDTBnvQ==
+  dependencies:
+    "@noble/hashes" "1.3.0"
+
+"@noble/hashes@1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.0.tgz#085fd70f6d7d9d109671090ccae1d3bec62554a1"
+  integrity sha512-ilHEACi9DwqJB0pw7kv+Apvh50jiiSyR/cQ3y4W7lOR5mhvn/50FLUfsnfJz0BDZtl/RR16kXvptiv6q1msYZg==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"

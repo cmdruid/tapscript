@@ -2,7 +2,7 @@ import { Buff }     from '@cmdcode/buff-utils'
 import { isBytes }  from '../check.js'
 import { decodeTx } from './decode.js'
 import { encodeTx } from './encode.js'
-import { createTx } from './utils.js'
+import { createTx } from './create.js'
 
 import { Bytes, TxData, TxTemplate } from '../../schema/types.js'
 

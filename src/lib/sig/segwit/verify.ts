@@ -1,5 +1,5 @@
 import { Buff }       from '@cmdcode/buff-utils'
-import { Noble }      from '@cmdcode/crypto-utils'
+import { verify }     from '@cmdcode/crypto-utils'
 import { safeThrow }  from '../../utils.js'
 import { Tx }         from '../../tx/index.js'
 import { hashTx }     from './hash.js'
@@ -7,11 +7,11 @@ import { TxTemplate } from '../../../schema/types.js'
 import { Script }     from '../../script/index.js'
 import { HashConfig } from '../types.js'
 
-export async function verifyTx (
+export function verifyTx (
   txdata : TxTemplate | string | Uint8Array,
   index  : number,
   config : HashConfig = {}
-) : Promise<boolean> {
+) : boolean {
   const tx = Tx.fmt.toJson(txdata)
   const { throws = false } = config
   const { witness = [] }   = tx.vin[index]
@@ -54,7 +54,7 @@ export async function verifyTx (
   // console.log('hash:', hash.hex)
   // console.log('pubk:', pub.hex)
 
-  if (!Noble.verify(signature.hex, hash.hex, pub.hex)) {
+  if (!verify(signature.hex, hash.hex, pub.hex, 'ecdsa')) {
     return safeThrow('Invalid signature!', throws)
   }
 

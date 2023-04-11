@@ -3,7 +3,7 @@ import { SecretKey }         from '@cmdcode/crypto-utils'
 import KeyLink               from '@cmdcode/keylink'
 import { spawn }             from 'child_process'
 import { UTXO }              from './schema.js'
-import { TxData }            from '../../src/index.js'
+import { Address, TxData }            from '../../src/index.js'
 
 import {
   CoreDescriptor,
@@ -26,7 +26,7 @@ interface CliConfig {
 }
 
 const DEFAULT_SORTER   = () => Math.random() > 0.5 ? 1 : -1
-const DEFAULT_TEMPLATE = { version : 1, input : [], output : [], locktime : 0 }
+const DEFAULT_TEMPLATE = { version : 2, vin : [], vout : [], locktime : 0 }
 
 export class CLI {
   wallet ?: string
@@ -145,8 +145,11 @@ export class CLI {
       console.log(seckey)
       if (seckey !== undefined) {
         const signer = await KeyLink.fromBase58(seckey.key).getPath(fullpath)
-        if (signer.pubkey.hex === key) {
-          return signer.seckey
+        if (
+          signer.pubkey.hex === key &&
+          signer.seckey !== undefined
+        ) {
+          return new SecretKey(signer.seckey)
         }
       }
     }
@@ -215,20 +218,21 @@ export class CLI {
   ) {
     
     const utxos = await this.getUTXOs(amount + fee)
-    const total = utxos.reduce((prev, curr) => utxos.values)
+    const total = utxos.reduce((prev, curr) => curr.amount + prev, 0)
+    const scriptPubKey = Address.toScriptPubKey(address)
 
-    template.output.push({ address, value : amount })
+    template.vout.push({ value : amount, scriptPubKey })
 
-    template.output.push({
-      value   : total - amount - fee,
-      address : await this.newaddress
+    template.vout.push({
+      value : total - amount - fee,
+      scriptPubKey : Address.toScriptPubKey(await this.newaddress)
     })
 
     for (const utxo of utxos) {
       const { txid, vout, amount: value, scriptPubKey, signer } = utxo
       const prevout = { value, scriptPubKey, signer }
-      const witness = [ utxo.signer.pub.hex. utxo.signer.sign ]
-      template.input.push({ txid, vout, prevout})
+      const witness = [ utxo.signer?.pub.hex, utxo.signer?.sign() ]
+      template.vin.push({ txid, vout, prevout})
     }
     return template
   }
