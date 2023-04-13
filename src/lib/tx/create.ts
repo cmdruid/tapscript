@@ -8,7 +8,6 @@ const DEFAULT_TX = {
 }
 
 const DEFAULT_VIN = {
-  prevout   : {},
   scriptSig : [],
   sequence  : 0xFFFFFFFD,
   witness   : []
@@ -21,7 +20,7 @@ const DEFAULT_VOUT = {
 
 export function createTx (template : TxTemplate) : TxData {
   const tx = { ...DEFAULT_TX, ...template }
-  tx.vin.map(txin   => { return { ...DEFAULT_VIN, ...txin }   })
-  tx.vout.map(txout => { return { ...DEFAULT_VOUT, ...txout } })
+  tx.vin = tx.vin.map(txin   => { return { ...DEFAULT_VIN, ...txin }   })
+  tx.vout = tx.vout.map(txout => { return { ...DEFAULT_VOUT, ...txout } })
   return tx as TxData
 }

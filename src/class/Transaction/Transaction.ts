@@ -3,14 +3,14 @@ import TxInput      from './TxInput.js'
 import TxOutput     from './TxOutput.js'
 import TxLocktime   from './TxLocktime.js'
 import { Tx }       from '../../lib/tx/index.js'
-import { TxData }   from '../../schema/types.js'
+import { TxData, TxTemplate }   from '../../schema/types.js'
 import { Schema }   from '../../schema/check.js'
 
 export default class Transaction {
   readonly _data : TxData
 
   constructor (
-    txdata : string | Uint8Array | TxData
+    txdata : string | Uint8Array | TxTemplate
   ) {
     if (typeof txdata === 'string') {
       txdata = Buff.hex(txdata)
@@ -21,7 +21,9 @@ export default class Transaction {
     }
 
     const schema  = Schema.TxData
-    this._data    = schema.parse(Tx.create(txdata))
+    const data    = Tx.create(txdata)
+    console.log(data)
+    this._data    = schema.parse(data)
   }
 
   get data () : TxData {

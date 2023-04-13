@@ -1,24 +1,17 @@
 import { z } from 'zod'
 
-import { OPCODE_MAP } from '../lib/script/words.js'
-
-const OpEnum = (Object.keys(OPCODE_MAP) as unknown) as readonly [string, ...string[]]
-
-const hexstr = z.string().regex(/^[a-fA-F0-9]$/)
-const hash   = z.string().regex(/^[a-fA-F0-9]{64}$/)
-const uint32 = z.number().min(0).max(0xFFFFFFFF)
-const uint64 = z.bigint()
-
-const strOrNumArray = z.array(z.union([ z.string(), z.number() ]))
-
-const opName  = z.enum(OpEnum)
-const opCode  = z.nativeEnum(OPCODE_MAP)
-const script  = z.union([ hexstr, opName, opCode ]).array()
-const witness = z.array(z.union([ hexstr, script ]))
+const hexstr  = z.string().regex(/^[a-fA-F0-9]$/)
+const hash    = z.string().regex(/^[a-fA-F0-9]{64}$/)
+const uint32  = z.number().min(0).max(0xFFFFFFFF)
+const uint64  = z.bigint()
+const byteArr = z.instanceof(Uint8Array)
+const asmcode = z.union([ hexstr, uint32, z.string(), byteArr ]).array()
+const script  = z.union([ asmcode, uint32, hexstr, byteArr ])
+const witness = z.array(z.union([ hexstr, uint32, script ]))
 
 const TxOutput = z.object({
   value        : z.union([ uint32, uint64 ]),
-  scriptPubKey : strOrNumArray
+  scriptPubKey : script
 })
 
 const TxInput = z.object({
