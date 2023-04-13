@@ -49,8 +49,7 @@
   "devDependencies": {
     "@cmdcode/buff-utils": "^1.7.1",
     "@cmdcode/crypto-utils": "^1.8.4",
-    "@cmdcode/keylink": "^1.4.0",
-    "@cmdcode/webcrypto": "^1.0.0",
+    "@cmdcode/keylink": "^1.4.1",
     "@noble/curves": "^0.9.1",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",

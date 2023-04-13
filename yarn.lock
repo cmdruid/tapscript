@@ -189,46 +189,20 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@cmdcode/buff-utils@^1.5.2":
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.5.2.tgz#1180d369f36753b40142bb238d53a2d08fd2b615"
-  integrity sha512-VP5y7cebpHDlJhHPmrZC8GimZi18a1aqppE5diGTnx79mH3X+7QtnHwkKPoylZ4Zsv1XPu2nc/OHqcNwM3YKgg==
-
-"@cmdcode/buff-utils@^1.5.7":
-  version "1.5.7"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.5.7.tgz#7eb626a81cb6726a84cc0215d3590cf3175732ee"
-  integrity sha512-qgWBzRKoVnFOnlNqwSbdVxf3fwjQd1T5YLzE//o8S/oMpKnWz2wEWTulacajldhun1JGqNkWSOKumGXDlOYkuw==
-
 "@cmdcode/buff-utils@^1.7.1":
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.7.1.tgz#00333fc450bc2a9b8aaec5dda608a2965e013ce5"
   integrity sha512-1YBCnqIZtWEmd5Qi8Kbs1T8SQUsU6PbZzCEa8CJYmT9UfxS/nJsd1v8bwl9sVYeUYlJHIbTx6FO9jB3fDXh6tA==
-
-"@cmdcode/crypto-utils@^1.6.4":
-  version "1.6.4"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-1.6.4.tgz#55b4995a605bb0a732ec882c1add03ca807abc62"
-  integrity sha512-EF8nqFHFG9fWPa5MIykjDmem15QxZD4LWf1hnDgpgODX4c7pG8mf21sX7ucolqobq0+J4wOZuldYk6s9KLHoVg==
-  dependencies:
-    "@cmdcode/buff-utils" "^1.5.2"
-    "@cmdcode/secp256k1" "^1.0.7"
 
 "@cmdcode/crypto-utils@^1.8.4":
   version "1.8.4"
   resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-1.8.4.tgz#d8b2c3cd6a03edd1107bc1b090d0ee9b3236211e"
   integrity sha512-c0SVEI9fcugp93rfhauB3On78LnO+cvzXTrqBgB6B9YJE/9d1kOQuLc54MjnqQz6zzQmJGn5LU6VFBzlYlM4bw==
 
-"@cmdcode/keylink@^1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@cmdcode/keylink/-/keylink-1.4.0.tgz#92a44624b804e15cea69e6bafbbb53d2c6f8067c"
-  integrity sha512-RrwL0WPLCdMPC73F6k8wtL7RG3JCniBoEZHoYlY1y9u+2cBdVYXPDiDsTL1vTFpoqiMbhpdWTHmhxSDjngITPw==
-  dependencies:
-    "@cmdcode/buff-utils" "^1.5.7"
-    "@cmdcode/crypto-utils" "^1.6.4"
-
-"@cmdcode/secp256k1@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@cmdcode/secp256k1/-/secp256k1-1.0.7.tgz#5cfa3a6e8cacb67ce7b69d07c7538df3aadabab5"
-  integrity sha512-Os5BgDCqxYVw8e6w5oZ1PaNQBP6j1H/GceM+yIaz7XbGmM8KHWJhMEAy3tWjR/JHjWDJeXIs+a5T6+0OwAipTg==
+"@cmdcode/keylink@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@cmdcode/keylink/-/keylink-1.4.1.tgz#5b12a157678b695daa894ea75d1e28f0581e1bce"
+  integrity sha512-u6uEPtt57OAQmQfc8DP59ozfGWAWIgL0bDa4TNfKyCjh0Db3HpBoGjvPB/qHolqjrQQ0sJwljRWHDHbPDZvPKg==
 
 "@cmdcode/webcrypto@^1.0.0":
   version "1.0.0"

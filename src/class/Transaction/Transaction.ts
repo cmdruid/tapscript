@@ -2,47 +2,54 @@ import { Buff }     from '@cmdcode/buff-utils'
 import TxInput      from './TxInput.js'
 import TxOutput     from './TxOutput.js'
 import TxLocktime   from './TxLocktime.js'
-import { encodeTx } from '../../lib/tx/encode.js'
-import { decodeTx } from '../../lib/tx/decode.js'
+import { Tx }       from '../../lib/tx/index.js'
 import { TxData }   from '../../schema/types.js'
-// import { Schema }   from '../../schema/check.js'
+import { Schema }   from '../../schema/check.js'
 
 export default class Transaction {
-  public version  : number
-  public vin      : TxInput[]
-  public vout     : TxOutput[]
-  public locktime : TxLocktime
+  readonly _data : TxData
 
   constructor (
     txdata : string | Uint8Array | TxData
   ) {
     if (typeof txdata === 'string') {
-      txdata = Buff.hex(txdata).raw
+      txdata = Buff.hex(txdata)
     }
 
     if (txdata instanceof Uint8Array) {
-      txdata = decodeTx(txdata)
+      txdata = Tx.decode(txdata)
     }
 
-    // const schema = Schema.TxData
-    const data    = txdata // schema.parse(txdata)
-
-    this.version  = data.version ?? 2
-    this.vin      = data.vin?.map(e => new TxInput(e))   ?? []
-    this.vout     = data.vout?.map(e => new TxOutput(e)) ?? []
-    this.locktime = new TxLocktime(data.locktime)
+    const schema  = Schema.TxData
+    this._data    = schema.parse(Tx.create(txdata))
   }
 
   get data () : TxData {
-    return JSON.parse(JSON.stringify(this))
+    return this._data
+  }
+
+  get version () : number {
+    return this.data.version
+  }
+
+  get vin () : TxInput[] {
+    return this.data.vin.map((_e, i) => new TxInput(this.data, i))
+  }
+
+  get vout () : TxOutput[] {
+    return this.data.vout.map((e) => new TxOutput(e))
+  }
+
+  get locktime () : TxLocktime {
+    return new TxLocktime(this.data.locktime)
   }
 
   get base () : Buff {
-    return encodeTx(this.data, true)
+    return Tx.encode(this.data, true)
   }
 
   get buff () : Buff {
-    return encodeTx(this.data)
+    return Tx.encode(this.data)
   }
 
   get raw () : Uint8Array {
@@ -77,15 +84,6 @@ export default class Transaction {
   get txid () : string {
     return this.base.toHash('hash256').reverse().hex
   }
-
-  // async sighash (
-  //   idx      : number,
-  //   value    : number,
-  //   script   : ScriptData,
-  //   sigflag ?: number = 0x00,
-  // ) : Promise<Uint8Array> {
-  //   return encodeSighash(this.data, idx, value, script, sigflag, anypay)
-  // }
 
   async export () : Promise<object> {
     const { size, weight, vsize, hex } = this

@@ -13,30 +13,28 @@ const strOrNumArray = z.array(z.union([ z.string(), z.number() ]))
 
 const opName  = z.enum(OpEnum)
 const opCode  = z.nativeEnum(OPCODE_MAP)
-const address = z.string()
 const script  = z.union([ hexstr, opName, opCode ]).array()
 const witness = z.array(z.union([ hexstr, script ]))
 
 const TxOutput = z.object({
   value        : z.union([ uint32, uint64 ]),
-  scriptPubKey : strOrNumArray.optional(),
-  address      : address.optional()
+  scriptPubKey : strOrNumArray
 })
 
 const TxInput = z.object({
   txid      : hash,
   vout      : uint32,
-  scriptSig : script.optional(),
-  sequence  : uint32.optional(),
+  scriptSig : script,
+  sequence  : uint32,
   prevout   : TxOutput.optional(),
-  witness   : witness.optional()
+  witness
 })
 
 const TxData = z.object({
   version  : uint32,
   vin      : z.array(TxInput),
   vout     : z.array(TxOutput),
-  locktime : uint32.optional()
+  locktime : uint32
 })
 
 export const Schema = {
