@@ -6,8 +6,8 @@ const uint32  = z.number().min(0).max(0xFFFFFFFF)
 const uint64  = z.bigint()
 const byteArr = z.instanceof(Uint8Array)
 const asmcode = z.union([ hexstr, uint32, z.string(), byteArr ]).array()
-const script  = z.union([ asmcode, uint32, hexstr, byteArr ])
-const witness = z.array(z.union([ hexstr, uint32, script ]))
+const script  = z.union([ asmcode, hexstr, byteArr ])
+const witness = z.array(script)
 
 const TxOutput = z.object({
   value        : z.union([ uint32, uint64 ]),

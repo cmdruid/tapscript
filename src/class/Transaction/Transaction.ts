@@ -20,10 +20,8 @@ export default class Transaction {
       txdata = Tx.decode(txdata)
     }
 
-    const schema  = Schema.TxData
-    const data    = Tx.create(txdata)
-    console.log(data)
-    this._data    = schema.parse(data)
+    const schema = Schema.TxData
+    this._data   = schema.parse(Tx.create(txdata))
   }
 
   get data () : TxData {
