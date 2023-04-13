@@ -9,11 +9,12 @@ import {
   ScriptData,
   TxTemplate,
   LockData,
-  ValueData
+  ValueData,
+  TxData
 } from '../../schema/types.js'
 
 export function encodeTx (
-  txdata : TxTemplate,
+  txdata : TxTemplate | TxData,
   omitWitness ?: boolean
 ) : Buff {
   /** Convert a JSON-based Bitcoin transaction

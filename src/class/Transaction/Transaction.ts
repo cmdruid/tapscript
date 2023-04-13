@@ -78,7 +78,7 @@ export default class Transaction {
   }
 
   get hash () : string {
-    return this.buff.toHash('hash160').reverse().hex
+    return this.buff.toHash('hash256').reverse().hex
   }
 
   get txid () : string {

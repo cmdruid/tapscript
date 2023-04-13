@@ -1,5 +1,5 @@
 // import KeyLink       from '@cmdcode/keylink'
-// import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff-utils'
 import { SecretKey } from '@cmdcode/crypto-utils'
 // import { CLI, WalletInfo }  from './lib/cli.js'
 // import { WalletDescriptor } from './lib/descriptors.js'
@@ -10,37 +10,42 @@ import { SecretKey } from '@cmdcode/crypto-utils'
 
 // console.dir(template, { depth: null })
 
-import { Address, Transaction, Tx } from "../src/index.js"
+import { Address, Transaction, Signer, Tx } from "../src/index.js"
 
-const secret = 'ccd54b99acec77d0537b01431579baef998efac6b08e9564bc3047b20ec1bb4c'
+const secret = '0bfe1e341a95f3c4d0402df1dea0bf9e505b65a687416402ff3422bceb045d8e'
 const seckey = new SecretKey(secret, { type: 'taproot' })
 const pubkey = seckey.pub
 
-console.log(Address.p2tr.fromPubKey(pubkey, 'regtest'))
+// const marker   = Buff.encode('ord')
+// const mimetype = Buff.encode('plain/txt')
 
+console.log(Address.p2tr.fromPubKey(pubkey))
 
 const txdata = {
   vin  : [{
-    txid: '3124490b17c8e6d6e207668ca2cc22fabca445528eee2adbd5a6eaed99f276c8',
-    vout: 1,
+    txid: 'f1ff8cd7271125997b8acd43b0325249d1ba5b0a05e9158860ed54fad1b58250',
+    vout: 0,
     prevout: {
-      value: 100_000,
+      value: 1500,
       scriptPubKey: [ 'OP_1', pubkey ]
-    },
-    sequence: 0x11111111
+    }
   }],
   vout : [
     {
-      value: 99_000,
-      scriptPubKey: Address.toScriptPubKey('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y')
-    },
-    {
       value: 0,
-      scriptPubKey: Address.toScriptPubKey('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y')
+      scriptPubKey: [ 'OP_1', pubkey ]
     }
   ]
 }
 
-console.log(txdata.vin[0].prevout?.scriptPubKey)
+const sig = Signer.taproot.sign(seckey, txdata, 0)
 
-const tx = new Transaction(txdata)
+// Let's add this signature to our witness data for input 0.
+txdata.vin[0].witness = [ sig ]
+
+// Check if the signature and transaction are valid.
+const isValid = Signer.taproot.verify(txdata, 0, { throws: true })
+
+console.log(Tx.encode(txdata).hex)
+
+console.log(Tx.util.getTxid(txdata))

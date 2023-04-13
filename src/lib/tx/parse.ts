@@ -1,9 +1,10 @@
 import { Buff }   from '@cmdcode/buff-utils'
 import { isHex }  from '../check.js'
 import { Script } from '../script/index.js'
-import { TxFmt } from './format.js'
 
 import { Bytes, OutputType, ScriptData, ScriptPubKeyData, TxData, WitnessData } from '../../schema/types.js'
+import { encodeTx } from './encode.js'
+import { TxFmt } from './format.js'
 
 const OUTPUT_TYPES : Array<[ string, RegExp ]> = [
   [ 'p2pkh',   /^76a914(?<hash>\w{40})88ac$/ ],
@@ -122,7 +123,8 @@ export function readScriptPubKey (
   return { type: 'raw', data: Buff.hex(hex) }
 }
 
-export function getTxid (txdata : TxData | string | Uint8Array) : string {
-  const data = TxFmt.toBytes(txdata)
+export function getTxid (txdata : TxData | Bytes) : string {
+  const bytes = TxFmt.toJson(txdata)
+  const data  = encodeTx(bytes, true)
   return data.toHash('hash256').reverse().hex
 }
