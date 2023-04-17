@@ -1,6 +1,6 @@
 {
   "name": "@cmdcode/tapscript",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "A basic library for working with Tapscript, signatures and Bitcoin transactions.",
   "type": "module",
   "main": "./dist/main.js",
@@ -48,8 +48,8 @@
   ],
   "devDependencies": {
     "@cmdcode/buff-utils": "^1.7.1",
-    "@cmdcode/crypto-utils": "^1.8.4",
-    "@cmdcode/keylink": "^1.4.1",
+    "@cmdcode/crypto-utils": "^1.9.0",
+    "@cmdcode/keylink": "^1.4.2",
     "@noble/curves": "^0.9.1",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
