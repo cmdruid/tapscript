@@ -60,10 +60,7 @@ const browserConfig = {
       format    : 'iife',
       name      : libraryName,
       plugins   : [terser()],
-      sourcemap : true,
-      globals: {
-        crypto  : 'crypto'
-      }
+      sourcemap : true
     },
   ],
   plugins: [ 

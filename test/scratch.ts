@@ -10,42 +10,60 @@ import { SecretKey } from '@cmdcode/crypto-utils'
 
 // console.dir(template, { depth: null })
 
-import { Address, Transaction, Signer, Tx } from "../src/index.js"
+// 1858f52b6801b72f941ad180235f5401b2d34591952dfe56845d8799718c8274
+// 0bfe1e341a95f3c4d0402df1dea0bf9e505b65a687416402ff3422bceb045d8e
+
+import fs from 'fs/promises'
+import { Address, Transaction, Signer, Tap, Tx } from "../src/index.js"
 
 const secret = '0bfe1e341a95f3c4d0402df1dea0bf9e505b65a687416402ff3422bceb045d8e'
 const seckey = new SecretKey(secret, { type: 'taproot' })
 const pubkey = seckey.pub
 
-// const marker   = Buff.encode('ord')
-// const mimetype = Buff.encode('plain/txt')
+console.log(seckey.toWIF())
 
-console.log(Address.p2tr.fromPubKey(pubkey))
+// The 'marker' bytes. Part of the ordinal inscription format.
+const marker   = Buff.encode('ord')
+// Specify the media type of the file. 
+const mimetype = Buff.encode('text/plain;charset=utf-8')
+// Get the data blob of the file.
+const imgpath = new URL('./still_alive.txt', import.meta.url).pathname
+const imgdata = await fs.readFile(imgpath).then(e => new Uint8Array(e))
+// Basic format of an 'inscription' script.
+const script = [ pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF' ]
+// For tapscript spends, we need to convert this script into a 'tapleaf'.
+const tapleaf = Tap.encodeScript(script)
+// Generate a tapkey that includes our leaf script. Also, create a merlke proof 
+// (cblock) that targets our leaf and proves its inclusion in the tapkey.
+const [ tpubkey, cblock ] = Tap.getPubKey(pubkey, { target: tapleaf })
+// A taproot address is simply the tweaked public key, encoded in bech32 format.
+const address = Address.p2tr.fromPubKey(tpubkey, 'regtest')
+console.log('Your address:', address)
 
-const txdata = {
+const txdata = Tx.create({
   vin  : [{
-    txid: 'f1ff8cd7271125997b8acd43b0325249d1ba5b0a05e9158860ed54fad1b58250',
-    vout: 0,
+    txid: '8e6f7139ce3fcd7d37f2ec3a4476c5d774f97f08501bbc29a4a7435b305edd1b',
+    vout: 1,
     prevout: {
       value: 1500,
-      scriptPubKey: [ 'OP_1', pubkey ]
+      scriptPubKey: [ 'OP_1', tpubkey ]
     }
   }],
   vout : [
     {
       value: 0,
-      scriptPubKey: [ 'OP_1', pubkey ]
+      scriptPubKey: Address.toScriptPubKey('bcrt1pcxfatez49rmunw6fm289qsu7t72skurctgl66v80xxdg3zlmsaaqu0shr0')
     }
   ]
-}
+})
 
-const sig = Signer.taproot.sign(seckey, txdata, 0)
+const sig = Signer.taproot.sign(seckey, txdata, 0, { extension: tapleaf })
 
 // Let's add this signature to our witness data for input 0.
-txdata.vin[0].witness = [ sig ]
+txdata.vin[0].witness = [ sig, script, cblock ]
 
 // Check if the signature and transaction are valid.
-const isValid = Signer.taproot.verify(txdata, 0, { throws: true })
+Signer.taproot.verify(txdata, 0, { pubkey, throws: true })
 
-console.log(Tx.encode(txdata).hex)
-
-console.log(Tx.util.getTxid(txdata))
+console.log('txid:', Tx.util.getTxid(txdata))
+console.log('tx hex:', Tx.encode(txdata).hex)

@@ -81,7 +81,7 @@ export async function inscription (t : Test) : Promise<void> {
 
     // Check if the signature is valid for the provided public key, and that the
     // transaction is also valid (the merkle proof will be validated as well).
-    const isValid = await Signer.taproot.verify(txdata, 0, { pubkey, throws: true })
+    const isValid = Signer.taproot.verify(txdata, 0, { pubkey, throws: true })
 
     if (VERBOSE) {
       console.log('Your txhex:', Tx.encode(txdata).hex)
