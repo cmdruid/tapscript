@@ -23,11 +23,12 @@ export const TapTweak = {
 }
 
 export const Tap = {
-  getPubKey    : CHK.getTapPubKey,
-  getSecKey    : CHK.getTapSecKey,
-  encodeScript : SCR.getTapScript,
-  checkPath    : CHK.checkPath,
-  tree         : TapTree,
-  tweak        : TapTweak,
-  util         : TapUtil
+  getPubKey     : CHK.getTapPubKey,
+  getSecKey     : CHK.getTapSecKey,
+  encodeScript  : SCR.getTapScript,
+  checkPath     : CHK.checkPath,
+  tree          : TapTree,
+  tweak         : TapTweak,
+  util          : TapUtil,
+  SCRIPT_PUBKEY : TWK.SCRIPT_PUBKEY
 }
