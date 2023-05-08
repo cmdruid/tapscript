@@ -1,7 +1,7 @@
-import { Buff } from '@cmdcode/buff-utils'
-import { Bytes, Networks, ScriptData } from '../../schema/types.js'
-import { Script } from '../script/index.js'
+import { Buff }      from '@cmdcode/buff-utils'
 import { checkSize } from '../utils.js'
+import { hash160sh } from './utils.js'
+import { Bytes, Networks, ScriptData } from '../../schema/types.js'
 
 export function check (
   address : string,
@@ -46,8 +46,8 @@ export function fromScript (
   script   : ScriptData,
   network ?: Networks
 ) : string {
-  const bytes = Script.fmt.toBytes(script, false)
-  return encode(bytes.toHash('hash160'), network)
+  const scriptHash = hash160sh(script)
+  return encode(scriptHash, network)
 }
 
-export const P2SH = { check, encode, decode, scriptPubKey, fromScript }
+export const P2SH = { check, encode, decode, hash: hash160sh, scriptPubKey, fromScript }

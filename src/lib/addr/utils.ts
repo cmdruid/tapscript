@@ -1,13 +1,14 @@
 
-import { Buff }   from '@cmdcode/buff-utils'
-import { Script } from '../script/index.js'
-import { P2PKH }  from './p2pkh.js'
-import { P2SH }   from './p2sh.js'
-import { P2WPKH } from './p2w-pkh.js'
-import { P2WSH }  from './p2w-sh.js'
-import { P2TR }   from './p2tr.js'
-import { Tx } from '../tx/index.js'
-import { Networks, OutputType, ScriptData } from '../../schema/types.js'
+import { Buff }      from '@cmdcode/buff-utils'
+import { Script }    from '../script/index.js'
+import { P2PKH }     from './p2pkh.js'
+import { P2SH }      from './p2sh.js'
+import { P2WPKH }    from './p2w-pkh.js'
+import { P2WSH }     from './p2w-sh.js'
+import { P2TR }      from './p2tr.js'
+import { Tx }        from '../tx/index.js'
+import { checkSize } from '../utils.js'
+import { Bytes, Networks, OutputType, ScriptData } from '../../schema/types.js'
 
 import {
   AddressData,
@@ -88,4 +89,20 @@ export function fromScriptPubKey (
 export function toScriptPubKey (address : string) : ScriptData {
   const { script } = decodeAddress(address)
   return Script.fmt.toAsm(script, false)
+}
+
+export function hash160pkh (pubkey : Bytes) : Buff {
+  const bytes = Buff.bytes(pubkey)
+  checkSize(bytes, 33)
+  return bytes.toHash('hash160')
+}
+
+export function hash160sh (script : ScriptData) : Buff {
+  const bytes = Script.fmt.toBytes(script, false)
+  return bytes.toHash('hash160')
+}
+
+export function sha256sh (script : ScriptData) : Buff {
+  const bytes = Script.fmt.toBytes(script, false)
+  return bytes.toHash('sha256')
 }

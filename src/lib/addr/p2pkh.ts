@@ -1,6 +1,7 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff }            from '@cmdcode/buff-utils'
 import { Bytes, Networks } from '../../schema/types.js'
-import { checkSize } from '../utils.js'
+import { checkSize }       from '../utils.js'
+import { hash160pkh }      from './utils.js'
 
 export function check (
   address : string,
@@ -45,10 +46,8 @@ export function fromPubKey (
   pubkey   : Bytes,
   network ?: Networks
 ) : string {
-  const bytes = Buff.bytes(pubkey)
-  checkSize(bytes, 33)
-  const hash = bytes.toHash('hash160')
-  return encode(hash, network)
+  const pkh = hash160pkh(pubkey)
+  return encode(pkh, network)
 }
 
-export const P2PKH = { check, encode, decode, scriptPubKey, fromPubKey }
+export const P2PKH = { check, encode, decode, hash: hash160pkh, scriptPubKey, fromPubKey }

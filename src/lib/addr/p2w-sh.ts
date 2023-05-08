@@ -1,8 +1,8 @@
 import { Buff }            from '@cmdcode/buff-utils'
-import { Bytes, Networks, ScriptData } from '../../schema/types.js'
-import { Script } from '../script/index.js'
-import { checkSize } from '../utils.js'
+import { checkSize }       from '../utils.js'
 import { BECH32_PREFIXES } from './schema.js'
+import { sha256sh }        from './utils.js'
+import { Bytes, Networks, ScriptData } from '../../schema/types.js'
 
 const VALID_PREFIXES = [ 'bc1q', 'tb1q', 'bcrt1q' ]
 
@@ -42,9 +42,8 @@ export function fromScript (
   script   : ScriptData,
   network ?: Networks
 ) : string {
-  const bytes = Script.fmt.toBytes(script, false)
-  const hash  = bytes.toHash('sha256')
-  return encode(hash, network)
+  const sh = sha256sh(script)
+  return encode(sh, network)
 }
 
-export const P2WSH = { check, encode, decode, scriptPubKey, fromScript }
+export const P2WSH = { check, encode, decode, hash: sha256sh, scriptPubKey, fromScript }
