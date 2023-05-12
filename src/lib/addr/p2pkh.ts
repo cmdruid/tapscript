@@ -1,7 +1,7 @@
 import { Buff }            from '@cmdcode/buff-utils'
 import { Bytes, Networks } from '../../schema/types.js'
 import { checkSize }       from '../utils.js'
-import { hash160pkh }      from './utils.js'
+import { hash160pkh }      from './hash.js'
 
 export function check (
   address : string,

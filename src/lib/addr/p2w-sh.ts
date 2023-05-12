@@ -1,7 +1,7 @@
 import { Buff }            from '@cmdcode/buff-utils'
 import { checkSize }       from '../utils.js'
 import { BECH32_PREFIXES } from './schema.js'
-import { sha256sh }        from './utils.js'
+import { sha256sh }        from './hash.js'
 import { Bytes, Networks, ScriptData } from '../../schema/types.js'
 
 const VALID_PREFIXES = [ 'bc1q', 'tb1q', 'bcrt1q' ]

@@ -1,6 +1,6 @@
 import { Buff }      from '@cmdcode/buff-utils'
 import { checkSize } from '../utils.js'
-import { hash160sh } from './utils.js'
+import { hash160sh } from './hash.js'
 import { Bytes, Networks, ScriptData } from '../../schema/types.js'
 
 export function check (
