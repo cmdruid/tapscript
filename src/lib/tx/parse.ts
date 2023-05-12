@@ -1,10 +1,24 @@
-import { Buff }   from '@cmdcode/buff-utils'
-import { isHex }  from '../check.js'
-import { Script } from '../script/index.js'
-
-import { Bytes, OutputType, ScriptData, ScriptPubKeyData, TxData, WitnessData } from '../../schema/types.js'
+import { Buff }     from '@cmdcode/buff-utils'
+import { isHex }    from '../check.js'
+import { Script }   from '../script/index.js'
 import { encodeTx } from './encode.js'
-import { TxFmt } from './format.js'
+import { TxFmt }    from './format.js'
+
+import {
+  Bytes,
+  OutputType,
+  ScriptData,
+  ScriptPubKeyData,
+  TxData,
+  WitnessData
+} from '../../schema/types.js'
+
+interface TxSizeData {
+  size   : number
+  bsize  : number
+  vsize  : number
+  weight : number
+}
 
 const OUTPUT_TYPES : Array<[ string, RegExp ]> = [
   [ 'p2pkh',   /^76a914(?<hash>\w{40})88ac$/ ],
@@ -124,7 +138,17 @@ export function readScriptPubKey (
 }
 
 export function getTxid (txdata : TxData | Bytes) : string {
-  const bytes = TxFmt.toJson(txdata)
-  const data  = encodeTx(bytes, true)
+  const json = TxFmt.toJson(txdata)
+  const data = encodeTx(json, true)
   return data.toHash('hash256').reverse().hex
+}
+
+export function getTxSize (txdata : TxData | Bytes) : TxSizeData {
+  const json   = TxFmt.toJson(txdata)
+  const bsize  = encodeTx(json, true).length
+  const fsize  = encodeTx(json, false).length
+  const weight = bsize * 3 + fsize
+  const remain = (weight % 4 > 0) ? 1 : 0
+  const vsize  = Math.floor(weight / 4) + remain
+  return { size: fsize, bsize, vsize, weight }
 }

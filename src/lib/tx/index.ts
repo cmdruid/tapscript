@@ -5,13 +5,10 @@ import { createTx } from './create.js'
 
 import {
   getTxid,
+  getTxSize,
   readScriptPubKey,
   readWitness
-}  from './parse.js'
-
-export const TxCalc = {
-  txid: getTxid
-}
+} from './parse.js'
 
 export const Tx = {
   create : createTx,
@@ -19,6 +16,7 @@ export const Tx = {
   decode : decodeTx,
   fmt    : TxFmt,
   util   : {
+    getTxSize,
     getTxid,
     readScriptPubKey,
     readWitness
