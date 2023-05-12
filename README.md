@@ -1,29 +1,29 @@
-# Tapscript Tools
+# Tapscript
 
-A basic library for working with Tapscript, Schnorr Signatures, and Bitcoin transactions.
+A basic library for working with Taproot, Schnorr Signatures, and Bitcoin transactions.
 
 ## Introduction
 
-Tapscript uses some pretty cutting-edge stuff. If you are new to tapscript, please continue reading for a brief overview of how tapscript works. The library will make more sense if you have a general idea about what is happening under the hood.
+Tapscript uses the latest feature upgrade to Bitcoin called Taproot. If you are new to Bitcoin or the Taproot upgrade, please continue reading for a brief overview of how it works. This library will be easier to follow if you know what taproot is doing under the hood.
 
-If you already have a good understanding of tapscript, feel free to skip ahead by clicking [here](##-Library-Index)).
+If you already have a good understanding of Bitcoin and Taproot, feel free to skip ahead by clicking [here](##-Library-Index)).
 
-## What is Tapscript?
+## What is Taproot?
 
-Bitcoin uses a simple scripting language that allows you to lock up coins into a contract. These contracts are published to the blockchain and enforced by all nodes in the network.
+Bitcoin uses a simple scripting language (called Bitcoin Script) that allows you to lock up coins into a contract. These contracts are published to the blockchain and enforced by all nodes in the network.
 
 In order to settle a contract (and claim its coins), you are required to publish the *entire* contract, including parts that are not relevant to the settlement. This is expensive and wasteful, plus it leaks information that could have otherwise been kept private.
 
-Tapscript is a new way to publish these contracts to the blockchain that fixes the above concerns. It allows you to settle contracts by publishing only the portion of the contract that is relevant. This means smaller transactions, cheaper fees, and better privacy guarantees for the contract as a whole.
+Taproot is a new way to publish these contracts to the blockchain that fixes the above concerns. It allows you to settle contracts by publishing only the portion of the contract that is relevant. This means smaller transactions, cheaper fees, and better privacy guarantees for the contract as a whole.
 
-Tapscript also comes with many other benefits, including:
+Taproot also comes with many other benefits, including:
 
  * It drastically simplifies the flow and logic of writing a contract.
  * You can create large, complex contracts that only need a small transaction to settle.
  * Commitments to data and other arbitrary things can be thrown into your contract for free.
  * The new schnorr-based signature format lets you do some crazy cool stuff (BIP340).
 
-These new features came with the Taproot upgrade in 2019. Read more about it [here](https://cointelegraph.com/bitcoin-for-beginners/a-beginners-guide-to-the-bitcoin-taproot-upgrade).
+Read more about the Taproot upgrade in 2019 [here](https://cointelegraph.com/bitcoin-for-beginners/a-beginners-guide-to-the-bitcoin-taproot-upgrade).
 
 ## How does Taproot work?
 
@@ -44,13 +44,13 @@ The great thing about merkle trees is that you can use the root hash to prove th
 
 For example, to prove that script(a) exists in the tree, we simply provide hash(b) and hash(c, d). This is all the information we need to recreate the root hash(ab, cd). We do not reveal any of the other scripts.
 
-This allows us to break up a contract into many scripts, then lock coins to the root hash of our combined scripts. To redeem coins, we simply need to provide one of the scripts, plus a 'path' of hashes that let us to recompute the root of the tree.
+This allows us to break up a contract into many scripts, then lock coins to the root hash of our combined scripts. To redeem coins, we simply need to provide one of the scripts, plus a 'path' of hashes that lead us to the root hash of the tree.
 
 ## About Key Tweaking
 
-Another clever trick that tapscript uses, is something called "key tweaking".
+Another clever trick that Taproot uses, is something called "key tweaking".
 
-Typically, we create a pair of signing keys by multiplying a secret number with a prime number called a "generator" (G). This process is done in a way that is computationally impossible to reverse without knowing the secret.
+In order to create a key-pair used for signatures, we start with a secret number, or "key". We then multiply this key by a very large prime number, called a "generator" (G). This process is done in a way that is computationally impossible to reverse without knowing the secret. The resulting number then becomes our public key.
 
 ```
 seckey * G => pubkey
@@ -72,12 +72,19 @@ pubkey + (tweak * G) = (tweakedkey * G) = tweakedpub
 
 Later, we can choose to reveal the original public key and tweak, with a proof that both were used to construct the modified key. Or we can simply choose to sign using the modified key, and not reveal anything!
 
-Tapscript uses key tweaking in order to lock coins to the root hash of our script tree. This provides us with two paths for spending coins:
+Taproot uses key tweaking in order to lock coins to the root hash of our tree. This provides us with two paths for spending coins:
 
  * Using the tweaked key (without revealing anything).
  * Using the interal key + script + proof.
 
-You can also create tweaked keys using an internal pubkey that has a provably unknown secret key. This is useful for locking coins so that they cannot ever be spent with a tweaked key, and *must* be redeemed using a script!
+> Note: the "proof" is a path of hashes used to recompute the tree root, along with our script. We call this path of hashes (called the "control block."
+
+If you want to eliminate the key-spending path (so that only a script can be used to redeem funds), you can use a pubkey that has a provably unknown secret key. One example of such a pubkey is the following:
+
+```js
+// Created by hashing the coordinates of the secp256k1 base point G:
+'0250929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0'
+```
 
 ## Tool Index
 
