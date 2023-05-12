@@ -491,12 +491,15 @@ This tool helps with parsing / serializing transaction data.
 
 ```ts
 Tx = {
-  // Serializes a JSON transaction into a hex-encoded string.
+  // Create a transaction object from partial JSON. 
+  // Any missing fields will be repalced with default values.
+  create : (data : Partial<TxData>) => TxData,
+  // Serialize a JSON transaction into a hex-encoded string.
   encode : (
     txdata       : TxData,  // The transaction JSON.
     omitWitness ?: boolean  // If you wish to omit the witness data.
   ) => string,
-  // Parses a hex-encoded transaction into a JSON object.
+  // Parse a hex-encoded transaction into a JSON object.
   decode : (bytes : string | Uint8Array) => TxData,
   // Normalize transaction data to a particular format.
   fmt : {
