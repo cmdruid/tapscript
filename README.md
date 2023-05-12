@@ -8,7 +8,7 @@ A basic library for working with Taproot, Schnorr Signatures, and Bitcoin transa
 
 Tapscript uses the latest feature upgrade to Bitcoin called Taproot. If you are new to Bitcoin or the Taproot upgrade, please continue reading for a brief overview of how it works. This library will be easier to follow if you know what taproot is doing under the hood.
 
-If you already have a good understanding of Bitcoin and Taproot, feel free to skip ahead by clicking [here](##-Library-Index)).
+If you already have a good understanding of Bitcoin and Taproot, feel free to skip ahead by clicking [here](##-Tool-Index).
 
 ## What is Taproot?
 
@@ -234,7 +234,7 @@ Script = {
 }
 ```
 
-### Signature Tool.
+### Signer Tool.
 
 This tool helps with signatures and validation.
 
