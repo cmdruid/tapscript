@@ -508,6 +508,8 @@ Tx = {
   util : {
     // Get the transaction Id of a transaction.
     getTxid : (txdata : TxData | Bytes) => Buff,
+    // Get the size data of a transaction.
+    getTxSize : (txdata : TxData | Bytes) => TxSizeData,
     // Parse a scriptPubKey and get the type plus hash data.
     readScriptPubKey : (script : ScriptData) => ScriptPubKeyData,
     // Parse an array of witness data into named values.
@@ -546,6 +548,13 @@ interface WitnessData {
   cblock : Buff | null  // The control block (if present) or null.
   script : Buff | null  // The redeem script (if present) or null.
   params : Bytes[]      // Any remaining witness arguments.
+}
+
+interface TxSizeData {
+  size   : number       // Size of the transaction in bytes.
+  bsize  : number       // Base size of the tx (without witness data).
+  vsize  : number       // Size of the tx with witness discount applied.
+  weight : number       // Used to calculate the vsize of the tx.
 }
 
 type SequenceData = string | number
