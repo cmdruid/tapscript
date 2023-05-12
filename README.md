@@ -8,7 +8,7 @@ A basic library for working with Taproot, Schnorr Signatures, and Bitcoin transa
 
 Tapscript uses the latest feature upgrade to Bitcoin called Taproot. If you are new to Bitcoin or the Taproot upgrade, please continue reading for a brief overview of how it works. This library will be easier to follow if you know what taproot is doing under the hood.
 
-If you already have a good understanding of Bitcoin and Taproot, feel free to skip ahead by clicking [here](##-Tool-Index).
+If you already have a good understanding of Bitcoin and Taproot, feel free to skip ahead by clicking [here](#tool-index).
 
 ## What is Taproot?
 
@@ -92,15 +92,15 @@ If you want to eliminate the key-spending path (so that only a script can be use
 
 This library provides a suite of tools for working with scripts, taproot, key tweaking, signatures and transactions. Use the links below to jump to the documentation for a certain tool.
 
-[**Address Tool**](###-Address-Tool)  
+[**Address Tool**](#address-tool)  
 Encode, decode, check, and convert various address types.  
-[**Script Tool**](###-Script-Tool)  
+[**Script Tool**](#script-tool)  
 Encode scripts into hex, or decode into a script array.  
-[**Signer Tool**](###-Signer-Tool)  
+[**Signer Tool**](#signer-tool)  
 Produce signatures and validate signed transactions.  
-[**Tap Tool**](###-Tap-Tool)  
+[**Tap Tool**](#tap-tool)  
 Build, tweak, and validate trees of data / scripts.  
-[**Tx Tool**](###-Tx-Tool)  
+[**Tx Tool**](#tx-tool)  
 Encode transactions into hex, or decode into a JSON object.
 
 ### About Buff
