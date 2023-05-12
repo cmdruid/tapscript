@@ -2,6 +2,8 @@
 
 A basic library for working with Taproot, Schnorr Signatures, and Bitcoin transactions.
 
+> Note: For nodejs users, please upgrade to version 19+ for globalThis support.
+
 ## Introduction
 
 Tapscript uses the latest feature upgrade to Bitcoin called Taproot. If you are new to Bitcoin or the Taproot upgrade, please continue reading for a brief overview of how it works. This library will be easier to follow if you know what taproot is doing under the hood.
@@ -146,16 +148,18 @@ Address = {
 interface AddressTool {
   // Check if an address is valid.
   check  : (address : string, network ?: Networks) => boolean
-  // Encode a pubkey or script hash into an address.
-  encode : (key     : Bytes,  network ?: Networks) => string
-  // Decode an address into a pubkey or script hash.
+  // Decode an address into a pubkey hash or script hash.
   decode : (address : string, network ?: Networks) => Buff
+  // Convert a key or script into the proper hash.
+  hash   : (input : Bytes | ScriptData) => Buff
+  // Encode a pubkey hash or script hash into an address.
+  encode : (input : Bytes,  network ?: Networks) => string
   // Return the scriptPubKey script for an address type.
-  scriptPubKey : (key : string) => string[]
+  scriptPubKey : (input : string) => string[]
   // Return an address based on a public key (PKH type addresses only).
-  fromPubKey (pubkey : Bytes, network ?: Networks) : => string
+  fromPubKey : (pubkey : Bytes, network ?: Networks) => string
   // Return an address based on a script key (SH type addresses only).
-  fromScript (script : ScriptData, network ?: Networks) : => string
+  fromScript : (script : ScriptData, network ?: Networks) => string
 }
 
 interface AddressData {
