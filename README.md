@@ -85,10 +85,10 @@ If you want to eliminate the key-spending path (so that a script *must* be used 
 
 ```js
 // BIP0341 specifies using the following pubkey value for script-only contracts.
-// It is created by hashing the coordinates of the secp256k1 base point G
+// It is created by hashing the DER encoded coordinates of secp256k1 base point G:
 '0250929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0'
-// Since we created this number using a hash function, there is no feasible way 
-// to compute what the private key would be for this number.
+// Since this pubkey was generated using a hash function, there is no feasible way 
+// to compute what the matching private key would be.
 ```
 
 ## Tool Index
