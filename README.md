@@ -40,7 +40,7 @@ Taproot uses a simple trick involving something called a "merkle tree".
 [ script(a), script(b), script(c), script(d) ]  
 ```
 
-A merkle tree is simply a list of data that is reduced down into a single hash. We do this by hashing items together in pairs of two, repeatedly, until we are naturally left with one item (the root).
+A merkle tree is simply a list of data that is reduced down into a single hash value. We do this by hashing values together in pairs of two, repeatedly, until we are naturally left with one value (the root).
 
 The great thing about merkle trees is that you can use the root hash to prove that a piece of data (such as a script) was included somewhere in the tree, without having to reveal the entire tree.
 
@@ -52,7 +52,7 @@ This allows us to break up a contract into many scripts, then lock coins to the 
 
 Another clever trick that Taproot uses, is something called "key tweaking".
 
-In order to create a key-pair used for signatures, we start with a secret number, or "key". We then multiply this key by a very large prime number, called a "generator" (G). This process is done in a way that is computationally impossible to reverse without knowing the secret. The resulting number then becomes our public key.
+In order to create a pair of keys used for signatures, we start with a secret number, or "key". We then multiply this key by a very large prime number, called a "generator" (G). This process is done in a way that is computationally impossible to reverse without knowing the secret. The resulting number then becomes our public key.
 
 ```
 seckey * G => pubkey
@@ -68,24 +68,27 @@ pubkey + (randomkey * G) + (msg * G) = signature * G  <= Proves that seckey was 
 Key tweaking is just an extention of this. We use a piece of data to "tweak" both keys in our key-pair, then use the modified keys to sign and verify transactions.
 
 ```
-seckey +    tweak    =    tweakedkey    = tweakedsec
-pubkey + (tweak * G) = (tweakedkey * G) = tweakedpub
+seckey +    tweak    = tweaked_seckey
+pubkey + (tweak * G) = tweaked_pubkey
 ```
 
-Later, we can choose to reveal the original public key and tweak, with a proof that both were used to construct the modified key. Or we can simply choose to sign using the modified key, and not reveal anything!
+Later, we can choose to reveal the original public key and tweak, as proof that both were used to construct the modified key. Or we can simply choose to sign using the modified key, and not reveal anything!
 
-Taproot uses key tweaking in order to lock coins to the root hash of our tree. This provides us with two paths for spending coins:
+Taproot uses key tweaking in order to lock coins to our pubkey + root of our tree. This provides us with two paths for spending coins:
 
- * Using the tweaked key (without revealing anything).
- * Using the interal key + script + proof.
+ * Using the tweaked pubkey (without revealing anything).
+ * Using the interal pubkey + script + proof.
 
-> Note: the "proof" is a path of hashes used to recompute the tree root, along with our script. We call this path of hashes (called the "control block."
+> Note: the "proof" is the path of hashes we described earlier, which is needed to recompute the root hash.
 
-If you want to eliminate the key-spending path (so that only a script can be used to redeem funds), you can use a pubkey that has a provably unknown secret key. One example of such a pubkey is the following:
+If you want to eliminate the key-spending path (so that a script *must* be used to redeem funds), you can replace the pubkey with a random number. However, it is best to use a number that everyone can verify has an unknown secret key. One example of such a number is the following:
 
 ```js
-// Created by hashing the coordinates of the secp256k1 base point G:
+// BIP0341 specifies using the following pubkey value for script-only contracts.
+// It is created by hashing the coordinates of the secp256k1 base point G
 '0250929b74c1a04954b78b4b6035e97a5e078a5a0f28ec96d547bfee9ace803ac0'
+// Since we created this number using a hash function, there is no feasible way 
+// to compute what the private key would be for this number.
 ```
 
 ## Tool Index
