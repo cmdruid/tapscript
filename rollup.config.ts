@@ -35,12 +35,12 @@ const nodeConfig = {
   onwarn,
   output: [
     {
-      file      : 'dist/main.js',
+      file      : 'dist/main.cjs',
       format    : 'cjs',
       sourcemap : true,
     },
     {
-      file      : 'dist/module.js',
+      file      : 'dist/module.mjs',
       format    : 'es',
       sourcemap : true,
       minifyInternalExports: false
