@@ -205,13 +205,13 @@ Example of using the AddressTool API for a given address type.
 // Example 33-byte public key.
 const pubkey  = '03d5af2a3e89cb72ff9ca1b36091ca46e4d4399abc5574b13d3e56bca6c0784679'
 // You can encode / decode / convert keys and script hashes.
-const address = Address.p2w.fromPubKey(pubkey, 'regtest')
+const address = Address.p2wpkh.fromPubKey(pubkey, 'regtest')
 // Address: bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk
-const address = Address.p2w.encode(keyhash, 'regtest')
+const address = Address.p2wpkh.encode(keyhash, 'regtest')
 // Address: bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk
-const bytes   = Address.p2w.decode(address)
+const bytes   = Address.p2wpkh.decode(address)
 // KeyHash: f44f76cbfd5b4c536d11d78b6700b8737c9eab07
-const script  = Address.p2w.scriptPubKey(bytes)
+const script  = Address.p2wpkh.scriptPubKey(bytes)
 // script: script: [ 'OP_0', 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07' ]
 ```
 
