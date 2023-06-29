@@ -75,7 +75,7 @@ export function encodeSequence (
   sequence : SequenceData
 ) : Uint8Array {
   if (typeof sequence === 'string') {
-    return Buff.hex(sequence, 4)
+    return Buff.hex(sequence, 4).reverse()
   }
   if (typeof sequence === 'number') {
     return Buff.num(sequence, 4).reverse()
