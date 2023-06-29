@@ -72,9 +72,15 @@ export function encodePrevOut (vout : number) : Uint8Array {
 }
 
 export function encodeSequence (
-  sequence : SequenceData = 0xFFFFFFFD
+  sequence : SequenceData
 ) : Uint8Array {
-  return Buff.bytes(sequence).reverse()
+  if (typeof sequence === 'string') {
+    return Buff.hex(sequence, 4)
+  }
+  if (typeof sequence === 'number') {
+    return Buff.num(sequence, 4).reverse()
+  }
+  throw new Error('Unrecognized format: ' + String(sequence))
 }
 
 function encodeInputs (arr : InputData[]) : Uint8Array {
