@@ -1,5 +1,5 @@
-import { Test }      from 'tape'
-import { SecretKey } from '@cmdcode/crypto-utils'
+import { Test } from 'tape'
+import { util } from '@cmdcode/crypto-utils'
 import { Address, Signer, Tap, Tx, } from '../../../src/index.js'
 
 export async function tree_spend (t : Test) : Promise<void> {
@@ -9,8 +9,8 @@ export async function tree_spend (t : Test) : Promise<void> {
 
     // Create a keypair to use for testing.
     const secret = '0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712'
-    const seckey = new SecretKey(secret, { type: 'taproot' })
-    const pubkey = seckey.pub
+    const seckey = util.getSecretKey(secret)
+    const pubkey = util.getPublicKey(seckey, true)
 
     // Specify an array of scripts to use for testing.
     const scripts = [

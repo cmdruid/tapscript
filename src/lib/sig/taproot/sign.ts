@@ -75,7 +75,7 @@ export function verify (
    * https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
    */
   // Get the Point value for pubkey.
-  const P = new Point(xOnlyPub(pubkey))
+  const P = Point.from_x(xOnlyPub(pubkey))
   // Normalize the message into bytes.
   const m = Buff.bytes(message)
   // Convert signature into a stream object.

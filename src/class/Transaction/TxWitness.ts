@@ -3,8 +3,6 @@ import { readWitness } from '../../lib/tx/parse.js'
 import { Script }      from '../../lib/script/index.js'
 import { Bytes, InputType, ScriptData, WitnessData } from '../../schema/types.js'
 
-
-
 export default class TxWitness {
   readonly format ?: InputType
   readonly _data   : ScriptData[]

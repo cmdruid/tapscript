@@ -17,7 +17,7 @@ export function getTapLeaf (
   return Buff.join([
     getTapTag('TapLeaf'),
     getVersion(version),
-    Buff.normalize(data)
+    Buff.bytes(data)
   ]).digest.hex
 }
 

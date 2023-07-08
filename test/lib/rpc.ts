@@ -5,7 +5,7 @@ import { Buff } from '@cmdcode/buff-utils'
 import {
   WALLET_METHODS,
   WalletConfig,
-   WalletResponse
+  WalletResponse
 } from './schema.js'
 
 interface RpcConfig {

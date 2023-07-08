@@ -1,6 +1,6 @@
 
 import { Test } from 'tape'
-import { SecretKey } from '@cmdcode/crypto-utils'
+import { util } from '@cmdcode/crypto-utils'
 import { Address, Signer, Tap, Tx, } from '../../../src/index.js'
 
 export async function key_spend (t : Test) : Promise<void> {
@@ -10,8 +10,8 @@ export async function key_spend (t : Test) : Promise<void> {
 
     // Create a keypair to use for testing.
     const secret = 'ccd54b99acec77d0537b01431579baef998efac6b08e9564bc3047b20ec1bb4c'
-    const seckey = new SecretKey(secret, { type: 'taproot' })
-    const pubkey = seckey.pub
+    const seckey = util.getSecretKey(secret)
+    const pubkey = util.getPublicKey(seckey, true)
 
     // For key spends, we need to get the tweaked versions
     // of the secret key and public key.
@@ -19,7 +19,7 @@ export async function key_spend (t : Test) : Promise<void> {
     const [ tpubkey ] = Tap.getPubKey(pubkey)
 
     // Optional: You could also derive the public key from the tweaked secret key.
-    const _tpubkey_example = new SecretKey(tseckey).pub.x.hex
+    const _tpubkey_example = util.getPublicKey(tseckey, true).hex
 
     // A taproot address is simply the tweaked public key, encoded in bech32 format.
     const address = Address.p2tr.fromPubKey(tpubkey, 'regtest')

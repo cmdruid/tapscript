@@ -2,19 +2,20 @@ import { Buff, Bytes } from '@cmdcode/buff-utils'
 import { Script }      from '../script/index.js'
 import { checkSize }   from '../utils.js'
 import { ScriptData }  from '../../schema/types.js'
+import { hash160, sha256 } from '@cmdcode/crypto-utils'
 
 export function hash160pkh (pubkey : Bytes) : Buff {
   const bytes = Buff.bytes(pubkey)
   checkSize(bytes, 33)
-  return bytes.toHash('hash160')
+  return hash160(bytes)
 }
 
 export function hash160sh (script : ScriptData) : Buff {
   const bytes = Script.fmt.toBytes(script, false)
-  return bytes.toHash('hash160')
+  return hash160(bytes)
 }
 
 export function sha256sh (script : ScriptData) : Buff {
   const bytes = Script.fmt.toBytes(script, false)
-  return bytes.toHash('sha256')
+  return sha256(bytes)
 }

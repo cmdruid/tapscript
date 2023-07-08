@@ -106,7 +106,7 @@ function readData (
   varint ?: boolean
 ) : string | null {
   const size = (varint === true)
-    ? stream.readSize('be')
+    ? stream.readSize('le')
     : stream.size
   return size > 0
     ? stream.read(size).hex

@@ -191,20 +191,20 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@cmdcode/buff-utils@^1.7.4":
-  version "1.7.4"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.7.4.tgz#f7c0f188f194dae8970ce4e96d05ba9d09c86744"
-  integrity sha512-K/1Bo+VLZcJYghMZOXTxe2oD+lzzx2j5kk6kaoOUkPS2NLj3qylgVJZWtuS8NF6c96rtamgf3WBPUSit57Fh0w==
+"@cmdcode/buff-utils@^1.9.7":
+  version "1.9.7"
+  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.9.7.tgz#789d75f87547341620dad4917080847ab18a22b1"
+  integrity sha512-Gfj4ZspY/weIjvNx9cAOmXQTTp11IHOSA6QKTowQZ6jNYrXWqBbzkPT5HLfqNK0hElWfrSBhN00bt0njVHTmBA==
 
-"@cmdcode/crypto-utils@^1.9.5":
-  version "1.9.5"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-1.9.5.tgz#e7776947314a08de61e8ad0006176f82e34ec57c"
-  integrity sha512-OSP9Ez9PwhOaT0vxm5HcfCXxyetvszcV1fduOQNOtT9muIW+in9eOH3FKiNAd6jdOMQg8M+ty+Rl5PX2Apnoeg==
+"@cmdcode/crypto-utils@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-2.0.2.tgz#2aed8fa48a0d1800616494428691c5905c2e9c36"
+  integrity sha512-+S+il5SPsJ4cb+ojidFMGHPtENL1wHSrqFut88a2pFzTFIV/IPbV0D985EpRVy1O/JFpKthn/hPjq4YtsaHv9Q==
 
-"@cmdcode/keylink@^1.4.2":
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/@cmdcode/keylink/-/keylink-1.4.2.tgz#f0c4c5417076294f248e4483cdcbf0eddaea366c"
-  integrity sha512-XQ1dcHQLk75IWheWkCXGrBvz81fUWtWOcVomaBwBtfMoOiG8E0hWN02C9gGtXT06MICZs1C8VCjsAheH1gH0RQ==
+"@cmdcode/keylink@^1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@cmdcode/keylink/-/keylink-1.4.3.tgz#3df106e076507988697c25905dba32f4c25be885"
+  integrity sha512-ruSnYOZo/9WFo1FaH1RT6WEaf4+flznd+leZMrRxI9hOYLz8GU81yiZeyhE3AKPKhrT1BDoT6ev9jZw3ImvE2w==
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"

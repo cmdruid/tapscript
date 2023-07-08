@@ -1,5 +1,5 @@
 import { Test } from 'tape'
-import { SecretKey } from '@cmdcode/crypto-utils'
+import { util } from '@cmdcode/crypto-utils'
 import { Address, Script, Signer, Tap, Tx, } from '../../../src/index.js'
 
 export async function script_spend (t : Test) : Promise<void> {
@@ -9,8 +9,8 @@ export async function script_spend (t : Test) : Promise<void> {
 
     // Create a keypair to use for testing.
     const secret = '0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712'
-    const seckey = new SecretKey(secret, { type: 'taproot' })
-    const pubkey = seckey.pub
+    const seckey = util.getSecretKey(secret)
+    const pubkey = util.getPublicKey(seckey, true)
 
     // Specify a basic script to use for testing.
     const script = [ pubkey, 'OP_CHECKSIG' ]
@@ -65,7 +65,7 @@ export async function script_spend (t : Test) : Promise<void> {
 
     // Check if the signature is valid for the provided public key, and that the
     // transaction is also valid (the merkle proof will be validated as well).
-    const isValid = await Signer.taproot.verify(txdata, 0, { pubkey })
+    const isValid = Signer.taproot.verify(txdata, 0, { pubkey })
 
     if (VERBOSE) {
       console.log('Your txhex:', Tx.encode(txdata).hex)

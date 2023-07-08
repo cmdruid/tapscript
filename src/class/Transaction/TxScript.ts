@@ -3,6 +3,7 @@ import { encodeScript } from '../../lib/script/encode.js'
 import { decodeScript } from '../../lib/script/decode.js'
 import { ScriptData }   from '../../schema/types.js'
 import { TapTree }      from '../../lib/tap/index.js'
+import { hash160, hash256 } from '@cmdcode/crypto-utils'
 
 type ScriptFormat = 'p2sh' | 'p2w' | 'p2tr'
 
@@ -30,9 +31,9 @@ export default class TxScript {
   getHash (format : ScriptFormat, version ?: number) : string {
     switch (format) {
       case 'p2w':
-        return this._buff.toHash('hash256').hex
+        return hash256(this._buff).hex
       case 'p2sh':
-        return this._buff.toHash('hash160').hex
+        return hash160(this._buff).hex
       case 'p2tr':
         return TapTree.getLeaf(this._buff, version)
       default:

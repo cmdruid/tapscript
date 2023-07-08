@@ -10,6 +10,7 @@ import {
   TxTemplate,
   Bytes
 } from '../../../schema/types.js'
+import { hash160, hash256 } from '@cmdcode/crypto-utils'
 
 const VALID_HASH_TYPES = [ 0x01, 0x02, 0x03 ]
 
@@ -47,7 +48,7 @@ export function hashTx (
     script === undefined &&
     config.pubkey !== undefined
   ) {
-    const pkhash = Buff.bytes(config.pubkey).toHash('hash160')
+    const pkhash = hash160(config.pubkey)
     script = `76a914${pkhash.hex}88ac`
   }
   // Make sure that some form of script has been provided.
@@ -75,7 +76,7 @@ export function hashTx (
 
   // console.log('sighash:', sighash.map(e => Buff.bytes(e).hex))
 
-  return Buff.join(sighash).toHash('hash256')
+  return hash256(Buff.join(sighash))
 }
 
 function hashPrevouts (
@@ -93,7 +94,7 @@ function hashPrevouts (
     stack.push(ENC.encodePrevOut(vout))
   }
 
-  return Buff.join(stack).toHash('hash256')
+  return hash256(Buff.join(stack))
 }
 
 function hashSequence (
@@ -110,7 +111,7 @@ function hashSequence (
   for (const { sequence } of vin) {
     stack.push(ENC.encodeSequence(sequence))
   }
-  return Buff.join(stack).toHash('hash256')
+  return hash256(Buff.join(stack))
 }
 
 function hashOutputs (
@@ -125,14 +126,14 @@ function hashOutputs (
       stack.push(ENC.encodeValue(value))
       stack.push(Script.encode(scriptPubKey, true))
     }
-    return Buff.join(stack).toHash('hash256')
+    return hash256(Buff.join(stack))
   }
 
   if (sigflag === 0x03 && idx < vout.length) {
     const { value, scriptPubKey } = vout[idx]
     stack.push(ENC.encodeValue(value))
     stack.push(Script.encode(scriptPubKey, true))
-    return Buff.join(stack).toHash('hash256')
+    return hash256(Buff.join(stack))
   }
 
   return Buff.num(0, 32)

@@ -24,7 +24,7 @@ export function encodeScript (
   }
 
   if (varint) {
-    buff = buff.prefixSize('be')
+    buff = buff.prefixSize('le')
   }
 
   return buff
@@ -91,7 +91,7 @@ function encodeSize (size : number) : Uint8Array {
     case (size > 0x4b && size < 0x100):
       return Buff.join([ OP_DATAPUSH1, Buff.num(size, 1) ])
     case (size >= 0x100 && size <= MAX_WORD_SIZE):
-      return Buff.join([ OP_DATAPUSH2, Buff.num(size, 2, 'be') ])
+      return Buff.join([ OP_DATAPUSH2, Buff.num(size, 2) ])
     default:
       throw new Error('Invalid word size:' + size.toString())
   }

@@ -12,6 +12,7 @@ import {
   TxData,
   WitnessData
 } from '../../schema/types.js'
+import { hash256 } from '@cmdcode/crypto-utils'
 
 interface TxSizeData {
   size   : number
@@ -140,7 +141,7 @@ export function readScriptPubKey (
 export function getTxid (txdata : TxData | Bytes) : string {
   const json = TxFmt.toJson(txdata)
   const data = encodeTx(json, true)
-  return data.toHash('hash256').reverse().hex
+  return hash256(data).reverse().hex
 }
 
 export function getTxSize (txdata : TxData | Bytes) : TxSizeData {

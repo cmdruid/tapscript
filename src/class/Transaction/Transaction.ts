@@ -1,10 +1,15 @@
 import { Buff }     from '@cmdcode/buff-utils'
+import { hash256 }  from '@cmdcode/crypto-utils'
 import TxInput      from './TxInput.js'
 import TxOutput     from './TxOutput.js'
 import TxLocktime   from './TxLocktime.js'
 import { Tx }       from '../../lib/tx/index.js'
-import { TxData, TxTemplate }   from '../../schema/types.js'
 import { Schema }   from '../../schema/check.js'
+
+import {
+  TxData,
+  TxTemplate
+} from '../../schema/types.js'
 
 export default class Transaction {
   readonly _data : TxData
@@ -78,11 +83,13 @@ export default class Transaction {
   }
 
   get hash () : string {
-    return this.buff.toHash('hash256').reverse().hex
+    const hash = hash256(this.buff)
+    return hash.reverse().hex
   }
 
   get txid () : string {
-    return this.base.toHash('hash256').reverse().hex
+    const hash = hash256(this.base)
+    return hash.reverse().hex
   }
 
   async export () : Promise<object> {

@@ -1,7 +1,7 @@
-import { Test }      from 'tape'
-import { Buff }      from '@cmdcode/buff-utils'
-import { SecretKey } from '@cmdcode/crypto-utils'
-import { schnorr }   from '@noble/curves/secp256k1'
+import { Test }    from 'tape'
+import { Buff }    from '@cmdcode/buff-utils'
+import { util }    from '@cmdcode/crypto-utils'
+import { schnorr } from '@noble/curves/secp256k1'
 
 import { decodeTx }        from '../../../../src/lib/tx/decode.js'
 import * as HASH           from '../../../../src/lib/sig/taproot/hash.js'
@@ -50,7 +50,7 @@ export async function test_signatures(t : Test) : Promise<void> {
       const actual_hash = SIG.hash(tx, txinIndex, { sigflag: hashType })
       t.equal(actual_hash.hex, sigHash, 'The signature hashes should match.')
       // Test our ability to sign the transaction.
-      const pubkey        = new SecretKey(tweakedPrivkey, { type: 'taproot'}).point.x
+      const pubkey        = util.getPublicKey(tweakedPrivkey, true)
       const tweakedpub    = Buff.raw(schnorr.getPublicKey(tweakedPrivkey))
       t.equal(pubkey.hex, tweakedpub.hex, 'The tweaked pubkeys should be equal.')
       const signature     = SIG.sign(tweakedPrivkey, tx, txinIndex, { sigflag: hashType, throws : true })

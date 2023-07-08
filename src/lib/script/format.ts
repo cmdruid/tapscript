@@ -1,4 +1,4 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff }         from '@cmdcode/buff-utils'
 import { isHex }        from '../check.js'
 import { decodeScript } from './decode.js'
 import { encodeScript } from './encode.js'

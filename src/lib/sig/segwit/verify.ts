@@ -1,5 +1,5 @@
 import { Buff }       from '@cmdcode/buff-utils'
-import { verify }     from '@cmdcode/crypto-utils'
+import { noble }      from '@cmdcode/crypto-utils'
 import { safeThrow }  from '../../utils.js'
 import { Tx }         from '../../tx/index.js'
 import { hashTx }     from './hash.js'
@@ -54,7 +54,7 @@ export function verifyTx (
   // console.log('hash:', hash.hex)
   // console.log('pubk:', pub.hex)
 
-  if (!verify(signature.hex, hash.hex, pub.hex, 'ecdsa')) {
+  if (!noble.secp.verify(signature, hash, pub)) {
     return safeThrow('Invalid signature!', throws)
   }
 

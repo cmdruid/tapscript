@@ -21,6 +21,6 @@ export function hashTag (
   ...data : Bytes[]
 ) : Buff {
   const htag = Buff.str(tag).digest.raw
-  const buff = data.map(e => Buff.normalize(e))
+  const buff = data.map(e => Buff.bytes(e))
   return Buff.join([ htag, htag, Buff.join(buff) ]).digest
 }

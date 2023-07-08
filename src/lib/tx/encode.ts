@@ -136,7 +136,7 @@ function encodeWitness (
       buffer.push(encodeData(entry))
     }
     return Buff.join(buffer)
-  } else { return Buff.normalize(data) }
+  } else { return Buff.bytes(data) }
 }
 
 function encodeData (data : ScriptData) : Buff {
