@@ -1,51 +1,12 @@
-import { Buff }              from '@cmdcode/buff-utils'
-import { TapTree, TapProof } from './types.js'
-import { Bytes, ScriptData } from '../../schema/types.js'
-import { Script } from '../script/index.js'
+import { Buff } from '@cmdcode/buff-utils'
+import { encode_branch } from './encode.js'
 
-const DEFAULT_VERSION = 0xc0
+import {
+  TapTree,
+  TapProof
+} from '../../schema/index.js'
 
-export function getTapTag (tag : string) : Buff {
-  const htag = Buff.str(tag).digest
-  return Buff.join([ htag, htag ])
-}
-
-export function getTapLeaf (
-  data : Bytes,
-  version = DEFAULT_VERSION
-) : string {
-  return Buff.join([
-    getTapTag('TapLeaf'),
-    getVersion(version),
-    Buff.bytes(data)
-  ]).digest.hex
-}
-
-export function getTapScript (
-  script   : ScriptData,
-  version ?: number
-) : string {
-  return getTapLeaf(Script.fmt.toBytes(script), version)
-}
-
-export function getTapBranch (
-  leafA : string,
-  leafB : string
-) : string {
-  // Compare leaves in lexical order.
-  if (leafB < leafA) {
-    // Swap leaves if needed.
-    [ leafA, leafB ] = [ leafB, leafA ]
-  }
-  // Return digest of leaves as a branch hash.
-  return Buff.join([
-    getTapTag('TapBranch'),
-    Buff.hex(leafA).raw,
-    Buff.hex(leafB).raw
-  ]).digest.hex
-}
-
-export function getTapRoot (
+export function get_root (
   leaves : TapTree
 ) : Buff {
   // Merkelize the leaves into a root hash.
@@ -94,7 +55,7 @@ export function merkleize (
   // Sort through the leaves (two at a time).
   for (let i = 0; i < leaves.length - 1; i += 2) {
     // Compute two leaves into a branch.
-    const branch = getTapBranch(leaves[i], leaves[i + 1])
+    const branch = encode_branch(leaves[i], leaves[i + 1])
     // Push our branch to the tree.
     tree.push(branch)
     // Check if a proof target is specified.
@@ -112,8 +73,4 @@ export function merkleize (
     }
   }
   return merkleize(tree, target, path)
-}
-
-export function getVersion (version = 0xc0) : number {
-  return version & 0xfe
 }

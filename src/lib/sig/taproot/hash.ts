@@ -1,58 +1,59 @@
-import { Buff }         from '@cmdcode/buff-utils'
-import * as ENC         from '../../tx/encode.js'
-import { Tx }           from '../../tx/index.js'
-import { Script }       from '../../script/index.js'
-import { encodeScript } from '../../script/encode.js'
-import { HashConfig }   from '../types.js'
+import { Buff } from '@cmdcode/buff-utils'
+
+import { encode_script } from '../../script/encode.js'
+
+import * as ENC    from '../../tx/encode.js'
+import * as Script from '../../script/index.js'
+import * as Tx     from '../../tx/index.js'
+import * as util   from '../utils.js'
 
 import {
-  Bytes,
+  HashConfig,
   InputData,
   OutputData,
   ScriptData,
-  TxTemplate
-} from '../../../schema/types.js'
+  TxBytes,
+  TxData
+} from '../../../schema/index.js'
+
+import assert from 'assert'
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
-export function hashTx (
-  template : TxTemplate | Bytes,
-  index    : number,
+export function hash_tx (
+  template : TxBytes | TxData,
   config   : HashConfig = {}
 ) : Buff {
   // Unpack configuration.
   const {
     extension,
+    txindex,
     sigflag       = 0x00,
     extflag       = 0x00,
     key_version   = 0x00,
     separator_pos = 0xFFFFFFFF
   } = config
-
-  // Normalize and unpack the txdata object.
-  const txdata = Tx.fmt.toJson(template)
-  const { version, vin: input, vout: output, locktime } = txdata
-
-  if (index >= input.length) {
-    // If index is out of bounds, throw error.
-    throw new Error('Index out of bounds: ' + String(index))
-  }
-
+  // Normalize the txdata object.
+  const tx = Tx.to_json(template)
+  // Check that the config is valid.
+  util.validate_config(tx, config)
+  // Unpack the txdata object.
+  const { version, vin: input, vout: output, locktime } = tx
+  // Parse the input we are signing from the config.
+  const txinput = util.parse_txinput(tx, config)
+  // Unpack the txinput object.
+  const { txid, vout, sequence, witness = [] } = txinput
+  // Check if we are using a valid hash type.
   if (!VALID_HASH_TYPES.includes(sigflag)) {
     // If the sigflag is an invalid type, throw error.
     throw new Error('Invalid hash type: ' + String(sigflag))
   }
-
   if (extflag < 0 || extflag > 127) {
     // If the extflag is out of range, throw error.
     throw new Error('Extention flag out of range: ' + String(extflag))
   }
-
-  // Unpack the input being signed.
-  const { txid, vout, sequence, witness = [] } = input[index]
-
   // Define the parameters of the transaction.
-  const isAnyPay  = (sigflag & 0x80) === 0x80
+  const is_anypay = (sigflag & 0x80) === 0x80
   const annex     = getAnnexData(witness)
   const annexBit  = (annex !== undefined) ? 1 : 0
   const extendBit = (extension !== undefined) ? 1 : 0
@@ -69,7 +70,7 @@ export function hashTx (
     ENC.encodeLocktime(locktime)  // Commit to tx locktime.
   ]
 
-  if (!isAnyPay) {
+  if (!is_anypay) {
     // If flag ANYONE_CAN_PAY is not set,
     // then commit to all inputs.
     const prevouts = input.map(e => getPrevout(e))
@@ -90,10 +91,10 @@ export function hashTx (
   // At this step, we include the spend type.
   preimage.push(Buff.num(spendType, 1))
 
-  if (isAnyPay) {
+  if (is_anypay) {
     // If ANYONE_CAN_PAY flag is set, then we will
     // provide a commitment to the input being signed.
-    const { value, scriptPubKey } = getPrevout(input[index])
+    const { value, scriptPubKey } = getPrevout(txinput)
     preimage.push(
       ENC.encodeTxid(txid),               // Commit to the input txid.
       ENC.encodePrevOut(vout),            // Commit to the input vout index.
@@ -105,7 +106,8 @@ export function hashTx (
     // Otherwise, we must have already included a commitment
     // to all inputs in the tx, so simply add a commitment to
     // the index of the input we are signing for.
-    preimage.push(Buff.num(index, 4).reverse())
+    assert.ok(typeof txindex === 'number')
+    preimage.push(Buff.num(txindex, 4).reverse())
   }
 
   if (annex !== undefined) {
@@ -117,7 +119,8 @@ export function hashTx (
     // If the SINGLE flag is set, then include a
     // commitment to the output which is adjacent
     // to the input that we are signing for.
-    preimage.push(hashOutput(output[index]))
+    assert.ok(typeof txindex === 'number')
+    preimage.push(hashOutput(output[txindex]))
   }
 
   if (extension !== undefined) {
@@ -173,7 +176,7 @@ export function hashScripts (
 ) : Uint8Array {
   const stack = []
   for (const { scriptPubKey } of prevouts) {
-    stack.push(encodeScript(scriptPubKey, true))
+    stack.push(encode_script(scriptPubKey, true))
   }
   return Buff.join(stack).digest
 }

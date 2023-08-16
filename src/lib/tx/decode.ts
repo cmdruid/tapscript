@@ -1,12 +1,15 @@
 import { Buff, Stream } from '@cmdcode/buff-utils'
 
 import {
+  TxBytes,
   TxData,
   InputData,
   OutputData
-} from '../../schema/types.js'
+} from '../../schema/index.js'
 
-export function decodeTx (bytes : string | Uint8Array) : TxData {
+export function decode_tx (
+  bytes : TxBytes
+) : TxData {
   /** Decode a raw bitcoin transaction. */
 
   if (typeof bytes === 'string') {
@@ -16,34 +19,34 @@ export function decodeTx (bytes : string | Uint8Array) : TxData {
   // Setup a byte-stream.
   const stream = new Stream(bytes)
 
-  const version = readVersion(stream)
+  const version = read_version(stream)
 
   // Check and enable any flags that are set.
-  const hasWitness = checkWitnessFlag(stream)
+  const has_witness = check_witness_flag(stream)
 
   // Parse our inputs and outputs.
-  const vin  = readInputs(stream)
-  const vout = readOutputs(stream)
+  const vin  = read_inputs(stream)
+  const vout = read_outputs(stream)
 
   // If witness flag is set, parse witness data.
-  if (hasWitness) {
+  if (has_witness) {
     for (const txin of vin) {
-      txin.witness = readWitness(stream)
+      txin.witness = read_witness(stream)
     }
   }
 
   // Parse locktime.
-  const locktime = readLocktime(stream)
+  const locktime = read_locktime(stream)
 
   // Return transaction object with calculated fields.
   return { version, vin, vout, locktime }
 }
 
-function readVersion (stream : Stream) : number {
+function read_version (stream : Stream) : number {
   return stream.read(4).reverse().toNum()
 }
 
-function checkWitnessFlag (stream : Stream) : boolean {
+function check_witness_flag (stream : Stream) : boolean {
   const [ marker, flag ] : number[] = [ ...stream.peek(2) ]
   if (marker === 0) {
     stream.read(2)
@@ -56,52 +59,52 @@ function checkWitnessFlag (stream : Stream) : boolean {
   return false
 }
 
-function readInputs (stream : Stream) : InputData[] {
+function read_inputs (stream : Stream) : InputData[] {
   const inputs = []
   const vinCount = stream.readSize()
   for (let i = 0; i < vinCount; i++) {
-    inputs.push(readInput(stream))
+    inputs.push(read_input(stream))
   }
   return inputs
 }
 
-function readInput (stream : Stream) : InputData {
+function read_input (stream : Stream) : InputData {
   return {
     txid      : stream.read(32).reverse().toHex(),
     vout      : stream.read(4).reverse().toNum(),
-    scriptSig : readScript(stream, true),
+    scriptSig : read_script(stream, true),
     sequence  : stream.read(4).reverse().toHex(),
     witness   : []
   }
 }
 
-function readOutputs (stream : Stream) : OutputData[] {
+function read_outputs (stream : Stream) : OutputData[] {
   const outputs  = []
   const outcount = stream.readSize()
   for (let i = 0; i < outcount; i++) {
-    outputs.push(readOutput(stream))
+    outputs.push(read_output(stream))
   }
   return outputs
 }
 
-function readOutput (stream : Stream) : OutputData {
+function read_output (stream : Stream) : OutputData {
   return {
     value        : stream.read(8).reverse().big,
-    scriptPubKey : readScript(stream, true)
+    scriptPubKey : read_script(stream, true)
   }
 }
 
-function readWitness (stream : Stream) : string[] {
+function read_witness (stream : Stream) : string[] {
   const stack = []
   const count = stream.readSize()
   for (let i = 0; i < count; i++) {
-    const word = readData(stream, true)
+    const word = read_data(stream, true)
     stack.push(word ?? '')
   }
   return stack
 }
 
-function readData (
+function read_data (
   stream  : Stream,
   varint ?: boolean
 ) : string | null {
@@ -113,14 +116,14 @@ function readData (
     : null
 }
 
-function readScript (
+function read_script (
   stream  : Stream,
   varint ?: boolean
 ) : string | string[] {
-  const data = readData(stream, varint)
+  const data = read_data(stream, varint)
   return (data !== null) ? data : []
 }
 
-function readLocktime (stream : Stream) : number {
+function read_locktime (stream : Stream) : number {
   return stream.read(4).reverse().toNum()
 }

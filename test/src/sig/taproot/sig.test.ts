@@ -1,20 +1,20 @@
 import { Test }    from 'tape'
 import { Buff }    from '@cmdcode/buff-utils'
-import { util }    from '@cmdcode/crypto-utils'
+import * as ecc    from '@cmdcode/crypto-utils'
 import { schnorr } from '@noble/curves/secp256k1'
 
-import { decodeTx }        from '../../../../src/lib/tx/decode.js'
-import * as HASH           from '../../../../src/lib/sig/taproot/hash.js'
-import { TRSigner as SIG } from '../../../../src/lib/sig/taproot/index.js'
-import { sign, verify }    from '../../../../src/lib/sig/taproot/sign.js'
-import test_vectors        from './sig.vectors.json' assert { type: 'json' }
-import { Tap }             from '../../../../src/index.js'
+import { decode_tx } from '../../../../src/lib/tx/decode.js'
+import * as HASH     from '../../../../src/lib/sig/taproot/hash.js'
+import * as taproot  from '../../../../src/lib/sig/taproot/index.js'
+import test_vectors  from './sig.vectors.json' assert { type: 'json' }
+
+import { Tap } from '../../../../src/index.js'
 
 const { txhex, utxos, spends, precompute } = test_vectors
 
-const tx = decodeTx(txhex)
+const tx = decode_tx(txhex)
 
-export function test_computehash(t : Test) : void {
+export function test_computehash(t : Test) {
   t.test('Test the intermediary hashes used for sighash construction.', t => {
     t.plan(5)
     const outpoints = HASH.hashOutpoints(tx.vin)
@@ -30,7 +30,7 @@ export function test_computehash(t : Test) : void {
   })
 }
 
-export async function test_signatures(t : Test) : Promise<void> {
+export function test_signatures(t : Test) {
   t.test('Test vectors for signature hash construction.', async t => {
     const vectors = spends
     t.plan(vectors.length * 11)
@@ -41,35 +41,35 @@ export async function test_signatures(t : Test) : Promise<void> {
       const { sigHash, tweak, internalPubkey, tweakedPrivkey }   = intermediary
       let { witness : [ witsig ] } = expected
       // Test our ability to create the tweak.
-      const taptweak = Tap.tweak.getTweak(internalPubkey, merkleRoot ?? undefined)
+      const taptweak = Tap.tweak.get_tweak(internalPubkey, merkleRoot ?? undefined)
       t.equal(taptweak.hex, tweak, 'The tap tweak should match.')
       // Test our ability to tweak the private key.\
-      const tweakedPrv = Tap.tweak.tweakSecKey(internalPrivkey, taptweak)
+      const tweakedPrv = Tap.tweak.tweak_seckey(internalPrivkey, taptweak)
       t.equal(tweakedPrv.hex, tweakedPrivkey, 'The tweaked prvkey should match.')
       // Test our ability to calculate the signature hash.
-      const actual_hash = SIG.hash(tx, txinIndex, { sigflag: hashType })
+      const actual_hash = taproot.hash_tx(tx, { sigflag: hashType, txindex: txinIndex })
       t.equal(actual_hash.hex, sigHash, 'The signature hashes should match.')
       // Test our ability to sign the transaction.
-      const pubkey        = util.getPublicKey(tweakedPrivkey, true)
+      const pubkey        = ecc.keys.get_pubkey(tweakedPrivkey, true)
       const tweakedpub    = Buff.raw(schnorr.getPublicKey(tweakedPrivkey))
       t.equal(pubkey.hex, tweakedpub.hex, 'The tweaked pubkeys should be equal.')
-      const signature     = SIG.sign(tweakedPrivkey, tx, txinIndex, { sigflag: hashType, throws : true })
-      const testsig       = sign(tweakedPrivkey, sigHash)
-      const isVerify      = verify(testsig, sigHash, tweakedpub)
+      const testsig       = ecc.signer.sign(sigHash, tweakedPrivkey)
+      const isVerify      = ecc.signer.verify(testsig, sigHash, tweakedpub)
       t.true(isVerify, 'Signature made with sign should be valid using verify.')
+      const signature     = taproot.sign_tx(tweakedPrivkey, tx, { sigflag: hashType, txindex : txinIndex, throws : true })
       const schnorrVerify = schnorr.verify(signature.slice(0, 64), sigHash, tweakedpub)
       t.true(schnorrVerify, 'The signTx signature should be valid using schnorr.')
-      const sigVerify     = verify(signature, actual_hash, tweakedpub)
+      const sigVerify     = ecc.signer.verify(signature, actual_hash, tweakedpub)
       t.true(sigVerify, 'The signTx signature should be valid using verify.')
-      const vectVerify    = verify(witsig, sigHash, tweakedpub)
+      const vectVerify    = ecc.signer.verify(witsig, sigHash, tweakedpub)
       t.true(vectVerify, 'The vector signature should be valid using verify.')
       const checkVerify   = schnorr.verify(Buff.hex(witsig).slice(0, 64), sigHash, tweakedpub)
       t.true(checkVerify, 'The vector signature should be valid using schnorr.')
       const schnorrSig    = schnorr.sign(actual_hash, tweakedPrivkey)
-      const testVerify    = verify(schnorrSig, actual_hash, tweakedpub)
+      const testVerify    = ecc.signer.verify(schnorrSig, actual_hash, tweakedpub)
       t.true(testVerify, 'The schnorr signature should be valid using verify.')
       tx.vin[txinIndex].witness = [ signature ]
-      const isVerified    = SIG.verify(tx, txinIndex, { sigflag: hashType, throws : true })
+      const isVerified    = taproot.verify_tx(tx, { sigflag: hashType, txindex: txinIndex, throws : true })
       t.true(isVerified, 'The signature should pass verifyTx')
     }
   })

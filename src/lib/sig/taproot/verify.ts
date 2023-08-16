@@ -1,23 +1,34 @@
-import { Buff, Stream }  from '@cmdcode/buff-utils'
-import { checkPath }     from '../../tap/key.js'
-import { verify }        from './sign.js'
-import { safeThrow }     from '../../utils.js'
-import { getTapLeaf }    from '../../tap/tree.js'
-import { Tx }            from '../../tx/index.js'
-import { hashTx }        from './hash.js'
-import { TxTemplate }    from '../../../schema/types.js'
-import { Script }        from '../../script/index.js'
-import { HashConfig }    from '../types.js'
+import { Buff, Stream } from '@cmdcode/buff-utils'
+import { safeThrow }    from '../../utils.js'
+import { hash_tx }      from './hash.js'
 
-export function verifyTx (
-  txdata  : TxTemplate | string | Uint8Array,
-  index   : number,
-  config  : HashConfig = {}
+import * as Script from '../../script/index.js'
+import * as Tap    from '../../tap/index.js'
+import * as Tx     from '../../tx/index.js'
+import * as util   from '../utils.js'
+
+import {
+  SignOptions,
+  signer
+} from '@cmdcode/crypto-utils'
+
+import {
+  TxBytes,
+  TxData,
+  HashConfig
+} from '../../../schema/index.js'
+
+export function verify_tx (
+  txdata   : TxBytes | TxData,
+  config   : HashConfig = {},
+  options ?: SignOptions
 ) : boolean {
-  const tx = Tx.fmt.toJson(txdata)
   const { throws = false } = config
-  const { prevout, witness = [] } = tx.vin[index]
-  const witnessData = Tx.util.readWitness(witness)
+  const tx = Tx.to_json(txdata)
+  // Parse the input we are signing from the config.
+  const txinput = util.parse_txinput(tx, config)
+  const { prevout, witness = [] } = txinput
+  const witnessData = Tx.parse_witness(witness)
   const { cblock, script, params } = witnessData
 
   let pub : Buff
@@ -32,14 +43,14 @@ export function verifyTx (
     return safeThrow('Prevout scriptPubKey is empty!', throws)
   }
 
-  const { type, data: tapkey } = Tx.util.readScriptPubKey(scriptPubKey)
+  const { type, data: tapkey } = Script.parse_scriptkey(scriptPubKey)
 
-  if (type !== 'p2tr') {
-    return safeThrow('Prevout script is not a valid taproot output:' + tapkey.hex, throws)
-  }
-
-  if (tapkey.length !== 32) {
-    return safeThrow('Invalid tapkey length: ' + String(tapkey.length), throws)
+  if (
+    type   !== 'p2tr'    ||
+    tapkey === undefined ||
+    tapkey.length !== 32
+  ) {
+    return safeThrow('Prevout script is not a valid taproot output: ' + String(scriptPubKey), throws)
   }
 
   if (
@@ -47,10 +58,10 @@ export function verifyTx (
     script !== null
   ) {
     const version    = cblock[0] & 0xfe
-    const target     = getTapLeaf(script, version)
+    const target     = Tap.encode_leaf(script, version)
     config.extension = target
 
-    if (!checkPath(tapkey, target, cblock, { throws })) {
+    if (!Tap.key.check_proof(tapkey, target, cblock, { throws })) {
       return safeThrow('cblock verification failed!', throws)
     }
   }
@@ -63,7 +74,7 @@ export function verifyTx (
     pub = Buff.bytes(tapkey)
   }
 
-  const rawsig    = Script.fmt.toParam(params[0])
+  const rawsig    = params[0]
   const stream    = new Stream(rawsig)
   const signature = stream.read(64).raw
 
@@ -74,11 +85,7 @@ export function verifyTx (
     }
   }
 
-  const hash = hashTx(tx, index, config)
+  const hash = hash_tx(tx, config)
 
-  if (!verify(signature, hash, pub, throws)) {
-    return safeThrow('Invalid signature!', throws)
-  }
-
-  return true
+  return signer.verify(signature, hash, pub, options)
 }

@@ -191,15 +191,15 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@cmdcode/buff-utils@^1.9.7":
-  version "1.9.7"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.9.7.tgz#789d75f87547341620dad4917080847ab18a22b1"
-  integrity sha512-Gfj4ZspY/weIjvNx9cAOmXQTTp11IHOSA6QKTowQZ6jNYrXWqBbzkPT5HLfqNK0hElWfrSBhN00bt0njVHTmBA==
+"@cmdcode/buff-utils@^1.12.4":
+  version "1.12.4"
+  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.12.4.tgz#ec6d9e47c312023024404d1c00d827a50549a502"
+  integrity sha512-nftOvZk0XgWioftxEF2QZA64S83aeUIcPtTsBAqpWsz/woEPxxzGheJG0WcNRffddeT7Ww3dqgAjpu5JOEyXVw==
 
-"@cmdcode/crypto-utils@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-2.0.2.tgz#2aed8fa48a0d1800616494428691c5905c2e9c36"
-  integrity sha512-+S+il5SPsJ4cb+ojidFMGHPtENL1wHSrqFut88a2pFzTFIV/IPbV0D985EpRVy1O/JFpKthn/hPjq4YtsaHv9Q==
+"@cmdcode/crypto-utils@^2.3.9":
+  version "2.3.9"
+  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-2.3.9.tgz#966a63c40ce2f93192fcb1efd54cb08f0aa44b28"
+  integrity sha512-1/QiJGIq6Sz6wAlaGO3QQ5kV73PbkvhSihVRIPBxZ8io3DZKlSwcN/iAsdHuqlxe5AqBHOsVARvuCtN084diUA==
 
 "@cmdcode/keylink@^1.4.3":
   version "1.4.3"
@@ -3020,10 +3020,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typescript@^4.9.4:
-  version "4.9.5"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
-  integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
+typescript@^5.1.6:
+  version "5.1.6"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.1.6.tgz#02f8ac202b6dad2c0dd5e0913745b47a37998274"
+  integrity sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==
 
 unbox-primitive@^1.0.2:
   version "1.0.2"

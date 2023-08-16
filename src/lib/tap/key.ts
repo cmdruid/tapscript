@@ -1,29 +1,41 @@
-import { Buff, Stream }      from '@cmdcode/buff-utils'
-import { util }              from '@cmdcode/crypto-utils'
-import { getTweakedKey }     from './tweak.js'
-import { safeThrow }         from '../utils.js'
-import { xOnlyPub }          from './utils.js'
-import { getTapBranch, merkleize }      from './tree.js'
-import { CtrlBlock, TapConfig, TapKey } from './types.js'
-import { Bytes } from '../../schema/types.js'
+import { Buff, Bytes } from '@cmdcode/buff-utils'
+import { keys }        from '@cmdcode/crypto-utils'
+
+import assert from 'assert'
+
+import { get_tweaked_key } from './tweak.js'
+import { safeThrow }       from '../utils.js'
+import { parse_xonly }     from './utils.js'
+import { merkleize }       from './tree.js'
+import { encode_branch }   from './encode.js'
+
+import {
+  parse_cblock,
+  read_parity
+} from './parse.js'
+
+import {
+  TapConfig,
+  TapKey
+} from '../../schema/index.js'
 
 const DEFAULT_VERSION = 0xc0
 
-export function getTapSecKey (
+export function get_seckey (
   seckey  : Bytes,
   config  : TapConfig = {}
 ) : TapKey {
-  return getTapKey(seckey, { ...config, isPrivate: true })
+  return get_tapkey(seckey, { ...config, isPrivate: true })
 }
 
-export function getTapPubKey (
+export function get_pubkey (
   pubkey  : Bytes,
   config  : TapConfig = {}
 ) : TapKey {
-  return getTapKey(pubkey, { ...config, isPrivate: false })
+  return get_tapkey(pubkey, { ...config, isPrivate: false })
 }
 
-function getTapKey (
+function get_tapkey (
   intkey : Bytes,
   config : TapConfig = {}
 ) : TapKey {
@@ -33,41 +45,42 @@ function getTapKey (
     version   = DEFAULT_VERSION
   } = config
 
-  const pubkey = (isPrivate)
-    ? util.getPublicKey(intkey, true)
-    : xOnlyPub(intkey)
+  const int_key = (isPrivate)
+    ? keys.get_pubkey(intkey, true)
+    : Buff.bytes(intkey)
+
+  assert.ok(int_key.length === 32)
 
   let { target } = config
 
-  if (target !== undefined) target = Buff.bytes(target).hex
+  let tapkey : Buff, ctrlpath : string[] = []
 
-  let tapkey, ctrlpath : string[] = []
-
-  if (tree.length > 0) {
-    // Merkelize the leaves into a root hash (with proof).
-    const [ root, _t, path ] = merkleize(tree, target)
-    // Get the control path from the merkelized output.
-    ctrlpath = path
-    // Get the tapped key from the internal key.
-    tapkey = getTweakedKey(intkey, root, isPrivate)
-  } else {
-    if (target !== undefined) {
-      // Get the tapped key from the single tapleaf.
-      tapkey = getTweakedKey(intkey, target, isPrivate)
+  if (target !== undefined) {
+    target = Buff.bytes(target).hex
+    if (tree.length > 0) {
+      // Merkelize the leaves into a root hash (with proof).
+      const [ root, _t, path ] = merkleize(tree, target)
+      // Get the control path from the merkelized output.
+      ctrlpath = path
+      // Get the tapped key from the internal key.
+      tapkey = get_tweaked_key(intkey, root, isPrivate)
+       // Get the tapped key from the single tapleaf.
     } else {
-      // Get the tapped key from an empty tweak.
-      tapkey = getTweakedKey(intkey, undefined, isPrivate)
+      tapkey = get_tweaked_key(intkey, target, isPrivate)
     }
+  } else {
+    // Get the tapped key from an empty tweak.
+    tapkey = get_tweaked_key(intkey, undefined, isPrivate)
   }
   // Get the parity bit for the (public) tapkey.
   const parity : number = (isPrivate)
-    ? util.getPublicKey(tapkey)[0]
+    ? keys.get_pubkey(tapkey, false)[0]
     : tapkey[0]
   // Get the block version / parity bit.
-  const cbit = Buff.num(version + readParityBit(parity))
+  const cbit = Buff.num(version + read_parity(parity))
   // Create the control block, starting with
   // the control bit and the (x-only) pubkey.
-  const block = [ cbit, pubkey ]
+  const block = [ cbit, int_key ]
   // If there is more than one path, add to block.
   if (ctrlpath.length > 0) {
     ctrlpath.forEach(e => block.push(Buff.hex(e)))
@@ -77,25 +90,25 @@ function getTapKey (
   // If target is not undefined:
   if (target !== undefined) {
     // Check that the path is valid.
-    if (!checkPath(tapkey, target, cblock, config)) {
+    if (!check_proof(tapkey, target, cblock, config)) {
       throw new Error('Path checking failed! Unable to generate path.')
     }
   }
-  return [ xOnlyPub(tapkey).hex, cblock.hex ]
+  return [ parse_xonly(tapkey).hex, cblock.hex ]
 }
 
-export function checkPath (
+export function check_proof (
   tapkey : Bytes,
   target : Bytes,
   cblock : Bytes,
   config : TapConfig = {}
 ) : boolean {
   const { isPrivate = false, throws = false } = config
-  const { parity, paths, intkey } = readCtrlBlock(cblock)
+  const { parity, paths, intkey } = parse_cblock(cblock)
 
   const pub = (isPrivate)
-    ? util.getPublicKey(tapkey, true)
-    : xOnlyPub(tapkey)
+    ? keys.get_pubkey(tapkey, true)
+    : parse_xonly(tapkey)
 
   const extkey = Buff.join([ parity, pub ])
 
@@ -106,10 +119,10 @@ export function checkPath (
   let branch = Buff.bytes(target).hex
 
   for (const path of paths) {
-    branch = getTapBranch(branch, path)
+    branch = encode_branch(branch, path)
   }
 
-  const k = getTweakedKey(intkey, branch)
+  const k = get_tweaked_key(intkey, branch)
 
   // console.log('branch:', branch)
   // console.log('intkey:', Buff.raw(intkey).hex)
@@ -117,28 +130,4 @@ export function checkPath (
   // console.log('tapkey:', k.hex)
 
   return (Buff.raw(k).hex === Buff.raw(extkey).hex)
-}
-
-export function readCtrlBlock (cblock : Bytes) : CtrlBlock {
-  const buffer = new Stream(Buff.bytes(cblock))
-  const cbyte  = buffer.read(1).num
-  const intkey = buffer.read(32)
-  const [ version, parity ] = (cbyte % 2 === 0)
-    ? [ cbyte, 0x02 ]
-    : [ cbyte - 1, 0x03 ]
-  const paths  = []
-  while (buffer.size >= 32) {
-    paths.push(buffer.read(32).hex)
-  }
-  if (buffer.size !== 0) {
-    throw new Error('Non-empty buffer on control block: ' + String(buffer))
-  }
-  return { intkey, paths, parity, version }
-}
-
-export function readParityBit (parity : number | string = 0x02) : number {
-  if (parity === 0 || parity === 1) return parity
-  if (parity === 0x02 || parity === '02') return 0
-  if (parity === 0x03 || parity === '03') return 1
-  throw new Error('Invalid parity bit: ' + String(parity))
 }

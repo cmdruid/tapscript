@@ -1,17 +1,21 @@
-import { Buff }       from '@cmdcode/buff-utils'
-import { noble }      from '@cmdcode/crypto-utils'
-import { hashTx }     from './hash.js'
-import { TxTemplate } from '../../../schema/types.js'
-import { HashConfig } from '../types.js'
+import { Buff, Bytes } from '@cmdcode/buff-utils'
+import { noble }       from '@cmdcode/crypto-utils'
+import { hash_tx }     from './hash.js'
 
-export function signTx (
-  seckey  : string | Uint8Array,
-  txdata  : TxTemplate | string | Uint8Array,
-  index   : number,
+import {
+  HashConfig,
+  TxBytes,
+  TxData
+} from '../../../schema/index.js'
+
+export function sign_tx (
+  seckey  : Bytes,
+  txdata  : TxBytes | TxData,
   config  : HashConfig = {}
 ) : Buff {
   const { sigflag = 0x01 } = config
-  const hash = hashTx(txdata, index, config)
-  const sig  = noble.secp.sign(hash, seckey).toDERRawBytes(true)
+  const sec  = Buff.bytes(seckey)
+  const hash = hash_tx(txdata, config)
+  const sig  = noble.secp.sign(hash, sec).toDERRawBytes(true)
   return Buff.join([ sig, sigflag ])
 }

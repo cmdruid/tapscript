@@ -1,13 +1,13 @@
-import { Buff, Stream } from '@cmdcode/buff-utils'
+import { Buff, Bytes, Stream } from '@cmdcode/buff-utils'
 
 import {
-  getOpLabel,
-  getWordType,
-  isValidWord
+  get_op_code,
+  get_op_type,
+  is_valid_op
 } from './words.js'
 
-export function decodeScript (
-  script : string | Uint8Array,
+export function decode_script (
+  script : Bytes,
   varint = false
 ) : string[] {
   let buff = Buff.bytes(script)
@@ -19,52 +19,52 @@ export function decodeScript (
     }
     buff = buff.slice(1)
   }
-  return decodeWords(buff)
+  return decode_words(buff)
 }
 
-export function decodeWords (
+export function decode_words (
   words : Uint8Array
 ) : string[] {
   const stream = new Stream(words)
 
   const stack : string[] = []
-  const stackSize = stream.size
+  const stack_size = stream.size
 
-  let word     : number
-  let wordType : string
-  let wordSize : number
+  let word      : number
+  let word_type : string
+  let word_size : number
 
   let count = 0
 
-  while (count < stackSize) {
+  while (count < stack_size) {
     word = stream.read(1).num
-    wordType = getWordType(word)
+    word_type = get_op_type(word)
     count++
-    switch (wordType) {
+    switch (word_type) {
       case 'varint':
         stack.push(stream.read(word).hex)
         count += word
         break
       case 'pushdata1':
-        wordSize = stream.read(1).reverse().num
-        stack.push(stream.read(wordSize).hex)
-        count += wordSize + 1
+        word_size = stream.read(1).reverse().num
+        stack.push(stream.read(word_size).hex)
+        count += word_size + 1
         break
       case 'pushdata2':
-        wordSize = stream.read(2).reverse().num
-        stack.push(stream.read(wordSize).hex)
-        count += wordSize + 2
+        word_size = stream.read(2).reverse().num
+        stack.push(stream.read(word_size).hex)
+        count += word_size + 2
         break
       case 'pushdata4':
-        wordSize = stream.read(4).reverse().num
-        stack.push(stream.read(wordSize).hex)
-        count += wordSize + 4
+        word_size = stream.read(4).reverse().num
+        stack.push(stream.read(word_size).hex)
+        count += word_size + 4
         break
       case 'opcode':
-        if (!isValidWord(word)) {
+        if (!is_valid_op(word)) {
           throw new Error(`Invalid OPCODE: ${word}`)
         }
-        stack.push(getOpLabel(word))
+        stack.push(get_op_code(word))
         break
       default:
         throw new Error(`Word type undefined: ${word}`)

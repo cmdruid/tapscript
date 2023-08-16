@@ -1,21 +1,25 @@
 import { Buff, Stream } from '@cmdcode/buff-utils'
-import { getOpCode }    from './words.js'
-import { isHex }        from '../check.js'
-import { ScriptData, Word } from '../../schema/types.js'
+import { get_asm_code } from './words.js'
+import { is_hex }       from '../utils.js'
+
+import {
+  ScriptData,
+  Word
+} from '../../schema/index.js'
 
 const MAX_WORD_SIZE = 0x208
 
-export function encodeScript (
+export function encode_script (
   script : ScriptData = [],
   varint = true
 ) : Buff {
   let buff = Buff.num(0)
 
   if (Array.isArray(script)) {
-    buff = Buff.raw(encodeWords(script))
+    buff = Buff.raw(encode_words(script))
   }
 
-  if (isHex(script)) {
+  if (is_hex(script)) {
     buff = Buff.hex(script)
   }
 
@@ -30,19 +34,19 @@ export function encodeScript (
   return buff
 }
 
-export function encodeWords (
-  wordArray : Word[]
+export function encode_words (
+  word_array : Word[]
 ) : Uint8Array {
   const words = []
-  for (const word of wordArray) {
-    words.push(encodeWord(word))
+  for (const word of word_array) {
+    words.push(encode_word(word))
   }
   return (words.length > 0)
     ? Buff.join(words)
     : new Uint8Array()
 }
 
-export function encodeWord (
+export function encode_word (
   word : Word
 ) : Uint8Array {
   /** Check if the word is a valid opcode,
@@ -55,8 +59,8 @@ export function encodeWord (
     if (word.startsWith('OP_')) {
       // If word is an opcode, return a
       // number value without size prefix.
-      return Buff.num(getOpCode(word), 1)
-    } else if (isHex(word)) {
+      return Buff.num(get_asm_code(word), 1)
+    } else if (is_hex(word)) {
       // If word is valid hex, encode as hex.
       buff = Buff.hex(word)
     } else {
@@ -75,13 +79,13 @@ export function encodeWord (
   }
 
   if (buff.length > MAX_WORD_SIZE) {
-    const words = splitWord(buff)
-    return encodeWords(words)
+    const words = split_word(buff)
+    return encode_words(words)
   }
-  return Buff.join([ encodeSize(buff.length), buff ])
+  return Buff.join([ encode_size(buff.length), buff ])
 }
 
-function encodeSize (size : number) : Uint8Array {
+function encode_size (size : number) : Uint8Array {
   const OP_DATAPUSH1 = Buff.num(0x4c, 1)
   const OP_DATAPUSH2 = Buff.num(0x4d, 1)
 
@@ -97,7 +101,7 @@ function encodeSize (size : number) : Uint8Array {
   }
 }
 
-function splitWord (word : Uint8Array) : Word[] {
+function split_word (word : Uint8Array) : Word[] {
   const words = []
   const buff  = new Stream(word)
   while (buff.size > MAX_WORD_SIZE) {

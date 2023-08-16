@@ -111,7 +111,7 @@ export const OPCODE_MAP = {
   OP_CHECKSIGADD         : 186
 }
 
-export function getOpLabel (num : number) : string {
+export function get_op_code (num : number) : string {
   if (num > 186 && num < 255) {
     return 'OP_SUCCESS' + String(num)
   }
@@ -121,14 +121,14 @@ export function getOpLabel (num : number) : string {
   throw new Error('OPCODE not found:' + String(num))
 }
 
-export function getOpCode (string : string) : number {
+export function get_asm_code (string : string) : number {
   for (const [ k, v ] of Object.entries(OPCODE_MAP)) {
     if (k === string) return Number(v)
   }
   throw new Error('OPCODE not found:' + string)
 }
 
-export function getWordType (word : number) : string {
+export function get_op_type (word : number) : string {
   switch (true) {
     case (word === 0):
       return 'opcode'
@@ -147,7 +147,7 @@ export function getWordType (word : number) : string {
   }
 }
 
-export function isValidWord (word : number) : boolean {
+export function is_valid_op (word : number) : boolean {
   /** Check if the provided value
    * is a valid script opcode.
    * */

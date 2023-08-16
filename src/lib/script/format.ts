@@ -1,50 +1,35 @@
-import { Buff }         from '@cmdcode/buff-utils'
-import { isHex }        from '../check.js'
-import { decodeScript } from './decode.js'
-import { encodeScript } from './encode.js'
-import { ScriptData }   from '../../schema/types.js'
+import { Buff }          from '@cmdcode/buff-utils'
+import { decode_script } from './decode.js'
+import { encode_script } from './encode.js'
+import { is_bytes }      from '../utils.js'
 
-function toAsm (
-  script ?: ScriptData,
+import {
+  ScriptData,
+  Word
+} from '../../schema/index.js'
+
+export function to_asm (
+  script  : ScriptData,
   varint ?: boolean
-) : string[] {
+) : Word[] {
   if (Array.isArray(script)) {
-    script = encodeScript(script, varint)
+    script = encode_script(script, varint)
   }
-  if (
-    script instanceof Uint8Array ||
-    isHex(script)
-  ) {
-    return decodeScript(script, varint)
+  if (is_bytes(script)) {
+    return decode_script(script, varint)
   }
-  throw new Error('Invalid format: ' + String(typeof script))
+  throw new Error('Invalid script format: ' + String(script))
 }
 
-function toBytes (
-  script ?: ScriptData,
+export function to_bytes (
+  script  : ScriptData,
   varint ?: boolean
 ) : Buff {
-  if (
-    script instanceof Uint8Array ||
-    isHex(script)
-  ) { script = decodeScript(script, varint) }
+  if (is_bytes(script)) {
+    script = decode_script(script, varint)
+  }
   if (Array.isArray(script)) {
-    return encodeScript(script, varint)
+    return encode_script(script, varint)
   }
-  throw new Error('Invalid format: ' + String(typeof script))
-}
-
-function toParam (
-  script : ScriptData
-) : Buff {
-  if (!Array.isArray(script)) {
-    return Buff.bytes(script)
-  }
-  throw new Error('Invalid format: ' + String(typeof script))
-}
-
-export const FmtScript = {
-  toAsm,
-  toBytes,
-  toParam
+  throw new Error('Invalid script format: ' + String(script))
 }

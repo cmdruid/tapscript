@@ -1,49 +1,29 @@
-import { Buff }     from '@cmdcode/buff-utils'
-import { isHex }    from '../check.js'
-import { Script }   from '../script/index.js'
-import { encodeTx } from './encode.js'
-import { TxFmt }    from './format.js'
+import { Buff } from '@cmdcode/buff-utils'
+import { hash } from '@cmdcode/crypto-utils'
+
+import { LEAF_VERSIONS } from './const.js'
+import { is_hex }        from '../utils.js'
+import { encode_tx }     from './encode.js'
+import { to_json }       from './format.js'
+
+import * as Script from '../script/index.js'
 
 import {
-  Bytes,
-  OutputType,
   ScriptData,
-  ScriptPubKeyData,
+  SizeData,
+  TxBytes,
   TxData,
   WitnessData
-} from '../../schema/types.js'
-import { hash256 } from '@cmdcode/crypto-utils'
+} from '../../schema/index.js'
 
-interface TxSizeData {
-  size   : number
-  bsize  : number
-  vsize  : number
-  weight : number
-}
+import assert from 'assert'
 
-const OUTPUT_TYPES : Array<[ string, RegExp ]> = [
-  [ 'p2pkh',   /^76a914(?<hash>\w{40})88ac$/ ],
-  [ 'p2sh',    /^a914(?<hash>\w{40})87$/     ],
-  [ 'p2w-pkh', /^0014(?<hash>\w{40})$/       ],
-  [ 'p2w-sh',  /^0020(?<hash>\w{64})$/       ],
-  [ 'p2tr',    /^5120(?<hash>\w{64})$/       ]
-]
-
-const LEAF_VERSIONS = [
-  0xc0, 0xc2, 0xc4, 0xc6, 0xc8, 0xca, 0xcc, 0xce,
-  0xd0, 0xd2, 0xd4, 0xd6, 0xd8, 0xda, 0xdc, 0xde,
-  0xe0, 0xe2, 0xe4, 0xe6, 0xe8, 0xea, 0xec, 0xee,
-  0xf0, 0xf2, 0xf4, 0xf6, 0xf8, 0xfa, 0xfc, 0xfe,
-  0x66, 0x7e, 0x80, 0x84, 0x96, 0x98, 0xba, 0xbc,
-  0xbe
-]
-
-function parseAnnex (
+function parse_annex (
   data : ScriptData[]
 ) : Buff | null {
   let item = data.at(-1)
 
-  if (isHex(item)) {
+  if (is_hex(item)) {
     item = Buff.hex(item)
   }
 
@@ -59,12 +39,12 @@ function parseAnnex (
   return null
 }
 
-function parseBlock (
+function parse_block (
   data : ScriptData[]
 ) : Buff | null {
   let item = data.at(-1)
 
-  if (isHex(item)) {
+  if (is_hex(item)) {
     item = Buff.hex(item)
   }
 
@@ -81,15 +61,15 @@ function parseBlock (
   return null
 }
 
-function parseWitScript (
+function parse_witness_data (
   data : ScriptData[]
 ) : Buff | null {
   if (data.length > 1) {
-    const item = data.at(-1)
     try {
-      const script = Script.fmt.toBytes(item)
+      const item = data.at(-1)
+      assert.ok(item !== undefined)
       data.pop()
-      return script
+      return Script.to_bytes(item)
     } catch (err) {
       return null
     }
@@ -97,57 +77,43 @@ function parseWitScript (
   return null
 }
 
-function parseParams (
+function parse_params (
   data : ScriptData[]
-) : Bytes[] {
-  const params : Bytes[] = []
+) : Buff[] {
+  const params : Buff[] = []
   for (const d of data) {
-    if (
-      isHex(d) ||
-      d instanceof Uint8Array
-    ) {
-      params.push(d)
+    if (is_hex(d) || d instanceof Uint8Array) {
+      params.push(Buff.bytes(d))
     }
   }
   return params
 }
 
-export function readWitness (
+export function parse_witness (
   data : ScriptData[] = []
 ) : WitnessData {
   const items  = [ ...data ]
-  const annex  = parseAnnex(items)
-  const cblock = parseBlock(items)
-  const script = parseWitScript(items)
-  const params = parseParams(items)
+  const annex  = parse_annex(items)
+  const cblock = parse_block(items)
+  const script = parse_witness_data(items)
+  const params = parse_params(items)
   return { annex, cblock, script, params }
 }
 
-export function readScriptPubKey (
-  script : ScriptData
-) : ScriptPubKeyData {
-  const hex = Script.fmt.toBytes(script, false).hex
-  for (const [ keytype, pattern ] of OUTPUT_TYPES) {
-    const type = keytype as OutputType
-    const { groups } = pattern.exec(hex) ?? {}
-    const { hash   } = groups ?? {}
-    if (isHex(hash)) {
-      return { type, data: Buff.hex(hash) }
-    }
-  }
-  return { type: 'raw', data: Buff.hex(hex) }
+export function get_txid (
+  txdata : TxData | TxBytes
+) : string {
+  const json = to_json(txdata)
+  const data = encode_tx(json, true)
+  return hash.hash256(data).reverse().hex
 }
 
-export function getTxid (txdata : TxData | Bytes) : string {
-  const json = TxFmt.toJson(txdata)
-  const data = encodeTx(json, true)
-  return hash256(data).reverse().hex
-}
-
-export function getTxSize (txdata : TxData | Bytes) : TxSizeData {
-  const json   = TxFmt.toJson(txdata)
-  const bsize  = encodeTx(json, true).length
-  const fsize  = encodeTx(json, false).length
+export function get_txsize (
+  txdata : TxData | TxBytes
+) : SizeData {
+  const json   = to_json(txdata)
+  const bsize  = encode_tx(json, true).length
+  const fsize  = encode_tx(json, false).length
   const weight = bsize * 3 + fsize
   const remain = (weight % 4 > 0) ? 1 : 0
   const vsize  = Math.floor(weight / 4) + remain

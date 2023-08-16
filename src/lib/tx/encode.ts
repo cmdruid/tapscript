@@ -1,6 +1,6 @@
-import { Buff }         from '@cmdcode/buff-utils'
-import { encodeScript } from '../script/encode.js'
-import { createTx }     from './create.js'
+import { Buff }          from '@cmdcode/buff-utils'
+import { encode_script } from '../script/encode.js'
+import { create_tx }     from './create.js'
 
 import {
   InputData,
@@ -11,16 +11,16 @@ import {
   LockData,
   ValueData,
   TxData
-} from '../../schema/types.js'
+} from '../../schema/index.js'
 
-export function encodeTx (
+export function encode_tx (
   txdata : TxTemplate | TxData,
   omitWitness ?: boolean
 ) : Buff {
-  /** Convert a JSON-based Bitcoin transaction
+  /* Convert a JSON-based Bitcoin transaction
    * into hex-encoded bytes.
    * */
-  const { version, vin, vout, locktime } = createTx(txdata)
+  const { version, vin, vout, locktime } = create_tx(txdata)
 
   const useWitness = (omitWitness !== true && checkForWitness(vin))
 
@@ -89,7 +89,7 @@ function encodeInputs (arr : InputData[]) : Uint8Array {
     const { txid, vout, scriptSig, sequence } = vin
     raw.push(encodeTxid(txid))
     raw.push(encodePrevOut(vout))
-    raw.push(encodeScript(scriptSig, true))
+    raw.push(encode_script(scriptSig, true))
     raw.push(encodeSequence(sequence))
   }
   return Buff.join(raw)
@@ -121,7 +121,7 @@ function encodeOutput (
   const { value, scriptPubKey } = vout
   const raw : Uint8Array[] = []
   raw.push(encodeValue(value))
-  raw.push(encodeScript(scriptPubKey, true))
+  raw.push(encode_script(scriptPubKey, true))
   return Buff.join(raw)
 }
 
@@ -141,7 +141,7 @@ function encodeWitness (
 
 function encodeData (data : ScriptData) : Buff {
   return (!isEmpty(data))
-    ? encodeScript(data, true)
+    ? encode_script(data, true)
     : new Buff(0)
 }
 

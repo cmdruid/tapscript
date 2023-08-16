@@ -1,41 +1,40 @@
-import { Buff }     from '@cmdcode/buff-utils'
-import { isBytes }  from '../check.js'
-import { decodeTx } from './decode.js'
-import { encodeTx } from './encode.js'
-import { createTx } from './create.js'
+import { Buff }      from '@cmdcode/buff-utils'
+import { is_bytes }  from '../utils.js'
+import { decode_tx } from './decode.js'
+import { encode_tx } from './encode.js'
+import { create_tx } from './create.js'
 
-import { Bytes, TxData, TxTemplate } from '../../schema/types.js'
+import {
+  TxBytes,
+  TxData,
+  TxTemplate
+} from '../../schema/index.js'
 
-export function toJson (
-  txdata ?: Bytes | TxData | TxTemplate
+export function to_json (
+  txdata : TxBytes | TxData | TxTemplate
 ) : TxData {
-  if (isBytes(txdata)) {
-    return decodeTx(txdata)
+  if (is_bytes(txdata)) {
+    return decode_tx(txdata)
   }
   if (
     typeof txdata === 'object' &&
     !(txdata instanceof Uint8Array)
   ) {
-    encodeTx(txdata)
-    return createTx(txdata)
+    encode_tx(txdata)
+    return create_tx(txdata)
   }
   throw new Error('Invalid format: ' + String(typeof txdata))
 }
 
-export function toBytes (
-  txdata ?: Bytes | TxData | TxTemplate
+export function to_bytes (
+  txdata ?: TxBytes | TxData | TxTemplate
 ) : Buff {
-  if (isBytes(txdata)) {
-    decodeTx(txdata)
+  if (is_bytes(txdata)) {
+    decode_tx(txdata)
     return Buff.bytes(txdata)
   }
   if (typeof txdata === 'object') {
-    return encodeTx(txdata)
+    return encode_tx(txdata)
   }
   throw new Error('Invalid format: ' + String(typeof txdata))
-}
-
-export const TxFmt = {
-  toBytes,
-  toJson
 }

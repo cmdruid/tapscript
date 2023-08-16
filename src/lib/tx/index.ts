@@ -1,24 +1,10 @@
-import { encodeTx } from './encode.js'
-import { decodeTx } from './decode.js'
-import { TxFmt }    from './format.js'
-import { createTx } from './create.js'
+export { encode_tx } from './encode.js'
+export { decode_tx } from './decode.js'
 
-import {
-  getTxid,
-  getTxSize,
-  readScriptPubKey,
-  readWitness
-} from './parse.js'
+export {
+  create_tx,
+  create_vin
+} from './create.js'
 
-export const Tx = {
-  create : createTx,
-  encode : encodeTx,
-  decode : decodeTx,
-  fmt    : TxFmt,
-  util   : {
-    getTxSize,
-    getTxid,
-    readScriptPubKey,
-    readWitness
-  }
-}
+export * from './format.js'
+export * from './parse.js'
