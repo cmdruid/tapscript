@@ -1,5 +1,9 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
 
+export function assert (value : unknown, message ?: string) : asserts value {
+  if (value === false) throw new Error(message ?? 'Assertion failed')
+}
+
 export function check_size (input : Bytes, size : number) : void {
   const bytes = Buff.bytes(input)
   if (bytes.length !== size) {

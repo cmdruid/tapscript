@@ -16,7 +16,7 @@ import {
   WitnessData
 } from '../../schema/index.js'
 
-import assert from 'assert'
+import { assert } from '../../lib/utils.js'
 
 function parse_annex (
   data : ScriptData[]
@@ -67,7 +67,7 @@ function parse_witness_data (
   if (data.length > 1) {
     try {
       const item = data.at(-1)
-      assert.ok(item !== undefined)
+      assert(item !== undefined)
       data.pop()
       return Script.to_bytes(item)
     } catch (err) {

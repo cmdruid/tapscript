@@ -2,7 +2,7 @@ import { Buff, Bytes }  from '@cmdcode/buff-utils'
 import { check_size }   from '../utils.js'
 import { hash160pkh }   from './hash.js'
 
-import assert from 'assert'
+import { assert } from '../../lib/utils.js'
 
 import {
   AddressData,
@@ -42,7 +42,7 @@ function decode_address (
 ) : AddressData {
   /* Decode a p2pkh address into a pubkey hash. */
   const meta = lookup(address)
-  assert.ok(meta !== null)
+  assert(meta !== null)
   const { type, network } = meta
   if (!check_address(address, network)) {
     throw new TypeError('Invalid p2pkh address:' + address)
@@ -57,7 +57,7 @@ function create_address (
   network ?: Network
 ) : string {
   const bytes = Buff.bytes(input)
-  assert.ok(bytes.length === 33)
+  assert(bytes.length === 33)
   const hash  = hash160pkh(bytes)
   return encode_keydata(hash, network)
 }

@@ -13,7 +13,7 @@ import {
   Word
 } from '../../schema/index.js'
 
-import assert from 'assert'
+import { assert } from '../../lib/utils.js'
 
 import { Bech32 } from './encoder.js'
 
@@ -44,14 +44,14 @@ export function decode_address (
   address : string
 ) : AddressData {
   const meta = lookup(address)
-  assert.ok(meta !== null)
+  assert(meta !== null)
   const { type, network } = meta
   if (!check_address(address)) {
     throw new TypeError('Invalid segwit address!')
   }
   const { data, version } = Bech32.decode(address)
   const script = create_script(data)
-  assert.ok(version === 0)
+  assert(version === 0)
   return { type, data, network, script }
 }
 

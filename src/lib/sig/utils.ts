@@ -1,4 +1,4 @@
-import assert from 'assert'
+import { assert } from '../utils.js'
 
 import {
   HashConfig,
@@ -14,7 +14,7 @@ export function parse_txinput (
   const ret = (typeof txindex === 'number')
     ? txdata.vin.at(txindex)
     : txinput
-  assert.ok(ret !== undefined)
+  assert(ret !== undefined)
   return ret
 }
 

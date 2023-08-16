@@ -1,7 +1,7 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
 import { keys }        from '@cmdcode/crypto-utils'
 
-import assert from 'assert'
+import { assert } from '../../lib/utils.js'
 
 import { get_tweaked_key } from './tweak.js'
 import { safeThrow }       from '../utils.js'
@@ -49,7 +49,7 @@ function get_tapkey (
     ? keys.get_pubkey(intkey, true)
     : Buff.bytes(intkey)
 
-  assert.ok(int_key.length === 32)
+  assert(int_key.length === 32)
 
   let { target } = config
 

@@ -10,8 +10,9 @@ import {
   ScriptData,
   Word
 } from '../../schema/index.js'
+
 import { lookup } from './const.js'
-import assert from 'assert'
+import { assert } from '../../lib/utils.js'
 
 export function check_address (
   address : string,
@@ -40,7 +41,7 @@ export function decode_address (
   address : string
 ) : AddressData {
   const meta = lookup(address)
-  assert.ok(meta !== null)
+  assert(meta !== null)
   const { type, network } = meta
   if (!check_address(address, network)) {
     throw new TypeError('Invalid p2sh address:' + address)

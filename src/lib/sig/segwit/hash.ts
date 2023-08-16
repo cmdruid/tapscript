@@ -1,11 +1,12 @@
 import { Buff } from '@cmdcode/buff-utils'
 import { hash } from '@cmdcode/crypto-utils'
-import assert   from 'assert'
 
 import * as ENC    from '../../tx/encode.js'
 import * as Script from '../../script/index.js'
 import * as Tx     from '../../tx/index.js'
 import * as util   from '../utils.js'
+
+import { assert } from '../../utils.js'
 
 import {
   HashConfig,
@@ -138,7 +139,7 @@ function hash_outputs (
   }
 
   if (sigflag === 0x03) {
-    assert.ok(idx !== undefined)
+    assert(idx !== undefined)
     if (idx < vout.length) {
       const { value, scriptPubKey } = vout[idx]
       stack.push(ENC.encodeValue(value))

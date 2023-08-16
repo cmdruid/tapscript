@@ -16,7 +16,7 @@ import {
   TxData
 } from '../../../schema/index.js'
 
-import assert from 'assert'
+import { assert } from '../../utils.js'
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
@@ -106,7 +106,7 @@ export function hash_tx (
     // Otherwise, we must have already included a commitment
     // to all inputs in the tx, so simply add a commitment to
     // the index of the input we are signing for.
-    assert.ok(typeof txindex === 'number')
+    assert(typeof txindex === 'number')
     preimage.push(Buff.num(txindex, 4).reverse())
   }
 
@@ -119,7 +119,7 @@ export function hash_tx (
     // If the SINGLE flag is set, then include a
     // commitment to the output which is adjacent
     // to the input that we are signing for.
-    assert.ok(typeof txindex === 'number')
+    assert(typeof txindex === 'number')
     preimage.push(hashOutput(output[txindex]))
   }
 

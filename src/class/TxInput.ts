@@ -10,7 +10,7 @@ import { create_vin, to_json } from '../lib/tx/index.js'
 
 import { SignOptions } from '@cmdcode/crypto-utils'
 
-import assert from 'assert'
+import { assert } from '../lib/utils.js'
 
 import {
   HashConfig,
@@ -84,8 +84,8 @@ export class TxInput {
     const { txindex = this.idx } = config ?? {}
     const tx = to_json(txdata)
 
-    assert.ok(typeof txindex === 'number')
-    assert.ok(txindex < tx.vin.length)
+    assert(typeof txindex === 'number')
+    assert(txindex < tx.vin.length)
 
     tx.vin[txindex] = this.data
 

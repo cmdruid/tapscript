@@ -21,12 +21,11 @@
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin typescript",
     "clean": "rm -rf dist/* coverage .nyc_output",
-    "start": "node --trace-deprecation --no-warnings --loader ts-node/esm",
+    "start": "tsx",
     "scratch": "yarn start test/scratch.ts",
     "lint": "eslint . --ext .ts",
     "fix": "eslint --fix . --ext .ts",
-    "tape": "yarn start test/tape.ts",
-    "test": "nyc --reporter=lcov --require ts-node/register yarn tape | tap-spec; nyc report ---reporter=text",
+    "test": "nyc --reporter=lcov yarn start test/tape.ts | tap-spec; nyc report ---reporter=text",
     "types": "tsc",
     "release": "yarn test && yarn clean && yarn types && yarn lint && yarn build"
   },
@@ -52,12 +51,12 @@
   "files": [
     "README.md",
     "LICENSE",
-    "dist"
+    "dist",
+    "src"
   ],
   "devDependencies": {
     "@cmdcode/buff-utils": "^1.12.4",
-    "@cmdcode/crypto-utils": "^2.3.9",
-    "@cmdcode/keylink": "^1.4.3",
+    "@cmdcode/crypto-utils": "^2.3.10",
     "@noble/curves": "^0.9.1",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
@@ -76,7 +75,7 @@
     "rollup": "^3.2.3",
     "tap-spec": "^5.0.0",
     "tape": "^5.6.1",
-    "ts-node": "^10.9.1",
+    "tsx": "^3.12.7",
     "typescript": "^5.1.6",
     "zod": "^3.20.6"
   }

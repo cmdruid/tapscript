@@ -3,7 +3,7 @@ import { check_size }  from '../utils.js'
 
 import { BECH32_PREFIXES, lookup } from './const.js'
 
-import assert from 'assert'
+import { assert } from '../../lib/utils.js'
 
 import {
   AddressData,
@@ -41,14 +41,14 @@ export function decode_address (
   address : string
 ) : AddressData {
   const meta = lookup(address)
-  assert.ok(meta !== null)
+  assert(meta !== null)
   const { type, network } = meta
   if (!check_address(address)) {
     throw new TypeError('Invalid segwit address!')
   }
   const { data, version } = Bech32m.decode(address)
   const script = create_script(data)
-  assert.ok(version === 1)
+  assert(version === 1)
   return { type, data, network, script }
 }
 
@@ -57,7 +57,7 @@ function create_address (
   network ?: Network
 ) : string {
   const bytes = Buff.bytes(input)
-  assert.ok(bytes.length === 32)
+  assert(bytes.length === 32)
   return encode_keydata(bytes, network)
 }
 
