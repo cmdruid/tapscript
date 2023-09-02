@@ -40,7 +40,8 @@ export default function (t : Test) {
       if (scripts.length === 0) {
         t.test('Testing empty key tweak.', t => {
           t.plan(1)
-          const tapkey = Tap.tweak.get_tweaked_key(internalPubkey).slice(1)
+          const taptweak = Tap.tweak.get_tweak(internalPubkey)
+          const tapkey = Tap.tweak.tweak_pubkey(internalPubkey, taptweak).slice(1)
           t.equal(tapkey.hex, tweakedPubkey, 'Tweaked pubs should match.')
         })
       } else {
@@ -62,9 +63,9 @@ export default function (t : Test) {
             const cbyte   = Buff.hex(cblocks[i]).slice(0, 1).num
             const version = cbyte & 0xfe
             const sbytes  = encode_script(scripts[i]).hex
-            const target = Tap.encode_leaf(sbytes, version)
+            const target = Tap.encode.leaf(sbytes, version)
             t.equal(target, leaves[i], 'Leaf hash should match.')
-            const [ _, cblock ] = Tap.key.get_pubkey(internalPubkey, { tree: leafHashes, target,  version })
+            const { cblock } = Tap.key.from_pubkey(internalPubkey, { tree: leafHashes, target,  version })
             t.equal(cblock, cblocks[i], 'Control blocks should be equal.')
           })
         }

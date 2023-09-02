@@ -1,12 +1,12 @@
 import { Buff }          from '@cmdcode/buff-utils'
 import { decode_script } from './decode.js'
 import { encode_script } from './encode.js'
-import { is_bytes }      from '../utils.js'
+import { is_bytes }      from '../util.js'
 
 import {
   ScriptData,
   Word
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 export function to_asm (
   script  : ScriptData,

@@ -1,121 +1,91 @@
-import { Buff } from '@cmdcode/buff-utils'
-import { hash } from '@cmdcode/crypto-utils'
+import { Buff }      from '@cmdcode/buff-utils'
+import { is_bytes }  from '../util.js'
+import { encode_tx } from './encode.js'
+import { decode_tx } from './decode.js'
 
-import { LEAF_VERSIONS } from './const.js'
-import { is_hex }        from '../utils.js'
-import { encode_tx }     from './encode.js'
-import { to_json }       from './format.js'
-
-import * as Script from '../script/index.js'
+import * as schema from '../../schema/index.js'
 
 import {
-  ScriptData,
-  SizeData,
+  TxInput,
+  VinTemplate,
   TxBytes,
   TxData,
-  WitnessData
-} from '../../schema/index.js'
+  TxTemplate,
+  VoutTemplate,
+  TxOutput
+} from '../../types/index.js'
 
-import { assert } from '../../lib/utils.js'
-
-function parse_annex (
-  data : ScriptData[]
-) : Buff | null {
-  let item = data.at(-1)
-
-  if (is_hex(item)) {
-    item = Buff.hex(item)
-  }
-
-  if (
-    data.length > 1            &&
-    item instanceof Uint8Array &&
-    item[0] === 0x50
-  ) {
-    data.pop()
-    return Buff.raw(item)
-  }
-
-  return null
+const DEFAULT_TX = {
+  version  : 2,
+  vin      : [],
+  vout     : [],
+  locktime : 0
 }
 
-function parse_block (
-  data : ScriptData[]
-) : Buff | null {
-  let item = data.at(-1)
+const DEFAULT_VIN = {
+  scriptSig : [],
+  sequence  : 4294967293,
+  witness   : []
+}
 
-  if (is_hex(item)) {
-    item = Buff.hex(item)
+const DEFAULT_VOUT = {
+  value        : 0n,
+  scriptPubKey : []
+}
+
+export function parse_vin (
+  vin : VinTemplate | TxInput
+) : TxInput {
+  const sequence = (typeof vin.sequence === 'string')
+    ? Buff.hex(vin.sequence).num
+    : vin.sequence ?? DEFAULT_VIN.sequence
+  const prevout = (typeof vin.prevout !== 'undefined')
+    ? parse_vout(vin.prevout)
+    : vin.prevout
+  return { ...DEFAULT_VIN, ...vin, prevout, sequence }
+}
+
+export function parse_vout (
+  vout : VoutTemplate | TxOutput
+) : TxOutput {
+  let value : bigint
+  if (typeof vout.value === 'number') {
+    value = BigInt(vout.value)
+  } else if (typeof vout.value === 'string') {
+    value = Buff.hex(vout.value).big
+  } else if (typeof vout.value === 'bigint') {
+    value = vout.value
+  } else {
+    value = 0n
   }
+  return { ...DEFAULT_VOUT, ...vout, value }
+}
 
-  if (
-    data.length > 1            &&
-    item instanceof Uint8Array &&
-    item.length > 32           &&
-    LEAF_VERSIONS.includes(item[0] & 0xfe)
-  ) {
-    data.pop()
-    return Buff.raw(item)
+export function parse_tx (
+  txdata : TxBytes | TxData | TxTemplate
+) : TxData {
+  if (is_bytes(txdata)) {
+    return decode_tx(txdata)
   }
-
-  return null
+  const locktime = (typeof txdata.locktime === 'string')
+    ? Buff.hex(txdata.locktime).num
+    : txdata.locktime ?? DEFAULT_TX.locktime
+  const tx = { ...DEFAULT_TX, ...txdata, locktime }
+  tx.vin  = tx.vin.map(txin   => parse_vin(txin))
+  tx.vout = tx.vout.map(txout => parse_vout(txout))
+  return schema.tx.txdata.parse(tx)
 }
 
-function parse_witness_data (
-  data : ScriptData[]
-) : Buff | null {
-  if (data.length > 1) {
-    try {
-      const item = data.at(-1)
-      assert(item !== undefined)
-      data.pop()
-      return Script.to_bytes(item)
-    } catch (err) {
-      return null
-    }
+export function to_bytes (
+  txdata ?: TxBytes | TxData | TxTemplate
+) : Buff {
+  if (is_bytes(txdata)) {
+    decode_tx(txdata)
+    return Buff.bytes(txdata)
   }
-  return null
-}
-
-function parse_params (
-  data : ScriptData[]
-) : Buff[] {
-  const params : Buff[] = []
-  for (const d of data) {
-    if (is_hex(d) || d instanceof Uint8Array) {
-      params.push(Buff.bytes(d))
-    }
+  if (typeof txdata === 'object') {
+    const tx = parse_tx(txdata)
+    return encode_tx(tx)
   }
-  return params
-}
-
-export function parse_witness (
-  data : ScriptData[] = []
-) : WitnessData {
-  const items  = [ ...data ]
-  const annex  = parse_annex(items)
-  const cblock = parse_block(items)
-  const script = parse_witness_data(items)
-  const params = parse_params(items)
-  return { annex, cblock, script, params }
-}
-
-export function get_txid (
-  txdata : TxData | TxBytes
-) : string {
-  const json = to_json(txdata)
-  const data = encode_tx(json, true)
-  return hash.hash256(data).reverse().hex
-}
-
-export function get_txsize (
-  txdata : TxData | TxBytes
-) : SizeData {
-  const json   = to_json(txdata)
-  const bsize  = encode_tx(json, true).length
-  const fsize  = encode_tx(json, false).length
-  const weight = bsize * 3 + fsize
-  const remain = (weight % 4 > 0) ? 1 : 0
-  const vsize  = Math.floor(weight / 4) + remain
-  return { size: fsize, bsize, vsize, weight }
+  throw new Error('Invalid format: ' + String(typeof txdata))
 }

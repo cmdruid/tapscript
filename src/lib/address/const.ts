@@ -2,7 +2,7 @@ import {
   AddressMeta,
   AddressType,
   Network
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 import { decode_data } from './encoder.js'
 

@@ -4,7 +4,7 @@ import { encode_branch } from './encode.js'
 import {
   TapTree,
   TapProof
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 export function get_root (
   leaves : TapTree

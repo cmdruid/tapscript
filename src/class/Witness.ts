@@ -1,11 +1,12 @@
 import { Buff }    from '@cmdcode/buff-utils'
+
 import * as Script from '../lib/script/index.js'
 import * as Tx     from '../lib/tx/index.js'
 
 import {
   ScriptData,
   WitnessData
-} from '../schema/index.js'
+} from '../types/index.js'
 
 export class Witness {
   readonly _data : ScriptData[]

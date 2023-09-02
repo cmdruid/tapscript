@@ -1,17 +1,15 @@
-import { Buff, Bytes }  from '@cmdcode/buff-utils'
-import { check_size }   from '../utils.js'
-import { hash160pkh }   from './hash.js'
+import { Buff, Bytes } from '@cmdcode/buff-utils'
+import { hash160pkh }  from './hash.js'
+import { lookup }      from './const.js'
 
-import { assert } from '../../lib/utils.js'
+import * as assert from '../assert.js'
 
 import {
   AddressData,
   Network,
   ScriptData,
   Word
-} from '../../schema/index.js'
-
-import { lookup } from './const.js'
+} from '../../types/index.js'
 
 function check_address (
   address : string,
@@ -33,7 +31,7 @@ function encode_keydata (
   /* Encode a pubkey hash into a p2pkh address. */
   const bytes  = Buff.bytes(keydata)
   const prefix = (network === 'main') ? Buff.num(0x00) : Buff.num(0x6F)
-  check_size(keydata, 20)
+  assert.size(keydata, 20)
   return bytes.prepend(prefix).tob58chk()
 }
 
@@ -42,7 +40,7 @@ function decode_address (
 ) : AddressData {
   /* Decode a p2pkh address into a pubkey hash. */
   const meta = lookup(address)
-  assert(meta !== null)
+  assert.ok(meta !== null)
   const { type, network } = meta
   if (!check_address(address, network)) {
     throw new TypeError('Invalid p2pkh address:' + address)
@@ -57,7 +55,7 @@ function create_address (
   network ?: Network
 ) : string {
   const bytes = Buff.bytes(input)
-  assert(bytes.length === 33)
+  assert.size(bytes, 33)
   const hash  = hash160pkh(bytes)
   return encode_keydata(hash, network)
 }
@@ -67,11 +65,11 @@ function create_script (
 ) : Word[] {
   /* Create a p2pkh script template. */
   const bytes = Buff.bytes(keydata)
-  check_size(bytes, 20)
+  assert.size(bytes, 20)
   return [ 'OP_DUP', 'OP_HASH160', bytes.hex, 'OP_EQUALVERIFY', 'OP_CHECKSIG' ]
 }
 
-export const P2PKH = {
+export default {
   create : create_address,
   encode : encode_keydata,
   decode : decode_address

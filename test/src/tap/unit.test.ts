@@ -11,7 +11,7 @@ export default function (t : Test) {
     t.plan(vectors.length)
     for (const [ src, ans ] of vectors) {
       const s = encode_script(src)
-      const leaf = Tap.encode_leaf(s, 0xc0)
+      const leaf = Tap.encode.leaf(s, 0xc0)
       t.equal(leaf, ans, 'Tapleaf should match')
     }
   })
@@ -19,7 +19,7 @@ export default function (t : Test) {
     const vectors = test_vectors.tapbranch
     t.plan(vectors.length)
     for (const [ src1, src2, ans ] of vectors) {
-      const branch = Tap.encode_branch(src1, src2)
+      const branch = Tap.encode.branch(src1, src2)
       t.equal(branch, ans, 'Tapbranch should match')
     }
   })
@@ -36,10 +36,10 @@ export default function (t : Test) {
     t.plan(vectors.length)
     for (const { scripts, index, pubkey, cblock } of vectors) {
       const data   = scripts.map(e => Script.encode(e))
-      const leaves = data.map(e => Tap.encode_leaf(e, 0xc0))
+      const leaves = data.map(e => Tap.encode.leaf(e, 0xc0))
       const script = Buff.raw(data[index]).hex
-      const target = Tap.encode_leaf(script)
-      const [ _, block ] = Tap.key.get_pubkey(pubkey, { tree: leaves, target })
+      const target = Tap.encode.leaf(script)
+      const { cblock : block } = Tap.key.from_pubkey(pubkey, { tree: leaves, target })
       t.equal(block, cblock, 'Control block should match')
     }
   }),
@@ -49,7 +49,7 @@ export default function (t : Test) {
     for (const { address, scripts, index, cblock } of vectors) {
       const decoded  = Address.P2TR.decode(address)
       const script  = Script.encode(scripts[index])
-      const target  = Tap.encode_leaf(script)
+      const target  = Tap.encode.leaf(script)
       const isValid = Tap.key.check_proof(decoded.data, target, cblock)
       t.true(isValid, 'Control block should be valid.')
     }

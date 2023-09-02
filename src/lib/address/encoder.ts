@@ -1,6 +1,6 @@
 import { Buff, Bytes, Encoder } from '@cmdcode/buff-utils'
 
-import { DecodedData } from '../../schema/index.js'
+import { DecodedData } from '../../types/index.js'
 
 function bech32_encode (
   prefix  : string,

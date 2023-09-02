@@ -2,10 +2,13 @@ import { Test } from 'tape'
 import { Buff } from '@cmdcode/buff-utils'
 import { keys } from '@cmdcode/crypto-utils'
 
-import { Address, Signer, Tap, Tx, } from '../../../src/index.js'
+import { Address, SigHash, Tap, Tx, } from '../../../src/index.js'
 
 import fs      from 'fs/promises'
 import { URL } from 'url'
+
+const { P2TR }    = Address
+const { taproot } = SigHash
 
 export async function inscription (t : Test) : Promise<void> {
   t.test('Example of an inscription transaction.', async t => {
@@ -36,12 +39,12 @@ export async function inscription (t : Test) : Promise<void> {
     // Basic format of an 'inscription' script.
     const script = [ pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF' ]
     // For tapscript spends, we need to convert this script into a 'tapleaf'.
-    const tapleaf = Tap.encode_script(script)
+    const tapleaf = Tap.encode.script(script)
     // Generate a tapkey that includes our leaf script. Also, create a merlke proof 
     // (cblock) that targets our leaf and proves its inclusion in the tapkey.
-    const [ tpubkey, cblock ] = Tap.key.get_pubkey(pubkey, { target: tapleaf })
+    const { tapkey, cblock } = Tap.key.from_pubkey(pubkey, { target: tapleaf })
     // A taproot address is simply the tweaked public key, encoded in bech32 format.
-    const address = Address.P2TR.create(tpubkey, 'regtest')
+    const address = P2TR.create(tapkey, 'regtest')
     if (VERBOSE) console.log('Your address:', address)
 
     /* NOTE: To continue with this example, send 100_000 sats to the above address.
@@ -49,7 +52,7 @@ export async function inscription (t : Test) : Promise<void> {
      * so that you can include that information below in the redeem tx.
      */ 
 
-    const txdata = Tx.create_tx({
+    const txdata = Tx.parse_tx({
       vin  : [{
         // Use the txid of the funding transaction used to send the sats.
         txid: 'b8ed81aca92cd85458966de90bc0ab03409a321758c09e46090988b783459a4d',
@@ -60,7 +63,7 @@ export async function inscription (t : Test) : Promise<void> {
           // Feel free to change this if you sent a different amount.
           value: 100_000,
           // This is what our address looks like in script form.
-          scriptPubKey: [ 'OP_1', tpubkey ]
+          scriptPubKey: [ 'OP_1', tapkey ]
         },
       }],
       vout : [{
@@ -74,7 +77,7 @@ export async function inscription (t : Test) : Promise<void> {
     // For this example, we are signing for input 0 of our transaction,
     // using the untweaked secret key. We are also extending the signature 
     // to include a commitment to the tapleaf script that we wish to use.
-    const sig = Signer.taproot.sign_tx(seckey, txdata, { extension: tapleaf, txindex: 0 })
+    const sig = taproot.sign_tx(seckey, txdata, { extension: tapleaf, txindex: 0 })
 
     // Add the signature to our witness data for input 0, along with the script
     // and merkle proof (cblock) for the script.
@@ -82,7 +85,7 @@ export async function inscription (t : Test) : Promise<void> {
 
     // Check if the signature is valid for the provided public key, and that the
     // transaction is also valid (the merkle proof will be validated as well).
-    const isValid = Signer.taproot.verify_tx(txdata, { txindex : 0, pubkey, throws: true })
+    const isValid = taproot.verify_tx(txdata, { txindex : 0, pubkey, throws: true })
 
     if (VERBOSE) {
       console.log('Your txhex:', Tx.encode_tx(txdata).hex)

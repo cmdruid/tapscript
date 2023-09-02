@@ -1,5 +1,6 @@
 export * from './address.js'
 export * from './script.js'
+export * from './sig.js'
 export * from './tap.js'
 export * from './tx.js'
 export * from './util.js'

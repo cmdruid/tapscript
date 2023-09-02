@@ -1,11 +1,11 @@
 import { Buff, Stream } from '@cmdcode/buff-utils'
 import { get_asm_code } from './words.js'
-import { is_hex }       from '../utils.js'
+import { is_hex }       from '../util.js'
 
 import {
   ScriptData,
   Word
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 const MAX_WORD_SIZE = 0x208
 

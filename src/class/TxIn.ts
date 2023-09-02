@@ -1,40 +1,37 @@
 
-import { Bytes }  from '@cmdcode/buff-utils'
-
-import { Sequence }  from './Sequence.js'
-import { TxOutput }  from './TxOutput.js'
-import { Witness }   from './Witness.js'
+import { Bytes }    from '@cmdcode/buff-utils'
+import { Sequence } from './Sequence.js'
+import { TxOut }    from './TxOut.js'
+import { Witness }  from './Witness.js'
 
 import { segwit, taproot }     from '../lib/sig/index.js'
-import { create_vin, to_json } from '../lib/tx/index.js'
+import { parse_vin, parse_tx } from '../lib/tx/index.js'
 
-import { SignOptions } from '@cmdcode/crypto-utils'
-
-import { assert } from '../lib/utils.js'
+import * as assert from '../lib/assert.js'
 
 import {
-  HashConfig,
-  InputData,
-  InputTemplate,
+  HashOptions,
+  TxInput,
+  VinTemplate,
   ScriptData,
   ScriptEnum,
   TxBytes,
   TxData
-} from '../schema/index.js'
+} from '../types/index.js'
 
-export class TxInput {
-  readonly _data : InputData
+export class TxIn {
+  readonly _data : TxInput
   readonly _idx ?: number
 
   constructor (
-    txinput : InputTemplate | InputData,
+    txinput : VinTemplate | TxInput,
     idx    ?: number
   ) {
-    this._data = create_vin(txinput)
+    this._data = parse_vin(txinput)
     this._idx  = idx
   }
 
-  get data () : InputData {
+  get data () : TxInput {
     return this._data
   }
 
@@ -50,9 +47,9 @@ export class TxInput {
     return this.data.vout
   }
 
-  get prevout () : TxOutput | undefined {
+  get prevout () : TxOut | undefined {
     return (this.data.prevout !== undefined)
-      ? new TxOutput(this.data.prevout)
+      ? new TxOut(this.data.prevout)
       : undefined
   }
 
@@ -76,16 +73,15 @@ export class TxInput {
   }
 
   sign (
-    seckey   : Bytes,
-    txdata   : TxBytes | TxData, 
-    config  ?: HashConfig,
-    options ?: SignOptions
+    seckey  : Bytes,
+    txdata  : TxBytes | TxData, 
+    config ?: HashOptions
   ) {
     const { txindex = this.idx } = config ?? {}
-    const tx = to_json(txdata)
+    const tx = parse_tx(txdata)
 
-    assert(typeof txindex === 'number')
-    assert(txindex < tx.vin.length)
+    assert.ok(typeof txindex === 'number')
+    assert.ok(txindex < tx.vin.length)
 
     tx.vin[txindex] = this.data
 
@@ -93,7 +89,7 @@ export class TxInput {
       return segwit.sign_tx(seckey, tx, config)
     }
     if (this.type.startsWith('p2tr')) {
-      return taproot.sign_tx(seckey, tx, config, options)
+      return taproot.sign_tx(seckey, tx, config)
     }
     if (this.type.startsWith('p2pkh') || this.type.startsWith('p2sh')) {
       throw new Error('This library currently does not support signing legacy transactions.')

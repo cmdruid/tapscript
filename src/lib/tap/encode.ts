@@ -3,9 +3,7 @@ import { hash }  from '@cmdcode/crypto-utils'
 
 import * as Script from '../script/index.js'
 
-import { ScriptData } from '../../schema/index.js'
-
-const { digest } = hash
+import { ScriptData } from '../../types/index.js'
 
 const DEFAULT_VERSION = 0xc0
 
@@ -13,7 +11,7 @@ export function encode_leaf (
   data : Bytes,
   version = DEFAULT_VERSION
 ) : string {
-  return digest('TapLeaf', encode_version(version), data).hex
+  return hash.digest('TapLeaf', encode_version(version), data).hex
 }
 
 export function encode_script (
@@ -25,18 +23,25 @@ export function encode_script (
 }
 
 export function encode_branch (
-  leafA : string,
-  leafB : string
+  leaf_a : string,
+  leaf_b : string
 ) : string {
   // Compare leaves in lexical order.
-  if (leafB < leafA) {
+  if (leaf_b < leaf_a) {
     // Swap leaves if needed.
-    [ leafA, leafB ] = [ leafB, leafA ]
+    [ leaf_a, leaf_b ] = [ leaf_b, leaf_a ]
   }
   // Return digest of leaves as a branch hash.
-  return digest('TapBranch', leafA, leafB).hex
+  return hash.digest('TapBranch', leaf_a, leaf_b).hex
 }
 
 export function encode_version (version = 0xc0) : number {
   return version & 0xfe
+}
+
+export default {
+  branch  : encode_branch,
+  leaf    : encode_leaf,
+  script  : encode_script,
+  version : encode_version
 }

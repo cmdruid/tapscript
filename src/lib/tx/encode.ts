@@ -1,17 +1,15 @@
 import { Buff }          from '@cmdcode/buff-utils'
 import { encode_script } from '../script/encode.js'
-import { create_tx }     from './create.js'
+import { parse_tx }      from './parse.js'
+import { is_empty }      from '../util.js'
 
 import {
-  InputData,
-  OutputData,
-  SequenceData,
   ScriptData,
+  TxInput,
+  TxOutput,
   TxTemplate,
-  LockData,
-  ValueData,
   TxData
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 export function encode_tx (
   txdata : TxTemplate | TxData,
@@ -20,148 +18,114 @@ export function encode_tx (
   /* Convert a JSON-based Bitcoin transaction
    * into hex-encoded bytes.
    * */
-  const { version, vin, vout, locktime } = create_tx(txdata)
+  const { version, vin, vout, locktime } = parse_tx(txdata)
 
-  const useWitness = (omitWitness !== true && checkForWitness(vin))
+  const useWitness = (omitWitness !== true && check_witness(vin))
 
-  const raw = [ encodeVersion(version) ]
+  const raw = [ encode_version(version) ]
 
   if (useWitness) {
     raw.push(Buff.hex('0001'))
   }
 
-  raw.push(encodeInputs(vin))
-  raw.push(encodeOutputs(vout))
+  raw.push(encode_inputs(vin))
+  raw.push(encode_outputs(vout))
 
   for (const txin of vin) {
     if (useWitness) {
-      raw.push(encodeWitness(txin.witness))
+      raw.push(encode_witness(txin.witness))
     }
   }
 
-  raw.push(encodeLocktime(locktime))
+  raw.push(encode_locktime(locktime))
 
   return Buff.join(raw)
 }
 
-function checkForWitness (vin : InputData[]) : boolean {
+function check_witness (vin : TxInput[]) : boolean {
   /** Check if any witness data is present. */
   for (const txin of vin) {
-    const { witness } = txin
-    if (
-      typeof witness === 'string'   ||
-      witness instanceof Uint8Array ||
-      (Array.isArray(witness) && witness.length > 0)
-    ) {
-      return true
-    }
+    if (!is_empty(txin.witness)) return true
   }
   return false
 }
 
-export function encodeVersion (num : number) : Uint8Array {
+export function encode_version (num : number) : Buff {
   return Buff.num(num, 4).reverse()
 }
 
-export function encodeTxid (txid : string) : Uint8Array {
+export function encode_txid (txid : string) : Buff {
   return Buff.hex(txid, 32).reverse()
 }
 
-export function encodePrevOut (vout : number) : Uint8Array {
+export function encode_idx (vout : number) : Buff {
   return Buff.num(vout, 4).reverse()
 }
 
-export function encodeSequence (
-  sequence : SequenceData
-) : Uint8Array {
-  if (typeof sequence === 'string') {
-    return Buff.hex(sequence, 4).reverse()
-  }
-  if (typeof sequence === 'number') {
-    return Buff.num(sequence, 4).reverse()
-  }
-  throw new Error('Unrecognized format: ' + String(sequence))
+export function encode_sequence (
+  sequence : number
+) : Buff {
+  return Buff.num(sequence, 4).reverse()
 }
 
-function encodeInputs (arr : InputData[]) : Uint8Array {
-  const raw : Uint8Array[] = [ Buff.varInt(arr.length) ]
-  for (const vin of arr) {
-    const { txid, vout, scriptSig, sequence } = vin
-    raw.push(encodeTxid(txid))
-    raw.push(encodePrevOut(vout))
-    raw.push(encode_script(scriptSig, true))
-    raw.push(encodeSequence(sequence))
-  }
+function encode_inputs (arr : TxInput[]) : Buff {
+  const raw : Buff[] = [ Buff.varInt(arr.length) ]
+  for (const vin of arr) raw.push(encode_vin(vin))
   return Buff.join(raw)
 }
 
-export function encodeValue (
-  value : ValueData
-) : Uint8Array {
-  if (typeof value === 'number') {
-    if (value % 1 !== 0) {
-      throw new Error('Value must be an integer:' + String(value))
-    }
-    return Buff.num(value, 8).reverse()
-  }
+export function encode_vin (vin : TxInput) : Buff {
+  const { txid, vout, scriptSig, sequence } = vin
+  return Buff.join([
+    encode_txid(txid),
+    encode_idx(vout),
+    encode_script(scriptSig, true),
+    encode_sequence(sequence)
+  ])
+}
+
+export function encode_value (
+  value : bigint
+) : Buff {
   return Buff.big(value, 8).reverse()
 }
 
-function encodeOutputs (arr : OutputData[]) : Uint8Array {
-  const raw : Uint8Array[] = [ Buff.varInt(arr.length) ]
-  for (const vout of arr) {
-    raw.push(encodeOutput(vout))
-  }
+function encode_outputs (arr : TxOutput[]) : Buff {
+  const raw : Buff[] = [ Buff.varInt(arr.length) ]
+  for (const vout of arr) raw.push(encode_vout(vout))
   return Buff.join(raw)
 }
 
-function encodeOutput (
-  vout : OutputData
-) : Uint8Array {
+function encode_vout (
+  vout : TxOutput
+) : Buff {
   const { value, scriptPubKey } = vout
   const raw : Uint8Array[] = []
-  raw.push(encodeValue(value))
+  raw.push(encode_value(value))
   raw.push(encode_script(scriptPubKey, true))
   return Buff.join(raw)
 }
 
-function encodeWitness (
+function encode_witness (
   data : ScriptData[] = []
-) : Uint8Array {
-  const buffer : Uint8Array[] = []
+) : Buff {
+  const buffer : Buff[] = []
   if (Array.isArray(data)) {
     const count = Buff.varInt(data.length)
     buffer.push(count)
     for (const entry of data) {
-      buffer.push(encodeData(entry))
+      buffer.push(encode_data(entry))
     }
     return Buff.join(buffer)
   } else { return Buff.bytes(data) }
 }
 
-function encodeData (data : ScriptData) : Buff {
-  return (!isEmpty(data))
+function encode_data (data : ScriptData) : Buff {
+  return (!is_empty(data))
     ? encode_script(data, true)
     : new Buff(0)
 }
 
-function isEmpty (data : ScriptData) : boolean {
-  if (Array.isArray(data)) {
-    return data.length === 0
-  }
-  if (typeof data === 'string') {
-    if (data === '') return true
-  }
-  const bytes = Buff.bytes(data)
-  return bytes.length === 1 && bytes[0] === 0
-}
-
-export function encodeLocktime (locktime : LockData) : Uint8Array {
-  if (typeof locktime === 'string') {
-    return Buff.hex(locktime, 4)
-  }
-  if (typeof locktime === 'number') {
-    return Buff.num(locktime, 4).reverse()
-  }
-  throw new Error('Unrecognized format: ' + String(locktime))
+export function encode_locktime (locktime : number) : Buff {
+  return Buff.num(locktime, 4).reverse()
 }

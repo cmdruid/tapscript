@@ -1,59 +1,61 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
 import { keys }        from '@cmdcode/crypto-utils'
 
-import { assert } from '../../lib/utils.js'
+import * as assert from '../assert.js'
 
-import { get_tweaked_key } from './tweak.js'
-import { safeThrow }       from '../utils.js'
-import { parse_xonly }     from './utils.js'
 import { merkleize }       from './tree.js'
 import { encode_branch }   from './encode.js'
 
 import {
+  get_tweak,
+  tweak_pubkey,
+  tweak_seckey
+} from './tweak.js'
+
+import {
   parse_cblock,
-  read_parity
+  parse_parity_bit
 } from './parse.js'
 
 import {
   TapConfig,
   TapKey
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 const DEFAULT_VERSION = 0xc0
 
-export function get_seckey (
+export function from_seckey (
   seckey  : Bytes,
-  config  : TapConfig = {}
+  config ?: TapConfig
 ) : TapKey {
-  return get_tapkey(seckey, { ...config, isPrivate: true })
+  return get_tapkey(seckey, { ...config, is_secret: true })
 }
 
-export function get_pubkey (
+export function from_pubkey (
   pubkey  : Bytes,
-  config  : TapConfig = {}
+  config ?: TapConfig
 ) : TapKey {
-  return get_tapkey(pubkey, { ...config, isPrivate: false })
+  return get_tapkey(pubkey, { ...config, is_secret: false })
 }
 
 function get_tapkey (
-  intkey : Bytes,
-  config : TapConfig = {}
+  int_key : Bytes,
+  config  : TapConfig = {}
 ) : TapKey {
   const {
-    isPrivate = false,
+    is_secret = false,
     tree      = [],
     version   = DEFAULT_VERSION
   } = config
 
-  const int_key = (isPrivate)
-    ? keys.get_pubkey(intkey, true)
-    : Buff.bytes(intkey)
-
-  assert(int_key.length === 32)
+  const int_pub = (is_secret)
+    ? keys.get_pubkey(int_key, true)
+    : keys.convert_32(int_key)
 
   let { target } = config
 
-  let tapkey : Buff, ctrlpath : string[] = []
+  let taptweak : Buff,
+      ctrlpath : string[] = []
 
   if (target !== undefined) {
     target = Buff.bytes(target).hex
@@ -63,21 +65,22 @@ function get_tapkey (
       // Get the control path from the merkelized output.
       ctrlpath = path
       // Get the tapped key from the internal key.
-      tapkey = get_tweaked_key(intkey, root, isPrivate)
+      taptweak = get_tweak(int_pub, root)
        // Get the tapped key from the single tapleaf.
     } else {
-      tapkey = get_tweaked_key(intkey, target, isPrivate)
+      taptweak = get_tweak(int_pub, target)
     }
   } else {
     // Get the tapped key from an empty tweak.
-    tapkey = get_tweaked_key(intkey, undefined, isPrivate)
+    taptweak = get_tweak(int_pub, new Uint8Array())
   }
-  // Get the parity bit for the (public) tapkey.
-  const parity : number = (isPrivate)
-    ? keys.get_pubkey(tapkey, false)[0]
-    : tapkey[0]
+  const fullkey = (is_secret)
+    ? tweak_seckey(int_key, taptweak)
+    : tweak_pubkey(int_pub, taptweak)
+  const parity = parse_parity_bit(fullkey[0])
+  const tapkey = keys.convert_32(fullkey).hex
   // Get the block version / parity bit.
-  const cbit = Buff.num(version + read_parity(parity))
+  const cbit = Buff.num(version + parity)
   // Create the control block, starting with
   // the control bit and the (x-only) pubkey.
   const block = [ cbit, int_key ]
@@ -87,47 +90,42 @@ function get_tapkey (
   }
   // Merge the data together into one array.
   const cblock = Buff.join(block)
-  // If target is not undefined:
-  if (target !== undefined) {
-    // Check that the path is valid.
-    if (!check_proof(tapkey, target, cblock, config)) {
-      throw new Error('Path checking failed! Unable to generate path.')
-    }
+
+  return {
+    parity,
+    tapkey,
+    target,
+    version,
+    cblock   : cblock.hex,
+    int_pub  : int_pub.hex,
+    path     : ctrlpath,
+    taptweak : taptweak.hex
   }
-  return [ parse_xonly(tapkey).hex, cblock.hex ]
 }
 
 export function check_proof (
   tapkey : Bytes,
   target : Bytes,
-  cblock : Bytes,
-  config : TapConfig = {}
+  cblock : Bytes
 ) : boolean {
-  const { isPrivate = false, throws = false } = config
-  const { parity, paths, intkey } = parse_cblock(cblock)
+  assert.size(tapkey, 32)
+  const { parity, path, int_pub } = parse_cblock(cblock)
 
-  const pub = (isPrivate)
-    ? keys.get_pubkey(tapkey, true)
-    : parse_xonly(tapkey)
-
-  const extkey = Buff.join([ parity, pub ])
-
-  if (extkey.length !== 33) {
-    return safeThrow('Invalid tapkey: ' + extkey.hex, throws)
-  }
+  const extkey = Buff.join([ parity, tapkey ])
 
   let branch = Buff.bytes(target).hex
 
-  for (const path of paths) {
-    branch = encode_branch(branch, path)
+  for (const leaf of path) {
+    branch = encode_branch(branch, leaf)
   }
 
-  const k = get_tweaked_key(intkey, branch)
+  const twk = get_tweak(int_pub, branch)
+  const key = tweak_pubkey(int_pub, twk)
 
   // console.log('branch:', branch)
-  // console.log('intkey:', Buff.raw(intkey).hex)
+  // console.log('intkey:', int_pub)
   // console.log('extkey:', extkey.hex)
-  // console.log('tapkey:', k.hex)
+  // console.log('tapkey:', key.hex)
 
-  return (Buff.raw(k).hex === Buff.raw(extkey).hex)
+  return (Buff.raw(key).hex === Buff.raw(extkey).hex)
 }

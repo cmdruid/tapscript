@@ -1,20 +1,20 @@
-import { assert } from '../utils.js'
+import * as assert from '../assert.js'
 
 import {
-  HashConfig,
-  InputData,
+  HashOptions,
+  TxInput,
   TxData
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 export function parse_txinput (
   txdata : TxData,
-  config : HashConfig = {}
-) : InputData {
+  config : HashOptions = {}
+) : TxInput {
   const { txindex, txinput } = config
   const ret = (typeof txindex === 'number')
     ? txdata.vin.at(txindex)
     : txinput
-  assert(ret !== undefined)
+  assert.ok(ret !== undefined)
   return ret
 }
 
@@ -29,7 +29,7 @@ export function check_anypay (
 
 export function validate_config (
   txdata : TxData,
-  config : HashConfig = {}
+  config : HashOptions = {}
 ) : void {
   const { txindex } = config
   const { vin }     = txdata

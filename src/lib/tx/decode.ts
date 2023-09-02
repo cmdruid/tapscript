@@ -3,9 +3,9 @@ import { Buff, Stream } from '@cmdcode/buff-utils'
 import {
   TxBytes,
   TxData,
-  InputData,
-  OutputData
-} from '../../schema/index.js'
+  TxInput,
+  TxOutput
+} from '../../types/index.js'
 
 export function decode_tx (
   bytes : TxBytes
@@ -59,35 +59,35 @@ function check_witness_flag (stream : Stream) : boolean {
   return false
 }
 
-function read_inputs (stream : Stream) : InputData[] {
+function read_inputs (stream : Stream) : TxInput[] {
   const inputs = []
   const vinCount = stream.readSize()
   for (let i = 0; i < vinCount; i++) {
-    inputs.push(read_input(stream))
+    inputs.push(decode_vin(stream))
   }
   return inputs
 }
 
-function read_input (stream : Stream) : InputData {
+export function decode_vin (stream : Stream) : TxInput {
   return {
-    txid      : stream.read(32).reverse().toHex(),
-    vout      : stream.read(4).reverse().toNum(),
+    txid      : stream.read(32).reverse().hex,
+    vout      : stream.read(4).reverse().num,
     scriptSig : read_script(stream, true),
-    sequence  : stream.read(4).reverse().toHex(),
+    sequence  : stream.read(4).reverse().num,
     witness   : []
   }
 }
 
-function read_outputs (stream : Stream) : OutputData[] {
+function read_outputs (stream : Stream) : TxOutput[] {
   const outputs  = []
   const outcount = stream.readSize()
   for (let i = 0; i < outcount; i++) {
-    outputs.push(read_output(stream))
+    outputs.push(decode_vout(stream))
   }
   return outputs
 }
 
-function read_output (stream : Stream) : OutputData {
+export function decode_vout (stream : Stream) : TxOutput {
   return {
     value        : stream.read(8).reverse().big,
     scriptPubKey : read_script(stream, true)

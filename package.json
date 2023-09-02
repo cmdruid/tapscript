@@ -21,11 +21,9 @@
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin typescript",
     "clean": "rm -rf dist/* coverage .nyc_output",
-    "start": "tsx",
-    "scratch": "yarn start test/scratch.ts",
+    "scratch": "tsx test/scratch.ts",
     "lint": "eslint . --ext .ts",
-    "fix": "eslint --fix . --ext .ts",
-    "test": "nyc --reporter=lcov yarn start test/tape.ts | tap-spec; nyc report ---reporter=text",
+    "test": "nyc --reporter=lcov tsx test/tape.ts | tap-spec; nyc report ---reporter=text",
     "types": "tsc",
     "release": "yarn test && yarn clean && yarn types && yarn lint && yarn build"
   },
@@ -56,7 +54,7 @@
   ],
   "devDependencies": {
     "@cmdcode/buff-utils": "^1.12.4",
-    "@cmdcode/crypto-utils": "^2.3.10",
+    "@cmdcode/crypto-utils": "^2.4.0",
     "@noble/curves": "^0.9.1",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",

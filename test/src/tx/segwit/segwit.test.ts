@@ -1,7 +1,9 @@
 import { Test }  from 'tape'
 import { Tx }    from '../../../../src/index.js'
-import test_data from './valid.vectors.json' assert { type: 'json' }
+
 import { parseVectors } from './utils.js'
+
+import test_data from './valid.vectors.json' assert { type: 'json' }
 
 export default function (t :Test) : void {
   const vectors = parseVectors(test_data)

@@ -196,10 +196,10 @@
   resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.12.4.tgz#ec6d9e47c312023024404d1c00d827a50549a502"
   integrity sha512-nftOvZk0XgWioftxEF2QZA64S83aeUIcPtTsBAqpWsz/woEPxxzGheJG0WcNRffddeT7Ww3dqgAjpu5JOEyXVw==
 
-"@cmdcode/crypto-utils@^2.3.10":
-  version "2.3.10"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-2.3.10.tgz#b08fdc824ef56dc9ac1ef7ea3738bb22ca57dd88"
-  integrity sha512-w5OfFa7l6VzFTVt5d2CMkZtHFQUPCcKa9eSy52bT7vLC2QO+vdyMPjOCZUjSpPqsg378CbFelSz/f2y21m23dQ==
+"@cmdcode/crypto-utils@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-2.4.0.tgz#6801f6c49061f83c66030e77b172efec9f17d3dd"
+  integrity sha512-2qfPhT0okqqzTWvtSFumxmbR9ZJbjxCR7KlcWjY7QodWkcaftatNta5An/kD8WRO0cJPKmhU9ZPjzRVY+Gau5w==
 
 "@esbuild-kit/cjs-loader@^2.4.2":
   version "2.4.2"

@@ -1,19 +1,21 @@
 import { Buff } from '@cmdcode/buff-utils'
 import { hash } from '@cmdcode/crypto-utils'
 
-import { TxInput }  from './TxInput.js'
-import { TxOutput } from './TxOutput.js'
-import { Locktime } from './Locktime.js'
+import {
+  encode_tx,
+  parse_tx
+} from '../lib/tx/index.js'
 
-import * as Tx from '../lib/tx/index.js'
+import { TxIn }     from './TxIn.js'
+import { TxOut }    from './TxOut.js'
+import { Locktime } from './Locktime.js'
 
 import {
   TransactionData,
   TxBytes,
   TxData,
-  TxTemplate,
-  validate
-} from '../schema/index.js'
+  TxTemplate
+} from '../types/index.js'
 
 const { hash256 } = hash
 
@@ -21,15 +23,14 @@ export class Transaction {
   readonly _data : TxData
 
   static create (template : TxTemplate) {
-    const txdata = Tx.create_tx(template)
+    const txdata = parse_tx(template)
     return new Transaction(txdata)
   }
 
   constructor (
     txdata : TxBytes | TxData
   ) {
-    txdata     = Tx.to_json(txdata)
-    this._data = validate.tx.data.parse(txdata)
+    this._data = parse_tx(txdata)
   }
 
   get data () : TxData {
@@ -40,12 +41,12 @@ export class Transaction {
     return this.data.version
   }
 
-  get vin () : TxInput[] {
-    return this.data.vin.map((e, i) => new TxInput(e, i))
+  get vin () : TxIn[] {
+    return this.data.vin.map((e, i) => new TxIn(e, i))
   }
 
-  get vout () : TxOutput[] {
-    return this.data.vout.map((e, i) => new TxOutput(e, i))
+  get vout () : TxOut[] {
+    return this.data.vout.map((e, i) => new TxOut(e, i))
   }
 
   get locktime () : Locktime {
@@ -53,11 +54,11 @@ export class Transaction {
   }
 
   get base () : Buff {
-    return Tx.encode_tx(this.data, true)
+    return encode_tx(this.data, true)
   }
 
   get buff () : Buff {
-    return Tx.encode_tx(this.data)
+    return encode_tx(this.data)
   }
 
   get raw () : Uint8Array {

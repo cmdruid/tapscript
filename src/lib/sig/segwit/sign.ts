@@ -3,19 +3,19 @@ import { noble }       from '@cmdcode/crypto-utils'
 import { hash_tx }     from './hash.js'
 
 import {
-  HashConfig,
+  HashOptions,
   TxBytes,
   TxData
-} from '../../../schema/index.js'
+} from '../../../types/index.js'
 
 export function sign_tx (
   seckey  : Bytes,
   txdata  : TxBytes | TxData,
-  config  : HashConfig = {}
+  options : HashOptions = {}
 ) : Buff {
-  const { sigflag = 0x01 } = config
+  const { sigflag = 0x01 } = options
   const sec  = Buff.bytes(seckey)
-  const hash = hash_tx(txdata, config)
+  const hash = hash_tx(txdata, options)
   const sig  = noble.secp.sign(hash, sec).toDERRawBytes(true)
   return Buff.join([ sig, sigflag ])
 }

@@ -3,29 +3,33 @@ import { Buff }    from '@cmdcode/buff-utils'
 import * as ecc    from '@cmdcode/crypto-utils'
 import { schnorr } from '@noble/curves/secp256k1'
 
-import { decode_tx } from '../../../../src/lib/tx/decode.js'
-import * as HASH     from '../../../../src/lib/sig/taproot/hash.js'
-import * as taproot  from '../../../../src/lib/sig/taproot/index.js'
-import test_vectors  from './sig.vectors.json' assert { type: 'json' }
+import { decode_tx }  from '../../../../src/lib/tx/decode.js'
+import { Tap }        from '../../../../src/index.js'
+import { parse_vout } from '../../../../src/lib/tx/parse.js'
 
-import { Tap } from '../../../../src/index.js'
+import * as HASH    from '../../../../src/lib/sig/taproot/hash.js'
+import * as taproot from '../../../../src/lib/sig/taproot/index.js'
+
+import test_vectors from './sig.vectors.json' assert { type: 'json' }
 
 const { txhex, utxos, spends, precompute } = test_vectors
 
 const tx = decode_tx(txhex)
 
+const prevouts = utxos.map(e => parse_vout(e))
+
 export function test_computehash(t : Test) {
   t.test('Test the intermediary hashes used for sighash construction.', t => {
     t.plan(5)
-    const outpoints = HASH.hashOutpoints(tx.vin)
+    const outpoints = HASH.hash_outpoints(tx.vin)
     t.equal(Buff.raw(outpoints).hex, precompute.hashPrevouts, 'Outpoint hash should match.')
-    const sequence = HASH.hashSequence(tx.vin)
+    const sequence = HASH.hash_sequence(tx.vin)
     t.equal(Buff.raw(sequence).hex, precompute.hashSequences, 'Sequence hash should match.')
-    const outputs  = HASH.hashOutputs(tx.vout)
+    const outputs  = HASH.hash_outputs(tx.vout)
     t.equal(Buff.raw(outputs).hex, precompute.hashOutputs, 'Output hash should match.')
-    const amounts  = HASH.hashAmounts(utxos)
+    const amounts  = HASH.hash_amounts(prevouts)
     t.equal(Buff.raw(amounts).hex, precompute.hashAmounts, 'Amounts hash should match.')
-    const scripts  = HASH.hashScripts(utxos)
+    const scripts  = HASH.hash_scripts(prevouts)
     t.equal(Buff.raw(scripts).hex, precompute.hashScriptPubkeys, 'Scripts hash should match.')
   })
 }
@@ -34,7 +38,7 @@ export function test_signatures(t : Test) {
   t.test('Test vectors for signature hash construction.', async t => {
     const vectors = spends
     t.plan(vectors.length * 11)
-    tx.vin.map((e, i) => e.prevout = utxos[i])
+    tx.vin.map((e, i) => e.prevout = prevouts[i])
     for (const { given, intermediary, expected } of vectors) {
       // Unpack our vector data.
       const { txinIndex, hashType, internalPrivkey, merkleRoot } = given
@@ -45,7 +49,7 @@ export function test_signatures(t : Test) {
       t.equal(taptweak.hex, tweak, 'The tap tweak should match.')
       // Test our ability to tweak the private key.\
       const tweakedPrv = Tap.tweak.tweak_seckey(internalPrivkey, taptweak)
-      t.equal(tweakedPrv.hex, tweakedPrivkey, 'The tweaked prvkey should match.')
+      t.equal(tweakedPrv.hex, tweakedPrivkey, 'The tweaked secret key should match.')
       // Test our ability to calculate the signature hash.
       const actual_hash = taproot.hash_tx(tx, { sigflag: hashType, txindex: txinIndex })
       t.equal(actual_hash.hex, sigHash, 'The signature hashes should match.')

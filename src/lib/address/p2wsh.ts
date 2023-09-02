@@ -1,9 +1,10 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { check_size }  from '../utils.js'
 import { sha256sh }    from './hash.js'
+import { Bech32 }      from './encoder.js'
 
 import { BECH32_PREFIXES, lookup } from './const.js'
 
+import * as assert from '../assert.js'
 import * as Script from '../script/index.js'
 
 import {
@@ -11,11 +12,7 @@ import {
   Network,
   ScriptData,
   Word
-} from '../../schema/index.js'
-
-import { assert } from '../../lib/utils.js'
-
-import { Bech32 } from './encoder.js'
+} from '../../types/index.js'
 
 const VALID_PREFIXES = [ 'bc1q', 'tb1q', 'bcrt1q' ]
 
@@ -36,7 +33,7 @@ export function encode_keydata (
 ) : string {
   const prefix = BECH32_PREFIXES[network]
   const bytes = Buff.bytes(keydata)
-  check_size(bytes, 32)
+  assert.size(bytes, 32)
   return Bech32.encode(prefix, bytes)
 }
 
@@ -44,14 +41,14 @@ export function decode_address (
   address : string
 ) : AddressData {
   const meta = lookup(address)
-  assert(meta !== null)
+  assert.ok(meta !== null)
   const { type, network } = meta
   if (!check_address(address)) {
     throw new TypeError('Invalid segwit address!')
   }
   const { data, version } = Bech32.decode(address)
   const script = create_script(data)
-  assert(version === 0)
+  assert.ok(version === 0)
   return { type, data, network, script }
 }
 
@@ -68,11 +65,11 @@ export function create_script (
   keydata : Bytes
 ) : Word[] {
   const bytes = Buff.bytes(keydata)
-  check_size(bytes, 32)
+  assert.size(bytes, 32)
   return [ 'OP_0', bytes.hex ]
 }
 
-export const P2WSH = {
+export default {
   create : create_address,
   encode : encode_keydata,
   decode : decode_address

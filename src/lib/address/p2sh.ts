@@ -1,7 +1,8 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { check_size }  from '../utils.js'
 import { hash160sh }   from './hash.js'
+import { lookup }      from './const.js'
 
+import * as assert from '../assert.js'
 import * as Script from '../script/index.js'
 
 import {
@@ -9,10 +10,7 @@ import {
   Network,
   ScriptData,
   Word
-} from '../../schema/index.js'
-
-import { lookup } from './const.js'
-import { assert } from '../../lib/utils.js'
+} from '../../types/index.js'
 
 export function check_address (
   address : string,
@@ -33,7 +31,7 @@ export function encode_keydata (
 ) : string {
   const prefix = (network === 'main') ? Buff.num(0x05) : Buff.num(0xC4)
   const bytes  = Buff.bytes(input)
-  check_size(bytes, 20)
+  assert.size(bytes, 20)
   return bytes.prepend(prefix).tob58chk()
 }
 
@@ -41,7 +39,7 @@ export function decode_address (
   address : string
 ) : AddressData {
   const meta = lookup(address)
-  assert(meta !== null)
+  assert.ok(meta !== null)
   const { type, network } = meta
   if (!check_address(address, network)) {
     throw new TypeError('Invalid p2sh address:' + address)
@@ -64,11 +62,11 @@ export function create_script (
   keydata : Bytes
 ) : Word[] {
   const bytes = Buff.bytes(keydata)
-  check_size(bytes, 20)
+  assert.size(bytes, 20)
   return [ 'OP_HASH160', bytes.hex, 'OP_EQUAL' ]
 }
 
-export const P2SH = {
+export default {
   create : create_address,
   encode : encode_keydata,
   decode : decode_address

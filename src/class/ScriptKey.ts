@@ -9,7 +9,7 @@ import {
   ScriptEnum,
   ScriptMeta,
   Word
-} from '../schema/index.js'
+} from '../types/index.js'
 
 const { hash160, hash256 } = hash
 
@@ -37,7 +37,7 @@ export class ScriptKey {
       case 'p2w-sh':
         return hash256(this.hex).hex
       case 'p2tr':
-        return Tap.encode_leaf(this.hex)
+        return Tap.encode.leaf(this.hex)
       default:
         throw new Error('Unrecognized script format: ' + this.type)
     }

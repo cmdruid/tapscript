@@ -1,6 +1,6 @@
 export { Transaction } from './Transaction.js'
-export { TxInput }     from './TxInput.js'
-export { TxOutput }    from './TxOutput.js'
+export { TxIn }        from './TxIn.js'
+export { TxOut }       from './TxOut.js'
 export { ScriptKey }   from './ScriptKey.js'
 export { Sequence }    from './Sequence.js'
 export { Witness }     from './Witness.js'

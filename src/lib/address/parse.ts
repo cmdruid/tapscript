@@ -7,7 +7,7 @@ import {
   AddressData,
   Network,
   ScriptData
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 export function parse_address (address : string) : AddressData {
   for (const row of ADDR_TYPES) {

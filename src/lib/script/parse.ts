@@ -1,7 +1,7 @@
 
 import { Buff }         from '@cmdcode/buff-utils'
 import { SCRIPT_TYPES } from './const.js'
-import { is_hex }       from '../utils.js'
+import { is_hex }       from '../util.js'
 
 import {
   to_asm,
@@ -11,7 +11,7 @@ import {
 import {
   ScriptData,
   ScriptMeta
-} from '../../schema/index.js'
+} from '../../types/index.js'
 
 export function parse_scriptkey (
   script : ScriptData

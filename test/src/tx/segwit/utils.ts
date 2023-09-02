@@ -1,5 +1,5 @@
-import { Buff } from '@cmdcode/buff-utils'
-import { InputData } from '../../../../src'
+import { Buff }    from '@cmdcode/buff-utils'
+import { TxInput } from '../../../../src'
 
 type TestInput = [
   prev_hash : string,
@@ -16,7 +16,7 @@ type TestData = [
 
 interface TestVector {
   txhex  : string
-  inputs : InputData
+  inputs : TxInput
   flags  : string[]
 }
 

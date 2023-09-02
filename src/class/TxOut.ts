@@ -1,19 +1,19 @@
-import { ScriptKey }  from './ScriptKey.js'
-import { OutputData, ValueData } from '../schema/index.js'
+import { ScriptKey } from './ScriptKey.js'
+import { TxOutput }  from '../types/index.js'
 
-export class TxOutput {
-  readonly _data : OutputData
+export class TxOut {
+  readonly _data : TxOutput
   readonly _idx ?: number
 
   constructor (
-    txout : OutputData,
+    txout : TxOutput,
     idx  ?: number
   ) {
     this._data = txout
     this._idx  = idx
   }
 
-  get data () : OutputData {
+  get data () : TxOutput {
     return this._data
   }
 
@@ -21,7 +21,7 @@ export class TxOutput {
     return this._idx
   }
 
-  get value () : ValueData {
+  get value () : bigint {
     return this._data.value
   }
 
@@ -29,7 +29,7 @@ export class TxOutput {
     return new ScriptKey(this._data.scriptPubKey)
   }
 
-  toJSON () : OutputData {
+  toJSON () : TxOutput {
     return this.data
   }
 }

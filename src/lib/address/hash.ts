@@ -1,12 +1,13 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
 import { hash }        from '@cmdcode/crypto-utils'
 import { to_bytes }    from '../script/index.js'
-import { check_size }  from '../utils.js'
-import { ScriptData }  from '../../schema/index.js'
+import { ScriptData }  from '../../types/index.js'
+
+import * as assert from '../assert.js'
 
 export function hash160pkh (pubkey : Bytes) : Buff {
   const bytes = Buff.bytes(pubkey)
-  check_size(bytes, 33)
+  assert.size(bytes, 33)
   return hash.hash160(bytes)
 }
 

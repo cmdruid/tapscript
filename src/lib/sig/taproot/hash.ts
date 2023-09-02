@@ -1,28 +1,28 @@
 import { Buff } from '@cmdcode/buff-utils'
 
+import { parse_tx }      from '../../tx/index.js'
 import { encode_script } from '../../script/encode.js'
 
 import * as ENC    from '../../tx/encode.js'
 import * as Script from '../../script/index.js'
-import * as Tx     from '../../tx/index.js'
 import * as util   from '../utils.js'
 
 import {
-  HashConfig,
-  InputData,
-  OutputData,
+  HashOptions,
   ScriptData,
   TxBytes,
-  TxData
-} from '../../../schema/index.js'
+  TxData,
+  TxInput,
+  TxOutput
+} from '../../../types/index.js'
 
-import { assert } from '../../utils.js'
+import * as assert from '../../assert.js'
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
 export function hash_tx (
   template : TxBytes | TxData,
-  config   : HashConfig = {}
+  config   : HashOptions = {}
 ) : Buff {
   // Unpack configuration.
   const {
@@ -34,7 +34,7 @@ export function hash_tx (
     separator_pos = 0xFFFFFFFF
   } = config
   // Normalize the txdata object.
-  const tx = Tx.to_json(template)
+  const tx = parse_tx(template)
   // Check that the config is valid.
   util.validate_config(tx, config)
   // Unpack the txdata object.
@@ -54,7 +54,7 @@ export function hash_tx (
   }
   // Define the parameters of the transaction.
   const is_anypay = (sigflag & 0x80) === 0x80
-  const annex     = getAnnexData(witness)
+  const annex     = get_annex_data(witness)
   const annexBit  = (annex !== undefined) ? 1 : 0
   const extendBit = (extension !== undefined) ? 1 : 0
   const spendType = ((extflag + extendBit) * 2) + annexBit
@@ -62,30 +62,30 @@ export function hash_tx (
 
   // Begin building our preimage.
   const preimage = [
-    hashtag,                      // Buffer input with
-    hashtag,                      // 2x hashed strings.
-    Buff.num(0x00, 1),            // Add zero-byte.
-    Buff.num(sigflag, 1),         // Commit to signature flag.
-    ENC.encodeVersion(version),   // Commit to tx version.
-    ENC.encodeLocktime(locktime)  // Commit to tx locktime.
+    hashtag,                       // Buffer input with
+    hashtag,                       // 2x hashed strings.
+    Buff.num(0x00, 1),             // Add zero-byte.
+    Buff.num(sigflag, 1),          // Commit to signature flag.
+    ENC.encode_version(version),   // Commit to tx version.
+    ENC.encode_locktime(locktime)  // Commit to tx locktime.
   ]
 
   if (!is_anypay) {
     // If flag ANYONE_CAN_PAY is not set,
     // then commit to all inputs.
-    const prevouts = input.map(e => getPrevout(e))
+    const prevouts = input.map(e => get_prevout(e))
     preimage.push(
-      hashOutpoints(input),   // Commit to txid/vout for each input.
-      hashAmounts(prevouts),  // Commit to prevout amount for each input.
-      hashScripts(prevouts),  // Commit to prevout script for each input.
-      hashSequence(input)     // Commit to sequence value for each input.
+      hash_outpoints(input),   // Commit to txid/vout for each input.
+      hash_amounts(prevouts),  // Commit to prevout amount for each input.
+      hash_scripts(prevouts),  // Commit to prevout script for each input.
+      hash_sequence(input)     // Commit to sequence value for each input.
     )
   }
 
   if ((sigflag & 0x03) < 2 || (sigflag & 0x03) > 3) {
     // If neither SINGLE or NONE flags are set,
     // include a commitment to all outputs.
-    preimage.push(hashOutputs(output))
+    preimage.push(hash_outputs(output))
   }
 
   // At this step, we include the spend type.
@@ -94,19 +94,19 @@ export function hash_tx (
   if (is_anypay) {
     // If ANYONE_CAN_PAY flag is set, then we will
     // provide a commitment to the input being signed.
-    const { value, scriptPubKey } = getPrevout(txinput)
+    const { value, scriptPubKey } = get_prevout(txinput)
     preimage.push(
-      ENC.encodeTxid(txid),               // Commit to the input txid.
-      ENC.encodePrevOut(vout),            // Commit to the input vout index.
-      ENC.encodeValue(value),             // Commit to the input's prevout value.
+      ENC.encode_txid(txid),              // Commit to the input txid.
+      ENC.encode_idx(vout),               // Commit to the input vout index.
+      ENC.encode_value(value),            // Commit to the input's prevout value.
       Script.encode(scriptPubKey, true),  // Commit to the input's prevout script.
-      ENC.encodeSequence(sequence)        // Commit to the input's sequence value.
+      ENC.encode_sequence(sequence)       // Commit to the input's sequence value.
     )
   } else {
     // Otherwise, we must have already included a commitment
     // to all inputs in the tx, so simply add a commitment to
     // the index of the input we are signing for.
-    assert(typeof txindex === 'number')
+    assert.ok(typeof txindex === 'number')
     preimage.push(Buff.num(txindex, 4).reverse())
   }
 
@@ -119,8 +119,8 @@ export function hash_tx (
     // If the SINGLE flag is set, then include a
     // commitment to the output which is adjacent
     // to the input that we are signing for.
-    assert(typeof txindex === 'number')
-    preimage.push(hashOutput(output[txindex]))
+    assert.ok(typeof txindex === 'number')
+    preimage.push(hash_output(output[txindex]))
   }
 
   if (extension !== undefined) {
@@ -140,40 +140,40 @@ export function hash_tx (
   return Buff.join(preimage).digest
 }
 
-export function hashOutpoints (
-  vin : InputData[]
-) : Uint8Array {
+export function hash_outpoints (
+  vin : TxInput[]
+) : Buff {
   const stack = []
   for (const { txid, vout } of vin) {
-    stack.push(ENC.encodeTxid(txid))
-    stack.push(ENC.encodePrevOut(vout))
+    stack.push(ENC.encode_txid(txid))
+    stack.push(ENC.encode_idx(vout))
   }
   return Buff.join(stack).digest
 }
 
-export function hashSequence (
-  vin : InputData[]
-) : Uint8Array {
+export function hash_sequence (
+  vin : TxInput[]
+) : Buff {
   const stack = []
   for (const { sequence } of vin) {
-    stack.push(ENC.encodeSequence(sequence))
+    stack.push(ENC.encode_sequence(sequence))
   }
   return Buff.join(stack).digest
 }
 
-export function hashAmounts (
-  prevouts : OutputData[]
-) : Uint8Array {
+export function hash_amounts (
+  prevouts : TxOutput[]
+) : Buff {
   const stack = []
   for (const { value } of prevouts) {
-    stack.push(ENC.encodeValue(value))
+    stack.push(ENC.encode_value(value))
   }
   return Buff.join(stack).digest
 }
 
-export function hashScripts (
-  prevouts : OutputData[]
-) : Uint8Array {
+export function hash_scripts (
+  prevouts : TxOutput[]
+) : Buff {
   const stack = []
   for (const { scriptPubKey } of prevouts) {
     stack.push(encode_script(scriptPubKey, true))
@@ -181,29 +181,29 @@ export function hashScripts (
   return Buff.join(stack).digest
 }
 
-export function hashOutputs (
-  vout : OutputData[]
-) : Uint8Array {
+export function hash_outputs (
+  vout : TxOutput[]
+) : Buff {
   const stack = []
   for (const { value, scriptPubKey } of vout) {
-    stack.push(ENC.encodeValue(value))
+    stack.push(ENC.encode_value(value))
     stack.push(Script.encode(scriptPubKey, true))
   }
   return Buff.join(stack).digest
 }
 
-export function hashOutput (
-  vout : OutputData
-) : Uint8Array {
+export function hash_output (
+  vout : TxOutput
+) : Buff {
   return Buff.join([
-    ENC.encodeValue(vout.value),
+    ENC.encode_value(vout.value),
     Script.encode(vout.scriptPubKey, true)
   ]).digest
 }
 
-function getAnnexData (
+function get_annex_data (
   witness ?: ScriptData[]
-) : Uint8Array | undefined {
+) : Buff | undefined {
   // If no witness exists, return undefined.
   if (witness === undefined) return
   // If there are less than two elements, return undefined.
@@ -227,7 +227,7 @@ function getAnnexData (
   return undefined
 }
 
-function getPrevout (vin : InputData) : OutputData {
+function get_prevout (vin : TxInput) : TxOutput {
   if (vin.prevout === undefined) {
     throw new Error('Prevout data missing for input: ' + String(vin.txid))
   }

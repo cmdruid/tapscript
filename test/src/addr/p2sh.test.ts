@@ -1,6 +1,7 @@
 
-import { Test }    from 'tape'
-import { Buff }    from '@cmdcode/buff-utils'
+import { Test } from 'tape'
+import { Buff } from '@cmdcode/buff-utils'
+
 import { Address } from '../../../src/index.js'
 
 export default function (t : Test) : void {

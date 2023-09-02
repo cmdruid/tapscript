@@ -1,6 +1,6 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
 
-import { Network, ScriptData, ScriptEnum, Word } from '../index.js'
+import { Network, ScriptData, ScriptEnum, Word } from './index.js'
 
 export interface DecoderTool {
   base58  : (str : string) => Buff

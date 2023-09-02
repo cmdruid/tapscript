@@ -1,35 +1,35 @@
 import { Buff } from '@cmdcode/buff-utils'
 import { hash } from '@cmdcode/crypto-utils'
 
+import { parse_tx } from '../../tx/index.js'
+
+import * as assert from '../../../lib/assert.js'
 import * as ENC    from '../../tx/encode.js'
 import * as Script from '../../script/index.js'
-import * as Tx     from '../../tx/index.js'
 import * as util   from '../utils.js'
 
-import { assert } from '../../utils.js'
-
 import {
-  HashConfig,
-  InputData,
-  OutputData,
+  HashOptions,
+  TxInput,
+  TxOutput,
   TxBytes,
   TxData
-} from '../../../schema/index.js'
+} from '../../../types/index.js'
 
 const { hash160, hash256 } = hash
 
 const VALID_HASH_TYPES = [ 0x01, 0x02, 0x03 ]
 
 export function hash_tx (
-  txdata : TxBytes | TxData,
-  config : HashConfig = {}
+  txdata  : TxBytes | TxData,
+  options : HashOptions = {}
 ) : Buff {
   // Unpack the sigflag from our config object.
-  const { sigflag = 0x01, txindex } = config
+  const { sigflag = 0x01, txindex } = options
   // Normalize the tx into JSON format.
-  const tx = Tx.to_json(txdata)
+  const tx = parse_tx(txdata)
   // Check that the config is valid.
-  util.validate_config(tx, config)
+  util.validate_config(tx, options)
   // Check if the ANYONECANPAY flag is set.
   const is_anypay = util.check_anypay(sigflag)
   // Save a normalized version of the sigflag.
@@ -41,7 +41,7 @@ export function hash_tx (
   // Unpack the tx object.
   const { version, vin, vout, locktime } = tx
   // Parse the input we are signing from the config.
-  const txinput = util.parse_txinput(tx, config)
+  const txinput = util.parse_txinput(tx, options)
   // Unpack the chosen input for signing.
   const { txid, vout: prevIdx, prevout, sequence } = txinput
   // Unpack the prevout for the chosen input.
@@ -51,13 +51,13 @@ export function hash_tx (
     throw new Error('Prevout value is empty!')
   }
   // Initialize our script variable from the config.
-  let script = config.script
+  let { pubkey, script } = options
   // Check if a pubkey is provided (instead of a script).
   if (
     script === undefined &&
-    config.pubkey !== undefined
+    pubkey !== undefined
   ) {
-    const pkhash = hash160(config.pubkey).hex
+    const pkhash = hash160(pubkey).hex
     script = `76a914${String(pkhash)}88ac`
   }
   // Make sure that some form of script has been provided.
@@ -70,16 +70,16 @@ export function hash_tx (
   }
 
   const sighash = [
-    ENC.encodeVersion(version),
-    hashPrevouts(vin, is_anypay),
-    hashSequence(vin, flag, is_anypay),
-    ENC.encodeTxid(txid),
-    ENC.encodePrevOut(prevIdx),
+    ENC.encode_version(version),
+    hash_prevouts(vin, is_anypay),
+    hash_sequence(vin, flag, is_anypay),
+    ENC.encode_txid(txid),
+    ENC.encode_idx(prevIdx),
     Script.encode(script, true),
-    ENC.encodeValue(value),
-    ENC.encodeSequence(sequence),
+    ENC.encode_value(value),
+    ENC.encode_sequence(sequence),
     hash_outputs(vout, flag, txindex),
-    ENC.encodeLocktime(locktime),
+    ENC.encode_locktime(locktime),
     Buff.num(sigflag, 4).reverse()
   ]
 
@@ -88,8 +88,8 @@ export function hash_tx (
   return hash256(Buff.join(sighash))
 }
 
-function hashPrevouts (
-  vin : InputData[],
+function hash_prevouts (
+  vin : TxInput[],
   isAnypay ?: boolean
 ) : Uint8Array {
   if (isAnypay === true) {
@@ -99,15 +99,15 @@ function hashPrevouts (
   const stack = []
 
   for (const { txid, vout } of vin) {
-    stack.push(ENC.encodeTxid(txid))
-    stack.push(ENC.encodePrevOut(vout))
+    stack.push(ENC.encode_txid(txid))
+    stack.push(ENC.encode_idx(vout))
   }
 
   return hash256(Buff.join(stack))
 }
 
-function hashSequence (
-  vin      : InputData[],
+function hash_sequence (
+  vin      : TxInput[],
   sigflag  : number,
   isAnyPay : boolean
 ) : Uint8Array {
@@ -118,13 +118,13 @@ function hashSequence (
   const stack = []
 
   for (const { sequence } of vin) {
-    stack.push(ENC.encodeSequence(sequence))
+    stack.push(ENC.encode_sequence(sequence))
   }
   return hash256(Buff.join(stack))
 }
 
 function hash_outputs (
-  vout    : OutputData[],
+  vout    : TxOutput[],
   sigflag : number,
   idx    ?: number
 ) : Uint8Array {
@@ -132,17 +132,17 @@ function hash_outputs (
 
   if (sigflag === 0x01) {
     for (const { value, scriptPubKey } of vout) {
-      stack.push(ENC.encodeValue(value))
+      stack.push(ENC.encode_value(value))
       stack.push(Script.encode(scriptPubKey, true))
     }
     return hash256(Buff.join(stack))
   }
 
   if (sigflag === 0x03) {
-    assert(idx !== undefined)
+    assert.ok(idx !== undefined)
     if (idx < vout.length) {
       const { value, scriptPubKey } = vout[idx]
-      stack.push(ENC.encodeValue(value))
+      stack.push(ENC.encode_value(value))
       stack.push(Script.encode(scriptPubKey, true))
       return hash256(Buff.join(stack))
     }

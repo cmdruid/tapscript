@@ -1,4 +1,4 @@
-import { ScriptEnum } from '../../schema/index.js'
+import { ScriptEnum } from '../../types/index.js'
 
 export const SCRIPT_TYPES : Array<[ ScriptEnum, RegExp ]> = [
   [ 'p2pkh',   /^76a914(?<hash>\w{40})88ac$/ ],

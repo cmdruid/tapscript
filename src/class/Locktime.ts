@@ -1,13 +1,11 @@
 import { Buff } from '@cmdcode/buff-utils'
 
-import { LockData } from '../schema/index.js'
-
 const LOCKTIME_THRESHOLD = 500000000
 
 export class Locktime {
   _data : number
 
-  constructor (value : LockData = 0) {
+  constructor (value : number = 0) {
     this._data = Buff.bytes(value).num
   }
 
