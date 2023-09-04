@@ -1,5 +1,5 @@
 import { Test } from 'tape'
-import * as ecc from '@cmdcode/crypto-utils'
+
 import { Address, SigHash, Tap, Tx, } from '../../../src/index.js'
 
 const { P2TR }    = Address
@@ -12,7 +12,7 @@ export async function tree_spend (t : Test) : Promise<void> {
 
     // Create a keypair to use for testing.
     const secret = '0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712'
-    const pubkey = ecc.keys.get_pubkey(secret, true)
+    const pubkey = SigHash.get_pubkey(secret, true)
 
     // Specify an array of scripts to use for testing.
     const scripts = [

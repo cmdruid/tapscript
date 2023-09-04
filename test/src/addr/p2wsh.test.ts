@@ -11,7 +11,7 @@ export default function p2wsh_test (t : Test) : void {
   const ref_hexdata = '0020cac55d9287ae2d8035fdc377ebf8e7fdb70f8ab5051d878db1cda7bd8b07a424'
   const ref_hash    = 'cac55d9287ae2d8035fdc377ebf8e7fdb70f8ab5051d878db1cda7bd8b07a424'
   const ref_script  = [ 'OP_0', ref_hash, ]
-  const ref_object  = { type: 'p2w-sh', network: 'regtest', data: Buff.hex(ref_hash) , script: ref_script }
+  const ref_object  = { type: 'p2w-sh', network: 'regtest', key: Buff.hex(ref_hash) , script: ref_script }
 
   t.test('P2WSH unit test', t => {
     t.plan(4)

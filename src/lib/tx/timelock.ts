@@ -1,5 +1,5 @@
 import { Buff, Bytes }  from '@cmdcode/buff-utils'
-import { SequenceData } from '../../types/index.js'
+import { TimelockData } from '../../types/index.js'
 
 const MAX_VAL    = 0xFFFFFFFF
 const NO_LOCK    = (1 << 31)
@@ -9,9 +9,20 @@ const TIME_SHIFT = 9
 const MAX_BLOCKS = LOCK_MASK - 1
 const MAX_STAMP  = (LOCK_MASK << TIME_SHIFT) - 1
 
+export function parse_locktime (
+  locktime : Bytes
+) : TimelockData {
+  const value     = Buff.bytes(locktime, 4).num
+  const enabled   = value < 1
+  const lock_type = (value < 5_000_000) ? 'stamp' : 'block'
+  const height = (lock_type === 'block') ? value : null
+  const stamp  = (lock_type === 'stamp') ? value : null
+  return { value, height, stamp, lock_type, enabled }
+}
+
 export function parse_sequence (
   sequence : Bytes
-) : SequenceData {
+) : TimelockData {
   const value     = Buff.bytes(sequence, 4).num
   const enabled   = value < MAX_VAL && (value & NO_LOCK) !== 1
   const lock_type = ((value & LOCK_TYPE) === 1) ? 'stamp' : 'block'
@@ -21,7 +32,7 @@ export function parse_sequence (
 }
 
 export function validate_sequence (
-  sequence : SequenceData
+  sequence : TimelockData
 ) : void {
   const { enabled, height, stamp, value } = sequence
   if (enabled) {

@@ -32,7 +32,7 @@ function encode_keydata (
   const bytes  = Buff.bytes(keydata)
   const prefix = (network === 'main') ? Buff.num(0x00) : Buff.num(0x6F)
   assert.size(keydata, 20)
-  return bytes.prepend(prefix).tob58chk()
+  return bytes.prepend(prefix).to_b58chk()
 }
 
 function decode_address (
@@ -45,9 +45,9 @@ function decode_address (
   if (!check_address(address, network)) {
     throw new TypeError('Invalid p2pkh address:' + address)
   }
-  const data   = Buff.b58chk(address).slice(1)
-  const script = create_script(data)
-  return { type, data, network, script }
+  const key    = Buff.b58chk(address).slice(1)
+  const script = create_script(key)
+  return { type, key, network, script }
 }
 
 function create_address (

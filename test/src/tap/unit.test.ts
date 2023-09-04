@@ -50,7 +50,7 @@ export default function (t : Test) {
       const decoded  = Address.P2TR.decode(address)
       const script  = Script.encode(scripts[index])
       const target  = Tap.encode.leaf(script)
-      const isValid = Tap.key.check_proof(decoded.data, target, cblock)
+      const isValid = Tap.key.check_proof(decoded.key, target, cblock)
       t.true(isValid, 'Control block should be valid.')
     }
   })

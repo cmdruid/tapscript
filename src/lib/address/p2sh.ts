@@ -32,7 +32,7 @@ export function encode_keydata (
   const prefix = (network === 'main') ? Buff.num(0x05) : Buff.num(0xC4)
   const bytes  = Buff.bytes(input)
   assert.size(bytes, 20)
-  return bytes.prepend(prefix).tob58chk()
+  return bytes.prepend(prefix).to_b58chk()
 }
 
 export function decode_address (
@@ -44,9 +44,9 @@ export function decode_address (
   if (!check_address(address, network)) {
     throw new TypeError('Invalid p2sh address:' + address)
   }
-  const data   = Buff.b58chk(address).slice(1)
-  const script = create_script(data)
-  return { type, data, network, script }
+  const key    = Buff.b58chk(address).slice(1)
+  const script = create_script(key)
+  return { type, key, network, script }
 }
 
 function create_address (

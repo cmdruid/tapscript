@@ -11,7 +11,7 @@ export default function (t : Test) : void {
   const ref_address = 'msi862KMaLR3jHcdKtAh9QMN2sS8Qcyywy'
   const ref_hash    = '85be4269276fd45d0b6f7ee963dd073b202d49ed'
   const ref_script  = [ 'OP_DUP', 'OP_HASH160', ref_hash, 'OP_EQUALVERIFY', 'OP_CHECKSIG' ]
-  const ref_object  = { type: 'p2pkh', network: 'testnet', data: Buff.hex(ref_hash) , script: ref_script }
+  const ref_object  = { type: 'p2pkh', network: 'testnet', key: Buff.hex(ref_hash) , script: ref_script }
 
   t.test('P2PKH unit test', t => {
     t.plan(4)

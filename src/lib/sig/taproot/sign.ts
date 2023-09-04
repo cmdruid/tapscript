@@ -3,15 +3,18 @@ import { signer }      from '@cmdcode/crypto-utils'
 import { hash_tx }     from './hash.js'
 
 import {
-  HashOptions,
+  SigHashOptions,
   TxBytes,
   TxData
 } from '../../../types/index.js'
 
+//  TODO:  Create generic hash / sign / verify.
+// Use prevout to detect which standard to use.
+
 export function sign_tx (
   seckey : Bytes,
   txdata : TxBytes | TxData,
-  config : HashOptions = {}
+  config : SigHashOptions = {}
 ) : Buff {
   // Set the signature flag type.
   const { sigflag = 0x00 } = config

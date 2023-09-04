@@ -1,6 +1,8 @@
 import { Buff, Bytes } from '@cmdcode/buff-utils'
 
-import { Network, ScriptData, ScriptEnum, Word } from './index.js'
+import { Network, ScriptData, Word } from './index.js'
+
+export type AddrEnum = 'p2pkh' | 'p2sh' | 'p2w-pkh' | 'p2w-sh' | 'p2tr'
 
 export interface DecoderTool {
   base58  : (str : string) => Buff
@@ -15,7 +17,7 @@ export interface DecodedData {
 }
 
 export type AddressType = [
-  type    : ScriptEnum,
+  type    : AddrEnum,
   prefix  : string,
   network : Network,
   size    : number,
@@ -23,7 +25,7 @@ export type AddressType = [
 ]
 
 export interface AddressMeta {
-  type    : ScriptEnum
+  type    : AddrEnum
   prefix  : string
   network : Network
   size    : number
@@ -31,8 +33,8 @@ export interface AddressMeta {
 }
 
 export interface AddressData {
-  type    : ScriptEnum
-  data    : Buff
+  type    : AddrEnum
+  key     : Buff
   network : Network
   script  : Word[]
 }

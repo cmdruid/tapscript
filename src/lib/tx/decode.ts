@@ -43,7 +43,7 @@ export function decode_tx (
 }
 
 function read_version (stream : Stream) : number {
-  return stream.read(4).reverse().toNum()
+  return stream.read(4).reverse().to_num()
 }
 
 function check_witness_flag (stream : Stream) : boolean {
@@ -61,7 +61,7 @@ function check_witness_flag (stream : Stream) : boolean {
 
 function read_inputs (stream : Stream) : TxInput[] {
   const inputs = []
-  const vinCount = stream.readSize()
+  const vinCount = stream.read_varint()
   for (let i = 0; i < vinCount; i++) {
     inputs.push(decode_vin(stream))
   }
@@ -79,10 +79,11 @@ export function decode_vin (stream : Stream) : TxInput {
 }
 
 function read_outputs (stream : Stream) : TxOutput[] {
-  const outputs  = []
-  const outcount = stream.readSize()
-  for (let i = 0; i < outcount; i++) {
-    outputs.push(decode_vout(stream))
+  const outputs = []
+  const vcount  = stream.read_varint()
+  for (let i = 0; i < vcount; i++) {
+    const vout = decode_vout(stream)
+    outputs.push(vout)
   }
   return outputs
 }
@@ -96,7 +97,7 @@ export function decode_vout (stream : Stream) : TxOutput {
 
 function read_witness (stream : Stream) : string[] {
   const stack = []
-  const count = stream.readSize()
+  const count = stream.read_varint()
   for (let i = 0; i < count; i++) {
     const word = read_data(stream, true)
     stack.push(word ?? '')
@@ -109,7 +110,7 @@ function read_data (
   varint ?: boolean
 ) : string | null {
   const size = (varint === true)
-    ? stream.readSize('le')
+    ? stream.read_varint('le')
     : stream.size
   return size > 0
     ? stream.read(size).hex
@@ -125,5 +126,5 @@ function read_script (
 }
 
 function read_locktime (stream : Stream) : number {
-  return stream.read(4).reverse().toNum()
+  return stream.read(4).reverse().to_num()
 }

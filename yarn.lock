@@ -191,15 +191,15 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@cmdcode/buff-utils@^1.12.4":
-  version "1.12.4"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-1.12.4.tgz#ec6d9e47c312023024404d1c00d827a50549a502"
-  integrity sha512-nftOvZk0XgWioftxEF2QZA64S83aeUIcPtTsBAqpWsz/woEPxxzGheJG0WcNRffddeT7Ww3dqgAjpu5JOEyXVw==
+"@cmdcode/buff-utils@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-2.0.0.tgz#4b197393371bad8f9c4872c790a01e28b16d6aaa"
+  integrity sha512-hduPGB45//2hzpjuudhXrbTRWyD+sjcry/bmmYjh1+SOtiZl4AgRRaTDr5FuG1VVjgkoTFBtc5DmBj3x3PlmTA==
 
-"@cmdcode/crypto-utils@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-2.4.0.tgz#6801f6c49061f83c66030e77b172efec9f17d3dd"
-  integrity sha512-2qfPhT0okqqzTWvtSFumxmbR9ZJbjxCR7KlcWjY7QodWkcaftatNta5An/kD8WRO0cJPKmhU9ZPjzRVY+Gau5w==
+"@cmdcode/crypto-utils@^2.4.1":
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-2.4.1.tgz#5c2dd932bfc23507397efc3e869ea610b888f0fe"
+  integrity sha512-g3H75ukz8K5JkIf+WXSH9wYIEuL+01TjifwlpNZfiigjACJxES3YWc2k/WisMu8SMUUVXBOpjd2Rb6/jgcCpgQ==
 
 "@esbuild-kit/cjs-loader@^2.4.2":
   version "2.4.2"

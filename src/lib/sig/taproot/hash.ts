@@ -5,10 +5,9 @@ import { encode_script } from '../../script/encode.js'
 
 import * as ENC    from '../../tx/encode.js'
 import * as Script from '../../script/index.js'
-import * as util   from '../utils.js'
 
 import {
-  HashOptions,
+  SigHashOptions,
   ScriptData,
   TxBytes,
   TxData,
@@ -17,12 +16,13 @@ import {
 } from '../../../types/index.js'
 
 import * as assert from '../../assert.js'
+import { parse_txinput } from '../utils.js'
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
 export function hash_tx (
   template : TxBytes | TxData,
-  config   : HashOptions = {}
+  config   : SigHashOptions = {}
 ) : Buff {
   // Unpack configuration.
   const {
@@ -35,12 +35,10 @@ export function hash_tx (
   } = config
   // Normalize the txdata object.
   const tx = parse_tx(template)
-  // Check that the config is valid.
-  util.validate_config(tx, config)
   // Unpack the txdata object.
   const { version, vin: input, vout: output, locktime } = tx
   // Parse the input we are signing from the config.
-  const txinput = util.parse_txinput(tx, config)
+  const txinput = parse_txinput(tx, config)
   // Unpack the txinput object.
   const { txid, vout, sequence, witness = [] } = txinput
   // Check if we are using a valid hash type.
@@ -221,7 +219,7 @@ function get_annex_data (
     annex[0] === 0x50
   ) {
     // return a digest of the annex.
-    return Buff.raw(annex).prefixSize('be').digest
+    return Buff.raw(annex).add_varint('be').digest
   }
   // Else, return undefined.
   return undefined

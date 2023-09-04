@@ -69,7 +69,7 @@ export function encode_sequence (
 }
 
 function encode_inputs (arr : TxInput[]) : Buff {
-  const raw : Buff[] = [ Buff.varInt(arr.length) ]
+  const raw : Buff[] = [ Buff.calc_varint(arr.length) ]
   for (const vin of arr) raw.push(encode_vin(vin))
   return Buff.join(raw)
 }
@@ -91,7 +91,7 @@ export function encode_value (
 }
 
 function encode_outputs (arr : TxOutput[]) : Buff {
-  const raw : Buff[] = [ Buff.varInt(arr.length) ]
+  const raw : Buff[] = [ Buff.calc_varint(arr.length) ]
   for (const vout of arr) raw.push(encode_vout(vout))
   return Buff.join(raw)
 }
@@ -111,7 +111,7 @@ function encode_witness (
 ) : Buff {
   const buffer : Buff[] = []
   if (Array.isArray(data)) {
-    const count = Buff.varInt(data.length)
+    const count = Buff.calc_varint(data.length)
     buffer.push(count)
     for (const entry of data) {
       buffer.push(encode_data(entry))

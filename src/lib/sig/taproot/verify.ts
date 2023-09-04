@@ -16,12 +16,12 @@ import {
 import {
   TxBytes,
   TxData,
-  HashOptions
+  SigHashOptions
 } from '../../../types/index.js'
 
 export function verify_tx (
   txdata   : TxBytes | TxData,
-  config   : HashOptions = {},
+  config   : SigHashOptions = {},
   options ?: SignOptions
 ) : boolean {
   const { throws = false } = config
@@ -44,7 +44,7 @@ export function verify_tx (
     return fail('Prevout scriptPubKey is empty!', throws)
   }
 
-  const { type, data: tapkey } = Script.parse_scriptkey(scriptPubKey)
+  const { type, key: tapkey } = Script.parse_scriptkey(scriptPubKey)
 
   if (
     type   !== 'p2tr'    ||

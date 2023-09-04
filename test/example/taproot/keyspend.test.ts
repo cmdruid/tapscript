@@ -1,8 +1,6 @@
 
 import { Test } from 'tape'
 
-import * as ecc from '@cmdcode/crypto-utils'
-
 import { Address, SigHash, Tap, Tx, } from '../../../src/index.js'
 
 const { P2TR }    = Address
@@ -15,7 +13,7 @@ export async function key_spend (t : Test) : Promise<void> {
 
     // Create a keypair to use for testing.
     const secret = 'ccd54b99acec77d0537b01431579baef998efac6b08e9564bc3047b20ec1bb4c'
-    const pubkey = ecc.keys.get_pubkey(secret, true)
+    const pubkey = SigHash.get_pubkey(secret, true)
 
     // For key spends, we need the tweaked pubkey (tapkey),
     // plus the tweak itself (for tweaking our seckey later).
@@ -53,12 +51,9 @@ export async function key_spend (t : Test) : Promise<void> {
       }]
     })
 
-    // For this example, we are signing for input 0 of our transaction.
-    const sighash = taproot.hash_tx(txdata, { txindex: 0 })
-
-    // We need to tweak our secret key, then sign the sighash.
+    // We need to tweak our secret key, then sign the tx.
     const tap_sec = Tap.tweak.tweak_seckey(secret, taptweak)
-    const sig     = ecc.signer.sign(sighash, tap_sec)
+    const sig     = taproot.sign_tx(tap_sec, txdata, { txindex: 0 })
 
     // Let's add this signature to our witness data for input 0.
     txdata.vin[0].witness = [ sig ]

@@ -10,7 +10,7 @@ import { parse_vin, parse_tx } from '../lib/tx/index.js'
 import * as assert from '../lib/assert.js'
 
 import {
-  HashOptions,
+  SigHashOptions,
   TxInput,
   VinTemplate,
   ScriptData,
@@ -75,7 +75,7 @@ export class TxIn {
   sign (
     seckey  : Bytes,
     txdata  : TxBytes | TxData, 
-    config ?: HashOptions
+    config ?: SigHashOptions
   ) {
     const { txindex = this.idx } = config ?? {}
     const tx = parse_tx(txdata)

@@ -15,7 +15,7 @@ export function parse_address (address : string) : AddressData {
     if (address.startsWith(prefix)) {
       const tool = ADDR_TOOLS[type]
       const addr = tool.decode(address, network)
-      if (addr.data.length === size) {
+      if (addr.key.length === size) {
         return addr
       }
     }
@@ -27,10 +27,10 @@ export function from_script (
   script   : ScriptData,
   network ?: Network
 ) : string {
-  const { type, data, hex } = parse_scriptkey(script)
+  const { type, key, hex } = parse_scriptkey(script)
   if (type !== 'raw') {
     const tool = ADDR_TOOLS[type]
-    return tool.encode(data, network)
+    return tool.encode(key, network)
   }
   throw new Error('Unrecognized script format: ' + hex)
 }

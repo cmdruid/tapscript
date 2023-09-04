@@ -9,7 +9,7 @@ import * as Script from '../../script/index.js'
 import * as util   from '../utils.js'
 
 import {
-  HashOptions,
+  SigHashOptions,
   TxInput,
   TxOutput,
   TxBytes,
@@ -22,16 +22,14 @@ const VALID_HASH_TYPES = [ 0x01, 0x02, 0x03 ]
 
 export function hash_tx (
   txdata  : TxBytes | TxData,
-  options : HashOptions = {}
+  options : SigHashOptions = {}
 ) : Buff {
   // Unpack the sigflag from our config object.
   const { sigflag = 0x01, txindex } = options
   // Normalize the tx into JSON format.
   const tx = parse_tx(txdata)
-  // Check that the config is valid.
-  util.validate_config(tx, options)
   // Check if the ANYONECANPAY flag is set.
-  const is_anypay = util.check_anypay(sigflag)
+  const is_anypay = (sigflag & 0x80) === 0x80
   // Save a normalized version of the sigflag.
   const flag = sigflag % 0x80
   // Check if the sigflag exists as a valid type.

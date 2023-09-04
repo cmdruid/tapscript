@@ -6,7 +6,7 @@ A basic library for working with Taproot, Schnorr Signatures, and Bitcoin transa
 
 ## Introduction
 
-Tapscript uses the latest feature upgrade to Bitcoin called Taproot. If you are new to Bitcoin or the Taproot upgrade, please continue reading for a brief overview of how it works. This library will be easier to follow if you know what taproot is doing under the hood.
+This library utilizes the latest feature upgrade to Bitcoin called Taproot. If you are new to Bitcoin or the Taproot upgrade, please continue reading for a brief overview of how it works. This library will be easier to follow if you know what taproot is doing under the hood.
 
 If you already have a good understanding of Bitcoin and Taproot, feel free to skip ahead by clicking [here](#tool-index).
 
@@ -14,72 +14,71 @@ If you already have a good understanding of Bitcoin and Taproot, feel free to sk
 
 Bitcoin uses a simple scripting language (called Bitcoin Script) that allows you to lock up coins into a contract. These contracts are published to the blockchain and enforced by all nodes in the network.
 
-In order to settle a contract (and claim its coins), you are required to publish the *entire* contract, including parts that are not relevant to the settlement. This is expensive and wasteful, plus it leaks information that could have otherwise been kept private.
+In order to settle a contract (and claim its coins), you are required to publish the *entire* contract script, including parts that are not relevant to the settlement. This is expensive and wasteful, plus it leaks information that could have otherwise been kept private.
 
-Taproot is a new way to publish these contracts to the blockchain that fixes the above concerns. It allows you to settle contracts by publishing only the portion of the contract that is relevant. This means smaller transactions, cheaper fees, and better privacy guarantees for the contract as a whole.
+Taproot is a new way to publish these contracts to the blockchain that fixes the above concerns. It allows you to settle contracts by publishing only the portion of the contract script that is relevant. This means smaller transactions, cheaper fees, and better privacy guarantees for the contract as a whole.
 
 Taproot also comes with many other benefits, including:
 
  * It drastically simplifies the flow and logic of writing a contract.
- * You can create large, complex contracts that only need a small transaction to settle.
+ * You can create large, complex contracts that only require a small transaction to settle.
  * Commitments to data and other arbitrary things can be thrown into your contract for free.
- * The new schnorr-based signature format lets you do some crazy cool stuff (BIP340).
+ * The new schnorr-based method for digital signatures (BIP340) lets you do some crazy cool stuff, like combining the signatures from a group of signers (BIP327).
 
-Read more about the Taproot upgrade in 2019 [here](https://cointelegraph.com/bitcoin-for-beginners/a-beginners-guide-to-the-bitcoin-taproot-upgrade).
+You can read more about the Taproot upgrade in 2019 [here](https://cointelegraph.com/bitcoin-for-beginners/a-beginners-guide-to-the-bitcoin-taproot-upgrade).
 
 ## How does Taproot work?
 
-Taproot uses a simple trick involving something called a "merkle tree".
+Taproot uses a simple trick involving a tree-like data structure called a 'merkle tree':
 
 ```
-                hash(ab, cd)                  <- Final hash    (the root)
+                hash(ab, cd)                <- Final hash    (the root)
               /             \                
-      hash(a, b)             hash(c, d)       <- Combined hash (the branches)
-     /          \           /          \    
-    hash(a) hash(b)        hash(c) hash(d)    <- Initial hash  (the leaves)
-[ script(a), script(b), script(c), script(d) ]  
+     hash(a, b)             hash(c, d)      <- Combined hash (the branches)
+    /          \           /          \    
+  hash(a) hash(b)        hash(c) hash(d)    <- Initial hash  (the leaves)
+
+[ script_a, script_b, script_c, script_d ]  <- array of spending scripts
 ```
 
-A merkle tree is simply a list of data that is reduced down into a single hash value. We do this by hashing values together in pairs of two, repeatedly, until we are naturally left with one value (the root).
+A merkle tree is quite simply a list of data that is reduced down into a single hash value. We do this by hashing values together in pairs of two, repeatedly, until we are naturally left with one value (the root).
 
-The great thing about merkle trees is that you can use the root hash to prove that a piece of data (such as a script) was included somewhere in the tree, without having to reveal the entire tree.
+The great thing about merkle trees is that you can use the root and branch hashes to prove that a piece of data is included within the tree, without having to reveal the entire tree.
 
-For example, to prove that script(a) exists in the tree, we simply provide hash(b) and hash(c, d). This is all the information we need to recreate the root hash(ab, cd). We do not reveal any of the other scripts.
+For example, to prove that script_a exists in the tree, we provide the script with hash(b) and hash(c, d). This is all the information we need to recreate the root hash(ab, cd). We do not reveal any of the other scripts.
 
-This allows us to break up a contract into many scripts, then lock coins to the root hash of our combined scripts. To redeem coins, we simply need to provide one of the scripts, plus a 'path' of hashes that lead us to the root hash of the tree.
+This allows us to break up a contract into many scripts, then lock the coins to the 'root' hash of our script tree. When redeeming coins, we provide a script with a solution, plus the 'path' of hashes needed to recompute the root hash and prove our script exists within the tree.
 
 ## About Key Tweaking
 
-Another clever trick that Taproot uses, is something called "key tweaking".
+In order to lock our coins to a 'root' hash, Taproot uses another clever trick called "key tweaking".
 
-In order to create a pair of keys used for signatures, we start with a secret number, or "key". We then multiply this key by a very large prime number, called a "generator" (G). This process is done in a way that is computationally impossible to reverse without knowing the secret. The resulting number then becomes our public key.
-
-```
-seckey * G => pubkey
-```
-
-We use a special set of numbers when making key-pairs, so that some arithmetic still works between the keys, without breaking their secret relationship with G. This is how we produce signatures and proofs.
+When we go about creating a key-pair, we start with picking a large number as our secret key. We combine this number with a known constant (G), using a a formula (ec) that is computationally impossible to reverse. The resulting number is our public key.
 
 ```
-seckey +    randomkey    +    msg    = signature      <= Does not reveal seckey.
-pubkey + (randomkey * G) + (msg * G) = signature * G  <= Proves that seckey was used.
+ec(seckey, G) => pubkey
 ```
 
-Key tweaking is just an extention of this. We use a piece of data to "tweak" both keys in our key-pair, then use the modified keys to sign and verify transactions.
+The elliptic curve formula also allows us to perform arithmetic between the keys, without breaking their secret relationship. This is how we produce signatures and proofs.
 
 ```
-seckey +    tweak    = tweaked_seckey
-pubkey + (tweak * G) = tweaked_pubkey
+seckey +    random     +    msg     = sig         <= Safe to reveal, hides seckey.
+pubkey + ec(random, G) + ec(msg, G) = ec(sig, G)  <= Proves that seckey was used.
 ```
 
-Later, we can choose to reveal the original public key and tweak, as proof that both were used to construct the modified key. Or we can simply choose to sign using the modified key, and not reveal anything!
+Key tweaking simply adds more arithmetic to the process. We can 'tweak' both keys with an extra value, then use the tweaked keys to produce a signature.
+
+```
+seckey +    tweak     = tweaked_seckey
+pubkey + ec(tweak, G) = tweaked_pubkey
+```
+
+Later, we can choose to reveal the original public key and tweak, as proof that both were used to construct the modified key. Or we can simply choose to sign using the modified key, without revealing that a tweak was made!
 
 Taproot uses key tweaking in order to lock coins to our pubkey + root of our tree. This provides us with two paths for spending coins:
 
  * Using the tweaked pubkey (without revealing anything).
  * Using the interal pubkey + script + proof.
-
-> Note: the "proof" is the path of hashes we described earlier, which is needed to recompute the root hash.
 
 If you want to eliminate the key-spending path (so that a script *must* be used to redeem funds), you can replace the pubkey with a random number. However, it is best to use a number that everyone can verify has an unknown secret key. One example of such a number is the following:
 
@@ -93,18 +92,18 @@ If you want to eliminate the key-spending path (so that a script *must* be used 
 
 ## Tool Index
 
-This library provides a suite of tools for working with scripts, taproot, key tweaking, signatures and transactions. Use the links below to jump to the documentation for a certain tool.
+This library provides a suite of tools for working with Bitcoin addresses, scripts, taproot tweaks, signatures and transactions. Use the links below to jump to the documentation for a certain tool.
 
 [**Address Tool**](#address-tool)  
 Encode, decode, check, and convert various address types.  
 [**Script Tool**](#script-tool)  
 Encode scripts into hex, or decode into a script array.  
-[**Signer Tool**](#signer-tool)  
-Produce signatures and validate signed transactions.  
+[**SigHash Tool**](#signer-tool)  
+Create the hash and signature needed for unlocking funds, plus validate signed transactions.  
 [**Tap Tool**](#tap-tool)  
-Build, tweak, and validate trees of data / scripts.  
+Build, tweak, and validate trees of bitcoin scripts (plus other data).  
 [**Tx Tool**](#tx-tool)  
-Encode transactions into hex, or decode into a JSON object.
+Encode transactions into hex, or decode them into a rich JSON object.
 
 ### About Buff
 
@@ -115,15 +114,15 @@ This library makes heavy use of the [Buff](https://github.com/cmdruid/buff-utils
 Example import into a browser-based project:
 ```html
 <script src="https://unpkg.com/@cmdcode/tapscript"></script>
-<script> const { Address, Script, Signer, Tap, Tx } = window.tapscript </script>
+<script> const { Address, Script, SigHash, Tap, Tx } = window.tapscript </script>
 ```
 Example import into a commonjs project:
 ```ts
-const { Address, Script, Signer, Tap, Tx } = require('@cmdcode/tapscript')
+const { Address, Script, SigHash, Tap, Tx } = require('@cmdcode/tapscript')
 ```
 Example import into an ES module project:
 ```ts
-import { Address, Script, Signer, Tap, Tx } from '@cmdcode/tapscript'
+import { Address, Script, SigHash, Tap, Tx } from '@cmdcode/tapscript'
 ```
 
 ### Address Tool
@@ -133,19 +132,19 @@ This tool allows you to encode, decode, check, an convert various address types.
 ```ts
 Address = {
   // Work with Pay-to-Pubkey-Hash addresses (Base58 encoded).
-  p2pkh  : => AddressTool,
+  P2PKH  : => AddressTool,
   // Work with Pay-to-Script-Hash addresses (Base58 encoded).
-  p2sh   : => AddressTool,
+  P2SH   : => AddressTool,
   // Work with Pay-to-Witness PubKey-Hash addresses (Bech32 encoded).
-  p2wpkh : => AddressTool,
+  P2WPKH : => AddressTool,
   // Work with Pay-to-Witness Script-Hash addresses (Bech32 encoded).
-  p2wsh  : => AddressTool,
+  P2WSH  : => AddressTool,
   // Work with Pay-to-Taproot addresses (Bech32m encoded).
-  p2tr   : => AddressTool,
-  // Decode any address format into a detailed object.
-  decode   : (address : string) => AddressData,
-  // Convert any address into its scriptPubKey format.
-  toScriptPubKey : (address : string) => Buff
+  P2TR   : => AddressTool,
+  // Decode any address format into a data-rich object.
+  parse : (address : string) => AddressData,
+  // Convert a scriptPubKey output into an address.
+  from_script : (address : string, network ?: Network) => string
 }
 
 interface AddressTool {
@@ -173,29 +172,29 @@ interface AddressData {
   type    : keyof AddressTools
 }
 
-type Networks = 'main' | 'testnet' | 'signet' | 'regtest'
+type Networks = 'bitcoin' | 'testnet' | 'regtest'
 ```
 
 #### Examples
 
-Example of using the main `Address` API.
+Example of using the `Address` tool.
 
 ```ts
 const address = 'bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk'
 // You can decode any address, extract data, or convert to a scriptPubKey format.
-const decoded = Address.decode(address)
+const decoded = Address.parse(address)
 // Example of the decoded data object.
 { 
-  prefix  : 'bcrt1q', 
-  type    : 'p2w', 
-  network : 'regtest', 
-  data    : 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07',
+  prefix  : 'bcrt1q',
+  type    : 'p2w',
+  network : 'regtest',
+  data    : Buff('f44f76cbfd5b4c536d11d78b6700b8737c9eab07'),
   script  : [ 'OP_0', 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07' ]
 }
 // You can also quickly convert between address and scriptPubKey formats.
-const bytes = Address.toScriptPubKey(address)
+const data = Address.parse(address)
 // Bytes: 0014f44f76cbfd5b4c536d11d78b6700b8737c9eab07
-const address = Address.fromScriptPubKey(scriptPubKey)
+const address = Address.from_script(script)
 // Address : bcrt1q738hdjlatdx9xmg3679kwq9cwd7fa2c84my9zk
 ```
 

@@ -5,11 +5,11 @@ import P2WSH  from './p2wsh.js'
 import P2TR   from './p2tr.js'
 
 import {
-  AddressTool,
-  ScriptEnum
+  AddrEnum,
+  AddressTool
 } from '../../types/index.js'
 
-export const ADDR_TOOLS : Record<ScriptEnum, AddressTool> = {
+export const ADDR_TOOLS : Record<AddrEnum, AddressTool> = {
   p2pkh     : P2PKH,
   p2sh      : P2SH,
   'p2w-pkh' : P2WPKH,

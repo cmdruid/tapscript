@@ -1,6 +1,5 @@
 import { Buff }      from '@cmdcode/buff-utils'
 import { is_bytes }  from '../util.js'
-import { encode_tx } from './encode.js'
 import { decode_tx } from './decode.js'
 
 import * as schema from '../../schema/index.js'
@@ -74,18 +73,4 @@ export function parse_tx (
   tx.vin  = tx.vin.map(txin   => parse_vin(txin))
   tx.vout = tx.vout.map(txout => parse_vout(txout))
   return schema.tx.txdata.parse(tx)
-}
-
-export function to_bytes (
-  txdata ?: TxBytes | TxData | TxTemplate
-) : Buff {
-  if (is_bytes(txdata)) {
-    decode_tx(txdata)
-    return Buff.bytes(txdata)
-  }
-  if (typeof txdata === 'object') {
-    const tx = parse_tx(txdata)
-    return encode_tx(tx)
-  }
-  throw new Error('Invalid format: ' + String(typeof txdata))
 }

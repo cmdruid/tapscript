@@ -2,27 +2,29 @@ import { Buff }     from '@cmdcode/buff-utils'
 import { noble }    from '@cmdcode/crypto-utils'
 import { fail }     from '../../util.js'
 import { hash_tx }  from './hash.js'
-import { parse_tx } from '../../tx/index.js'
+
+import { parse_txinput } from '../utils.js'
 
 import {
-  HashOptions,
+  parse_tx,
+  parse_witness
+} from '../../tx/index.js'
+
+import {
+  SigHashOptions,
   TxBytes,
   TxData
 } from '../../../types/index.js'
 
-import * as Tx   from '../../tx/index.js'
-import * as util from '../utils.js'
-
 export function verify_tx (
   txdata  : TxBytes | TxData,
-  options : HashOptions = {}
+  options : SigHashOptions = {}
 ) : boolean {
   const tx = parse_tx(txdata)
   const { throws = false } = options
-
-  const txinput          = util.parse_txinput(tx, options)
-  const { witness = [] } = txinput
-  const witness_data     = Tx.parse_witness(witness)
+  const txinput            = parse_txinput(tx, options)
+  const { witness = [] }   = txinput
+  const witness_data       = parse_witness(witness)
 
   let { pubkey, script } = options
 

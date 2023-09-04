@@ -2,7 +2,7 @@ import { Bytes } from '@cmdcode/buff-utils'
 
 import { TxInput, ScriptData } from './index.js'
 
-export interface HashOptions {
+export interface SigHashOptions {
   extension     ?: Bytes      // Include a tapleaf hash with your signature hash.
   extflag       ?: number     // Set the extention version flag (future use).
   txindex       ?: number     // Index value of the input you wish to sign for.

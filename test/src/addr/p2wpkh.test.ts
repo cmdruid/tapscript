@@ -11,7 +11,7 @@ export default function (t : Test) : void {
   const ref_hexdata = '0014f44f76cbfd5b4c536d11d78b6700b8737c9eab07'
   const ref_hash    = 'f44f76cbfd5b4c536d11d78b6700b8737c9eab07'
   const ref_script  = [ 'OP_0', ref_hash ]
-  const ref_object  = { type: 'p2w-pkh', network: 'regtest', data: Buff.hex(ref_hash), script: ref_script }
+  const ref_object  = { type: 'p2w-pkh', network: 'regtest', key: Buff.hex(ref_hash), script: ref_script }
 
   t.test('P2WPKH unit test', t => {
     t.plan(4)

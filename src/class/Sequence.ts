@@ -1,14 +1,14 @@
-import { parse_sequence } from '../lib/tx/sequence.js'
-import { SequenceData } from '../types/index.js'
+import { parse_sequence } from '../lib/tx/timelock.js'
+import { TimelockData }   from '../types/index.js'
 
 export class Sequence {
-  readonly _data : SequenceData
+  readonly _data : TimelockData
 
   constructor (value : number) {
     this._data = parse_sequence(value)
   }
 
-  get data () : SequenceData {
+  get data () : TimelockData {
     return this._data
   }
 

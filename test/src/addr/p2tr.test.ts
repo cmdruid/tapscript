@@ -10,7 +10,7 @@ export default function (t : Test) : void {
   const ref_address = 'bcrt1pjxmy65eywgafs5tsunw95ruycpqcqnev6ynxp7jaasylcgtcxczsqzdc9v'
   const ref_hexdata = '512091b64d5324723a985170e4dc5a0f84c041804f2cd12660fa5dec09fc21783605'
   const ref_script  = [ 'OP_1', ref_pubkey ]
-  const ref_object  = { type: 'p2tr', network: 'regtest', data: Buff.hex(ref_pubkey), script: ref_script }
+  const ref_object  = { type: 'p2tr', network: 'regtest', key: Buff.hex(ref_pubkey), script: ref_script }
 
   t.test('P2TR unit test', t => {
     t.plan(4)

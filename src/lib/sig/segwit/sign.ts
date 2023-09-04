@@ -3,7 +3,7 @@ import { noble }       from '@cmdcode/crypto-utils'
 import { hash_tx }     from './hash.js'
 
 import {
-  HashOptions,
+  SigHashOptions,
   TxBytes,
   TxData
 } from '../../../types/index.js'
@@ -11,7 +11,7 @@ import {
 export function sign_tx (
   seckey  : Bytes,
   txdata  : TxBytes | TxData,
-  options : HashOptions = {}
+  options : SigHashOptions = {}
 ) : Buff {
   const { sigflag = 0x01 } = options
   const sec  = Buff.bytes(seckey)

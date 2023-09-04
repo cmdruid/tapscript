@@ -34,7 +34,7 @@ export interface TxOutput {
   scriptPubKey : ScriptData
 }
 
-export interface SequenceData {
+export interface TimelockData {
   enabled   : boolean
   height    : number  | null
   lock_type : 'block' | 'stamp'

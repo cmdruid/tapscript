@@ -10,12 +10,13 @@ import {
 
 import {
   ScriptData,
-  ScriptMeta
+  ScriptMeta,
+  ScriptRaw
 } from '../../types/index.js'
 
 export function parse_scriptkey (
   script : ScriptData
-) : ScriptMeta {
+) : ScriptMeta | ScriptRaw {
   const hex = to_bytes(script, false).hex
   for (const [ type, pattern ] of SCRIPT_TYPES) {
     const { groups } = pattern.exec(hex) ?? {}
@@ -24,8 +25,8 @@ export function parse_scriptkey (
       return {
         type,
         hex,
-        data : Buff.hex(hash),
-        asm  : to_asm(script, false)
+        key : Buff.hex(hash),
+        asm : to_asm(script, false)
       }
     }
   }

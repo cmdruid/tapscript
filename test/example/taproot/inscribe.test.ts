@@ -1,6 +1,5 @@
 import { Test } from 'tape'
 import { Buff } from '@cmdcode/buff-utils'
-import { keys } from '@cmdcode/crypto-utils'
 
 import { Address, SigHash, Tap, Tx, } from '../../../src/index.js'
 
@@ -34,8 +33,8 @@ export async function inscription (t : Test) : Promise<void> {
     const mimetype = Buff.encode('image/png')
     // Create a keypair to use for testing.
     const secret = '0a7d01d1c2e1592a02ea7671bb79ecd31d8d5e660b008f4b10e67787f4f24712'
-    const seckey = keys.get_seckey(secret)
-    const pubkey = keys.get_pubkey(seckey, true)
+    const seckey = SigHash.get_seckey(secret)
+    const pubkey = SigHash.get_pubkey(seckey, true)
     // Basic format of an 'inscription' script.
     const script = [ pubkey, 'OP_CHECKSIG', 'OP_0', 'OP_IF', marker, '01', mimetype, 'OP_0', imgdata, 'OP_ENDIF' ]
     // For tapscript spends, we need to convert this script into a 'tapleaf'.

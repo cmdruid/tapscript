@@ -48,7 +48,7 @@ export function decode_address (
   const { data, version } = Bech32m.decode(address)
   const script = create_script(data)
   assert.ok(version === 1)
-  return { type, data, network, script }
+  return { type, key: data, network, script }
 }
 
 function create_address (

@@ -28,7 +28,7 @@ export function encode_script (
   }
 
   if (varint) {
-    buff = buff.prefixSize('le')
+    buff = buff.add_varint('le')
   }
 
   return buff

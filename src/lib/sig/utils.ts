@@ -1,40 +1,43 @@
+import { keys } from '@cmdcode/crypto-utils'
+
 import * as assert from '../assert.js'
 
+import { parse_tx }        from '../tx/parse.js'
+import { parse_scriptkey } from '../script/parse.js'
+
 import {
-  HashOptions,
+  SigHashOptions,
   TxInput,
-  TxData
+  TxBytes,
+  TxData,
+  ScriptMeta
 } from '../../types/index.js'
 
+export const get_pubkey = keys.get_pubkey
+export const get_seckey = keys.get_seckey
+
 export function parse_txinput (
-  txdata : TxData,
-  config : HashOptions = {}
+  txdata  : TxData,
+  config ?: SigHashOptions
 ) : TxInput {
-  const { txindex, txinput } = config
-  const ret = (typeof txindex === 'number')
-    ? txdata.vin.at(txindex)
-    : txinput
-  assert.ok(ret !== undefined)
-  return ret
-}
-
-export function check_anypay (
-  sigflag ?: number
-) : boolean {
-  return (
-    sigflag !== undefined &&
-    (sigflag & 0x80) === 0x80
-  )
-}
-
-export function validate_config (
-  txdata : TxData,
-  config : HashOptions = {}
-) : void {
-  const { txindex } = config
-  const { vin }     = txdata
-  if (txindex !== undefined && txindex >= vin.length) {
-    // If index is out of bounds, throw error.
-    throw new Error('Input index out of bounds: ' + String(txindex))
+  let { txindex, txinput } = config ?? {}
+  if (txindex !== undefined) {
+    if (txindex >= txdata.vin.length) {
+      // If index is out of bounds, throw error.
+      throw new Error('Input index out of bounds: ' + String(txindex))
+    }
+    txinput = txdata.vin.at(txindex)
   }
+  assert.ok(txinput !== undefined)
+  return txinput
+}
+
+export function parse_vin_meta (
+  txdata   : TxBytes | TxData,
+  options ?: SigHashOptions
+) : ScriptMeta {
+  txdata = parse_tx(txdata)
+  const { prevout } = parse_txinput(txdata, options)
+  assert.ok(prevout !== undefined)
+  return parse_scriptkey(prevout.scriptPubKey)
 }

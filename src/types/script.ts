@@ -9,16 +9,16 @@ export type ScriptMeta = ScriptRaw | ScriptTyped
 
 export interface ScriptTyped {
   type : ScriptEnum
-  data : Buff
+  key  : Buff
   hex  : string
   asm  : Word[]
 }
 
 export interface ScriptRaw {
-  type  : 'raw'
-  hex   : string
-  asm   : Word[]
-  data ?: Buff
+  type : 'raw'
+  hex  : string
+  asm  : Word[]
+  key ?: Buff
 }
 
 export type ScriptData = Word   | Word[]
