@@ -1,15 +1,9 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
-
-import {
-  Field,
-  Point,
-  hash,
-  keys
-} from '@cmdcode/crypto-utils'
+import { Buff, Bytes }  from '@cmdcode/buff'
+import { Field, Point } from '@cmdcode/crypto-tools'
+import { hash340 }      from '@cmdcode/crypto-tools/hash'
+import { convert_32b }  from '@cmdcode/crypto-tools/keys'
 
 import * as assert from '../assert.js'
-
-const { digest } = hash
 
 export function get_tweak (
   pubkey : Bytes,
@@ -17,7 +11,7 @@ export function get_tweak (
 ) : Buff {
   data = data ?? new Uint8Array()
   assert.size(pubkey, 32)
-  return digest('TapTweak', pubkey, data)
+  return hash340('TapTweak', pubkey, data)
 }
 
 export function tweak_seckey (
@@ -31,6 +25,6 @@ export function tweak_pubkey (
   pubkey : Bytes,
   tweak  : Bytes
 ) : Buff {
-  const pub = keys.convert_32(pubkey)
+  const pub = convert_32b(pubkey)
   return Point.from_x(pub).add(tweak).buff
 }

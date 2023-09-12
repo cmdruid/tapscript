@@ -1,4 +1,4 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 
 import { parse_tx }      from '../../tx/index.js'
 import { encode_script } from '../../script/encode.js'

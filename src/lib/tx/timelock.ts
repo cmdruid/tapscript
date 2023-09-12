@@ -1,4 +1,4 @@
-import { Buff, Bytes }  from '@cmdcode/buff-utils'
+import { Buff, Bytes }  from '@cmdcode/buff'
 import { TimelockData } from '../../types/index.js'
 
 const MAX_VAL    = 0xFFFFFFFF

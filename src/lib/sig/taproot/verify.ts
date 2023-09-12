@@ -1,4 +1,4 @@
-import { Buff, Stream } from '@cmdcode/buff-utils'
+import { Buff, Stream } from '@cmdcode/buff'
 import { hash_tx }      from './hash.js'
 import { fail }         from '../../util.js'
 import { parse_tx }     from '../../tx/index.js'
@@ -11,7 +11,7 @@ import * as util   from '../utils.js'
 import {
   SignOptions,
   signer
-} from '@cmdcode/crypto-utils'
+} from '@cmdcode/crypto-tools'
 
 import {
   TxBytes,
@@ -88,5 +88,5 @@ export function verify_tx (
 
   const hash = hash_tx(tx, config)
 
-  return signer.verify(signature, hash, pub, options)
+  return signer.verify_sig(signature, hash, pub, options)
 }

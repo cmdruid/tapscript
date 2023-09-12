@@ -1,5 +1,5 @@
 import { Test } from 'tape'
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 
 import { Address, SigHash, Tap, Tx, } from '../../../src/index.js'
 

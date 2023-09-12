@@ -1,5 +1,5 @@
 
-import { Bytes }    from '@cmdcode/buff-utils'
+import { Bytes }    from '@cmdcode/buff'
 import { Sequence } from './Sequence.js'
 import { TxOut }    from './TxOut.js'
 import { Witness }  from './Witness.js'

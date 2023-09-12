@@ -1,4 +1,4 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
 import { sha256sh }    from './hash.js'
 import { Bech32 }      from './encoder.js'
 

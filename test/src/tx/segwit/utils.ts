@@ -1,4 +1,4 @@
-import { Buff }    from '@cmdcode/buff-utils'
+import { Buff }    from '@cmdcode/buff'
 import { TxInput } from '../../../../src'
 
 type TestInput = [

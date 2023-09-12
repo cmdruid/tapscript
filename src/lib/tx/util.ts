@@ -1,4 +1,4 @@
-import { hash }      from '@cmdcode/crypto-utils'
+import { hash }      from '@cmdcode/crypto-tools'
 import { encode_tx } from './encode.js'
 import { parse_tx }  from './parse.js'
 

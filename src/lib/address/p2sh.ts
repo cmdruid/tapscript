@@ -1,4 +1,4 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
 import { hash160sh }   from './hash.js'
 import { lookup }      from './const.js'
 

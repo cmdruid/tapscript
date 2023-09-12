@@ -1,4 +1,4 @@
-import { Buff }    from '@cmdcode/buff-utils'
+import { Buff }    from '@cmdcode/buff'
 
 import * as Script from '../lib/script/index.js'
 import * as Tx     from '../lib/tx/index.js'

@@ -1,4 +1,4 @@
-import { Buff, Stream } from '@cmdcode/buff-utils'
+import { Buff, Stream } from '@cmdcode/buff'
 import { get_asm_code } from './words.js'
 import { is_hex }       from '../util.js'
 

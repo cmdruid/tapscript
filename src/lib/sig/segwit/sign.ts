@@ -1,5 +1,5 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { noble }       from '@cmdcode/crypto-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
+import { noble }       from '@cmdcode/crypto-tools'
 import { hash_tx }     from './hash.js'
 
 import {

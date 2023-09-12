@@ -1,5 +1,5 @@
 import { Test }          from 'tape'
-import { Buff }          from '@cmdcode/buff-utils'
+import { Buff }          from '@cmdcode/buff'
 import test_vectors      from './unit.vectors.json' assert { type: 'json' }
 import { encode_script } from '../../../src/lib/script/encode.js'
 

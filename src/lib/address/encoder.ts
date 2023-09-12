@@ -1,4 +1,4 @@
-import { Buff, Bytes, Encoder } from '@cmdcode/buff-utils'
+import { Buff, Bytes, Encoder } from '@cmdcode/buff'
 
 import { DecodedData } from '../../types/index.js'
 

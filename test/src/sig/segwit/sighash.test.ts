@@ -1,5 +1,5 @@
 import { Test } from 'tape'
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
 import { SigHash, TxData }   from '../../../../src/index.js'

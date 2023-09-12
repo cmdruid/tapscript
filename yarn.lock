@@ -191,15 +191,19 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
-"@cmdcode/buff-utils@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff-utils/-/buff-utils-2.0.0.tgz#4b197393371bad8f9c4872c790a01e28b16d6aaa"
-  integrity sha512-hduPGB45//2hzpjuudhXrbTRWyD+sjcry/bmmYjh1+SOtiZl4AgRRaTDr5FuG1VVjgkoTFBtc5DmBj3x3PlmTA==
+"@cmdcode/buff@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@cmdcode/buff/-/buff-2.0.2.tgz#754dea4bfefb7e6b3137c9cd636cce6fa78c2cab"
+  integrity sha512-CRYjrhCqcj04iGERQEzPQWhlZQcFO1QM0y+O23ga3/ftB974c2saTdQ6VJNG+OqaV9y+HC7ctQa21PBFRQlT1g==
 
-"@cmdcode/crypto-utils@^2.4.1":
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-utils/-/crypto-utils-2.4.1.tgz#5c2dd932bfc23507397efc3e869ea610b888f0fe"
-  integrity sha512-g3H75ukz8K5JkIf+WXSH9wYIEuL+01TjifwlpNZfiigjACJxES3YWc2k/WisMu8SMUUVXBOpjd2Rb6/jgcCpgQ==
+"@cmdcode/crypto-tools@^2.4.9":
+  version "2.4.9"
+  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-tools/-/crypto-tools-2.4.9.tgz#645fc9f0ad526f5dab7a1c994a9f8e8526d45bc0"
+  integrity sha512-hUM/wxftZSBoa85+CFF/PI3xQmpm57M0GWq9fEoeghXDCH+22jiBbOZstUHTMaMc1PC1iAnHF82PnJ2Il9z+fQ==
+  dependencies:
+    "@cmdcode/buff" "^2.0.2"
+    "@noble/curves" "^1.1.0"
+    "@noble/hashes" "^1.3.0"
 
 "@esbuild-kit/cjs-loader@^2.4.2":
   version "2.4.2"
@@ -454,10 +458,22 @@
   dependencies:
     "@noble/hashes" "1.3.0"
 
+"@noble/curves@^1.1.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.2.0.tgz#92d7e12e4e49b23105a2555c6984d41733d65c35"
+  integrity sha512-oYclrNgRaM9SsBUBVbb8M6DTV7ZHRTKugureoYEncY5c65HOmRzvSiTE3y5CYaPYJA/GVkrhXEoF0M3Ya9PMnw==
+  dependencies:
+    "@noble/hashes" "1.3.2"
+
 "@noble/hashes@1.3.0":
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.0.tgz#085fd70f6d7d9d109671090ccae1d3bec62554a1"
   integrity sha512-ilHEACi9DwqJB0pw7kv+Apvh50jiiSyR/cQ3y4W7lOR5mhvn/50FLUfsnfJz0BDZtl/RR16kXvptiv6q1msYZg==
+
+"@noble/hashes@1.3.2", "@noble/hashes@^1.3.0":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.3.2.tgz#6f26dbc8fbc7205873ce3cee2f690eba0d421b39"
+  integrity sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"

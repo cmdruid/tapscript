@@ -1,5 +1,5 @@
-import { Buff } from '@cmdcode/buff-utils'
-import { hash } from '@cmdcode/crypto-utils'
+import { Buff } from '@cmdcode/buff'
+import { hash } from '@cmdcode/crypto-tools'
 
 import { parse_tx } from '../../tx/index.js'
 

@@ -1,6 +1,6 @@
 import { Test }    from 'tape'
-import { Buff }    from '@cmdcode/buff-utils'
-import * as ecc    from '@cmdcode/crypto-utils'
+import { Buff }    from '@cmdcode/buff'
+import * as ecc    from '@cmdcode/crypto-tools'
 import { schnorr } from '@noble/curves/secp256k1'
 
 import { decode_tx }  from '../../../../src/lib/tx/decode.js'
@@ -57,20 +57,20 @@ export function test_signatures(t : Test) {
       const pubkey        = ecc.keys.get_pubkey(tweakedPrivkey, true)
       const tweakedpub    = Buff.raw(schnorr.getPublicKey(tweakedPrivkey))
       t.equal(pubkey.hex, tweakedpub.hex, 'The tweaked pubkeys should be equal.')
-      const testsig       = ecc.signer.sign(sigHash, tweakedPrivkey)
-      const isVerify      = ecc.signer.verify(testsig, sigHash, tweakedpub)
+      const testsig       = ecc.signer.sign_msg(sigHash, tweakedPrivkey)
+      const isVerify      = ecc.signer.verify_sig(testsig, sigHash, tweakedpub)
       t.true(isVerify, 'Signature made with sign should be valid using verify.')
       const signature     = taproot.sign_tx(tweakedPrivkey, tx, { sigflag: hashType, txindex : txinIndex, throws : true })
       const schnorrVerify = schnorr.verify(signature.slice(0, 64), sigHash, tweakedpub)
       t.true(schnorrVerify, 'The signTx signature should be valid using schnorr.')
-      const sigVerify     = ecc.signer.verify(signature, actual_hash, tweakedpub)
+      const sigVerify     = ecc.signer.verify_sig(signature, actual_hash, tweakedpub)
       t.true(sigVerify, 'The signTx signature should be valid using verify.')
-      const vectVerify    = ecc.signer.verify(witsig, sigHash, tweakedpub)
+      const vectVerify    = ecc.signer.verify_sig(witsig, sigHash, tweakedpub)
       t.true(vectVerify, 'The vector signature should be valid using verify.')
       const checkVerify   = schnorr.verify(Buff.hex(witsig).slice(0, 64), sigHash, tweakedpub)
       t.true(checkVerify, 'The vector signature should be valid using schnorr.')
       const schnorrSig    = schnorr.sign(actual_hash, tweakedPrivkey)
-      const testVerify    = ecc.signer.verify(schnorrSig, actual_hash, tweakedpub)
+      const testVerify    = ecc.signer.verify_sig(schnorrSig, actual_hash, tweakedpub)
       t.true(testVerify, 'The schnorr signature should be valid using verify.')
       tx.vin[txinIndex].witness = [ signature ]
       const isVerified    = taproot.verify_tx(tx, { sigflag: hashType, txindex: txinIndex, throws : true })

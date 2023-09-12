@@ -1,4 +1,4 @@
-import { Buff }      from '@cmdcode/buff-utils'
+import { Buff }      from '@cmdcode/buff'
 import { is_bytes }  from '../util.js'
 import { decode_tx } from './decode.js'
 

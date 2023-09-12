@@ -1,5 +1,5 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { keys }        from '@cmdcode/crypto-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
+import { keys }        from '@cmdcode/crypto-tools'
 
 import * as assert from '../assert.js'
 
@@ -50,7 +50,7 @@ function get_tapkey (
 
   const int_pub = (is_secret)
     ? keys.get_pubkey(int_key, true)
-    : keys.convert_32(int_key)
+    : keys.convert_32b(int_key)
 
   let { target } = config
 
@@ -78,7 +78,7 @@ function get_tapkey (
     ? tweak_seckey(int_key, taptweak)
     : tweak_pubkey(int_pub, taptweak)
   const parity = parse_parity_bit(fullkey[0])
-  const tapkey = keys.convert_32(fullkey).hex
+  const tapkey = keys.convert_32b(fullkey).hex
   // Get the block version / parity bit.
   const cbit = Buff.num(version + parity)
   // Create the control block, starting with

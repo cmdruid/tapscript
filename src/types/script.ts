@@ -1,4 +1,4 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 
 export type RedeemEnum = 'p2pkh'   | 'p2sh'   | 'p2w-p2pkh' | 'p2w-p2sh' |
                          'p2w-pkh' | 'p2w-sh' | 'p2tr'      | 'raw'

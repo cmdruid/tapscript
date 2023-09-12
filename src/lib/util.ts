@@ -1,4 +1,4 @@
-import { Bytes } from '@cmdcode/buff-utils'
+import { Bytes } from '@cmdcode/buff'
 
 export function fail (
   message : string,

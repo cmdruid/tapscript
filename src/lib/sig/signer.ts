@@ -1,4 +1,4 @@
-import { Buff, Bytes }    from '@cmdcode/buff-utils'
+import { Buff, Bytes }    from '@cmdcode/buff'
 import { parse_vin_meta } from './utils.js'
 
 import * as segwit  from './segwit/index.js'

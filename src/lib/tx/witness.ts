@@ -1,4 +1,4 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 
 import { LEAF_VERSIONS } from './const.js'
 import { is_hex }        from '../util.js'

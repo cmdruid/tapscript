@@ -1,5 +1,5 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { signer }      from '@cmdcode/crypto-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
+import { signer }      from '@cmdcode/crypto-tools'
 import { hash_tx }     from './hash.js'
 
 import {
@@ -21,7 +21,7 @@ export function sign_tx (
   // Calculate the transaction hash.
   const hash = hash_tx(txdata, config)
   // Sign the transaction hash with secret key.
-  const sig  = signer.sign(hash, seckey)
+  const sig  = signer.sign_msg(hash, seckey)
   // Return the signature.
   return (sigflag === 0x00)
     ? Buff.raw(sig)

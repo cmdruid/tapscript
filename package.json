@@ -53,8 +53,8 @@
     "src"
   ],
   "devDependencies": {
-    "@cmdcode/buff-utils": "^2.0.0",
-    "@cmdcode/crypto-utils": "^2.4.1",
+    "@cmdcode/buff": "^2.0.2",
+    "@cmdcode/crypto-tools": "^2.4.9",
     "@noble/curves": "^0.9.1",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",

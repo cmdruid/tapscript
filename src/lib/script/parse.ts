@@ -1,5 +1,5 @@
 
-import { Buff }         from '@cmdcode/buff-utils'
+import { Buff }         from '@cmdcode/buff'
 import { SCRIPT_TYPES } from './const.js'
 import { is_hex }       from '../util.js'
 

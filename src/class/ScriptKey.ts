@@ -1,4 +1,4 @@
-import { hash } from '@cmdcode/crypto-utils'
+import { hash } from '@cmdcode/crypto-tools'
 
 import * as Address from '../lib/address/index.js'
 import * as Script  from '../lib/script/index.js'

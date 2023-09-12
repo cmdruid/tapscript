@@ -1,4 +1,4 @@
-import { keys } from '@cmdcode/crypto-utils'
+import { keys } from '@cmdcode/crypto-tools'
 
 import * as assert from '../assert.js'
 

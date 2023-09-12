@@ -1,4 +1,4 @@
-import { Bytes }      from '@cmdcode/buff-utils'
+import { Bytes }      from '@cmdcode/buff'
 import { ScriptData } from './script.js'
 
 export interface TapKey extends CtrlBlock {

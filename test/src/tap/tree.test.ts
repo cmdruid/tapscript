@@ -1,5 +1,5 @@
 import { Test } from 'tape'
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 import { Tap }  from '../../../src/index.js'
 
 import { encode_script } from '../../../src/lib/script/encode.js'

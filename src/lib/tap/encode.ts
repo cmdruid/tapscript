@@ -1,5 +1,5 @@
-import { Bytes } from '@cmdcode/buff-utils'
-import { hash }  from '@cmdcode/crypto-utils'
+import { Bytes }   from '@cmdcode/buff'
+import { hash340 } from '@cmdcode/crypto-tools/hash'
 
 import * as Script from '../script/index.js'
 
@@ -11,7 +11,7 @@ export function encode_leaf (
   data : Bytes,
   version = DEFAULT_VERSION
 ) : string {
-  return hash.digest('TapLeaf', encode_version(version), data).hex
+  return hash340('TapLeaf', encode_version(version), data).hex
 }
 
 export function encode_script (
@@ -32,7 +32,7 @@ export function encode_branch (
     [ leaf_a, leaf_b ] = [ leaf_b, leaf_a ]
   }
   // Return digest of leaves as a branch hash.
-  return hash.digest('TapBranch', leaf_a, leaf_b).hex
+  return hash340('TapBranch', leaf_a, leaf_b).hex
 }
 
 export function encode_version (version = 0xc0) : number {

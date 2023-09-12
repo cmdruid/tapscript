@@ -1,4 +1,4 @@
-import { Buff, Bytes, Stream } from '@cmdcode/buff-utils'
+import { Buff, Bytes, Stream } from '@cmdcode/buff'
 
 import {
   get_op_code,

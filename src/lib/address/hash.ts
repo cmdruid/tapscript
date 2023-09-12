@@ -1,5 +1,5 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
-import { hash }        from '@cmdcode/crypto-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
+import { hash }        from '@cmdcode/crypto-tools'
 import { to_bytes }    from '../script/index.js'
 import { ScriptData }  from '../../types/index.js'
 

@@ -1,4 +1,4 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
 
 export function parse_xonly (key : Bytes) : Buff {
   const bytes = Buff.bytes(key)
