@@ -1,10 +1,11 @@
-import { Buff, Stream } from '@cmdcode/buff'
-import { hash_tx }      from './hash.js'
-import { fail }         from '../../util.js'
-import { parse_tx }     from '../../tx/index.js'
+import { Buff, Stream }   from '@cmdcode/buff'
+import { hash_tx }        from './hash.js'
+import { fail }           from '../../util.js'
+import { parse_tx }       from '../../tx/index.js'
+import { parse_script }   from '../../script/parse.js'
+import { verify_cblock }  from '../../tap/key.js'
+import { encode_tapleaf } from '../../tap/encode.js'
 
-import * as Script from '../../script/index.js'
-import * as Tap    from '../../tap/index.js'
 import * as Tx     from '../../tx/index.js'
 import * as util   from '../utils.js'
 
@@ -44,7 +45,7 @@ export function verify_tx (
     return fail('Prevout scriptPubKey is empty!', throws)
   }
 
-  const { type, key: tapkey } = Script.parse_scriptkey(scriptPubKey)
+  const { type, key: tapkey } = parse_script(scriptPubKey)
 
   if (
     type   !== 'p2tr'    ||
@@ -58,11 +59,12 @@ export function verify_tx (
     cblock !== null &&
     script !== null
   ) {
-    const version    = cblock[0] & 0xfe
-    const target     = Tap.encode.leaf(script, version)
-    config.extension = target
-
-    if (!Tap.key.check_proof(tapkey, target, cblock)) {
+    const version = cblock[0] & 0xfe
+    const target  = encode_tapleaf(script, version)
+    if (config.extension === undefined) {
+      config.extension = target
+    }
+    if (!verify_cblock(tapkey, target, cblock)) {
       return fail('cblock verification failed!', throws)
     }
   }

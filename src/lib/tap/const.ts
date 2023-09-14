@@ -1,7 +1,8 @@
 import { Buff }  from '@cmdcode/buff'
 import { Point } from '@cmdcode/crypto-tools'
 
-export const SCRIPT_PUBKEY = get_script_only_pub()
+export const DEFAULT_VERSION = 0xc0
+export const SCRIPT_PUBKEY   = get_script_only_pub()
 
 function get_script_only_pub () : string {
   // Generated as specified in BIP0341:

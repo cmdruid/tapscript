@@ -196,10 +196,19 @@
   resolved "https://registry.yarnpkg.com/@cmdcode/buff/-/buff-2.0.2.tgz#754dea4bfefb7e6b3137c9cd636cce6fa78c2cab"
   integrity sha512-CRYjrhCqcj04iGERQEzPQWhlZQcFO1QM0y+O23ga3/ftB974c2saTdQ6VJNG+OqaV9y+HC7ctQa21PBFRQlT1g==
 
-"@cmdcode/crypto-tools@^2.4.9":
-  version "2.4.9"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-tools/-/crypto-tools-2.4.9.tgz#645fc9f0ad526f5dab7a1c994a9f8e8526d45bc0"
-  integrity sha512-hUM/wxftZSBoa85+CFF/PI3xQmpm57M0GWq9fEoeghXDCH+22jiBbOZstUHTMaMc1PC1iAnHF82PnJ2Il9z+fQ==
+"@cmdcode/core-cmd@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@cmdcode/core-cmd/-/core-cmd-1.0.2.tgz#fb36b0949413975b677d553835b8a2af285c3584"
+  integrity sha512-uPFiTEJgARS1VlxUDvhx2P5EjJh5M4VMu/1Ekt6BlRaTGp6p6nqFdkP1d7w7nx+fMnyeC1EYeX/W+paj2MymYQ==
+  dependencies:
+    "@cmdcode/crypto-tools" "^2.4.10"
+    "@scrow/tapscript" "^2.0.2"
+    "@types/node" "^18.13.0"
+
+"@cmdcode/crypto-tools@^2.4.10":
+  version "2.4.10"
+  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-tools/-/crypto-tools-2.4.10.tgz#fbb09b02ba5cec304b261442065a924ea4a60cf9"
+  integrity sha512-2vNLhqsir9oS7FGmi1iBfdFSLMVbZ/JEawLxNVxKE9s3fRxjz8AFjur9AjG4ae7rDjK0/nsJUjeCj6aFAZUT7g==
   dependencies:
     "@cmdcode/buff" "^2.0.2"
     "@noble/curves" "^1.1.0"
@@ -546,6 +555,11 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
+"@scrow/tapscript@^2.0.2":
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/@scrow/tapscript/-/tapscript-2.0.5.tgz#f2ecbb65ad24db04c6f4af13d98f67d8130230c7"
+  integrity sha512-qXGfWKfpA8rTJIH94k/1jb4uBIVtb+hhTZSb2d97m/8lMnSUI8W2/sEwZNZVXmnfubRTMmM7ntfuhqAMGWhSAA==
+
 "@types/estree@*", "@types/estree@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.0.tgz#5fb2e536c1ae9bf35366eed879e827fa59ca41c2"
@@ -565,6 +579,11 @@
   version "18.15.11"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.15.11.tgz#b3b790f09cb1696cffcec605de025b088fa4225f"
   integrity sha512-E5Kwq2n4SbMzQOn6wnmBjuK9ouqlURrcZDVfbo9ftDDTFt3nk7ZKK4GMOzoYgnpQJKcxwQw+lGaBvvlMo0qN/Q==
+
+"@types/node@^18.13.0":
+  version "18.17.15"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.17.15.tgz#31301a273b9ca7d568fe6d1c35ae52e0fb3f8d6a"
+  integrity sha512-2yrWpBk32tvV/JAd3HNHWuZn/VDN1P+72hWirHnvsvTGSqbANi+kSeuQR9yAHnbvaBvHDsoTdXV0Fe+iRtHLKA==
 
 "@types/resolve@1.20.2":
   version "1.20.2"

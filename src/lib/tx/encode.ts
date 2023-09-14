@@ -1,24 +1,22 @@
 import { Buff }          from '@cmdcode/buff'
 import { encode_script } from '../script/encode.js'
-import { parse_tx }      from './parse.js'
 import { is_empty }      from '../util.js'
 
 import {
   ScriptData,
   TxInput,
   TxOutput,
-  TxTemplate,
   TxData
 } from '../../types/index.js'
 
 export function encode_tx (
-  txdata : TxTemplate | TxData,
+  txdata : TxData,
   omitWitness ?: boolean
 ) : Buff {
   /* Convert a JSON-based Bitcoin transaction
    * into hex-encoded bytes.
    * */
-  const { version, vin, vout, locktime } = parse_tx(txdata)
+  const { version, vin, vout, locktime } = txdata
 
   const useWitness = (omitWitness !== true && check_witness(vin))
 

@@ -1,11 +1,15 @@
 import { Buff } from '@cmdcode/buff'
 import { hash } from '@cmdcode/crypto-tools'
 
+import {
+  parse_asm,
+  encode_script
+} from '../../script/index.js'
+
 import { parse_tx } from '../../tx/index.js'
 
 import * as assert from '../../../lib/assert.js'
 import * as ENC    from '../../tx/encode.js'
-import * as Script from '../../script/index.js'
 import * as util   from '../utils.js'
 
 import {
@@ -63,7 +67,7 @@ export function hash_tx (
     throw new Error('No pubkey / script has been set!')
   }
   // Throw if OP_CODESEPARATOR is used in a script.
-  if (Script.to_asm(script).includes('OP_CODESEPARATOR')) {
+  if (parse_asm(script).includes('OP_CODESEPARATOR')) {
     throw new Error('This library does not currently support the use of OP_CODESEPARATOR in segwit scripts.')
   }
 
@@ -73,7 +77,7 @@ export function hash_tx (
     hash_sequence(vin, flag, is_anypay),
     ENC.encode_txid(txid),
     ENC.encode_idx(prevIdx),
-    Script.encode(script, true),
+    encode_script(script, true),
     ENC.encode_value(value),
     ENC.encode_sequence(sequence),
     hash_outputs(vout, flag, txindex),
@@ -131,7 +135,7 @@ function hash_outputs (
   if (sigflag === 0x01) {
     for (const { value, scriptPubKey } of vout) {
       stack.push(ENC.encode_value(value))
-      stack.push(Script.encode(scriptPubKey, true))
+      stack.push(encode_script(scriptPubKey, true))
     }
     return hash256(Buff.join(stack))
   }
@@ -141,7 +145,7 @@ function hash_outputs (
     if (idx < vout.length) {
       const { value, scriptPubKey } = vout[idx]
       stack.push(ENC.encode_value(value))
-      stack.push(Script.encode(scriptPubKey, true))
+      stack.push(encode_script(scriptPubKey, true))
       return hash256(Buff.join(stack))
     }
   }

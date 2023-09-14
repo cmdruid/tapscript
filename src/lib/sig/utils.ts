@@ -2,8 +2,8 @@ import { keys } from '@cmdcode/crypto-tools'
 
 import * as assert from '../assert.js'
 
-import { parse_tx }        from '../tx/parse.js'
-import { parse_scriptkey } from '../script/parse.js'
+import { parse_tx }     from '../tx/parse.js'
+import { parse_script } from '../script/parse.js'
 
 import {
   SigHashOptions,
@@ -39,5 +39,5 @@ export function parse_vin_meta (
   txdata = parse_tx(txdata)
   const { prevout } = parse_txinput(txdata, options)
   assert.ok(prevout !== undefined)
-  return parse_scriptkey(prevout.scriptPubKey)
+  return parse_script(prevout.scriptPubKey)
 }

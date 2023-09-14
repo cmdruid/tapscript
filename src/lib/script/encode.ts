@@ -4,7 +4,7 @@ import { is_hex }       from '../util.js'
 
 import {
   ScriptData,
-  Word
+  ScriptWord
 } from '../../types/index.js'
 
 const MAX_WORD_SIZE = 0x208
@@ -35,19 +35,19 @@ export function encode_script (
 }
 
 export function encode_words (
-  word_array : Word[]
+  words : ScriptWord[]
 ) : Uint8Array {
-  const words = []
-  for (const word of word_array) {
-    words.push(encode_word(word))
+  const bytes = []
+  for (const word of words) {
+    bytes.push(format_word(word))
   }
-  return (words.length > 0)
-    ? Buff.join(words)
+  return (bytes.length > 0)
+    ? Buff.join(bytes)
     : new Uint8Array()
 }
 
-export function encode_word (
-  word : Word
+export function format_word (
+  word : ScriptWord
 ) : Uint8Array {
   /** Check if the word is a valid opcode,
    *  and return its integer value.
@@ -85,7 +85,7 @@ export function encode_word (
   return Buff.join([ encode_size(buff.length), buff ])
 }
 
-function encode_size (size : number) : Uint8Array {
+export function encode_size (size : number) : Uint8Array {
   const OP_DATAPUSH1 = Buff.num(0x4c, 1)
   const OP_DATAPUSH2 = Buff.num(0x4d, 1)
 
@@ -101,7 +101,7 @@ function encode_size (size : number) : Uint8Array {
   }
 }
 
-function split_word (word : Uint8Array) : Word[] {
+export function split_word (word : Uint8Array) : ScriptWord[] {
   const words = []
   const buff  = new Stream(word)
   while (buff.size > MAX_WORD_SIZE) {

@@ -2,14 +2,14 @@ import { Test } from 'tape'
 import { Buff } from '@cmdcode/buff'
 
 import { secp256k1 as secp } from '@noble/curves/secp256k1'
-import { SigHash, TxData }   from '../../../../src/index.js'
-import { parse_tx }          from '../../../../src/lib/tx/parse.js'
+import { TxData }            from '@cmdcode/tapscript'
+import { segwit }            from '@cmdcode/tapscript/sighash'
+import { parse_tx }          from '@cmdcode/tapscript/tx'
 
 import test_data from './bip0143.vectors.json' assert { type: 'json' }
 
 export function sighash_vector_test(t :Test) {
   t.test('Testing segwit sighash vectors.', t => {
-    const { segwit } = SigHash
     const { redeemScript, txdata, sign_vectors } = test_data
 
     const tx = parse_tx(txdata)
@@ -32,7 +32,7 @@ export function sighash_vector_test(t :Test) {
       try {
         const hash = segwit.hash_tx(tx, { txindex: index, ...config })
         t.equal(hash.hex, sigHash, 'Sighash should be equal.')
-      } catch (err) {
+      } catch (err : any) {
         t.fail(err.message)
       }
 
@@ -45,7 +45,7 @@ export function sighash_vector_test(t :Test) {
         txcopy.vin[index].witness = [ sig, pubkey, redeemScript ]
         const signerVerify = segwit.verify_tx(txcopy, { txindex: index, ...config })
         t.equal(signerVerify, true, 'Signature should be valid using Signer.')
-      } catch (err) {
+      } catch (err : any) {
         t.fail(err.message)
       }
     }

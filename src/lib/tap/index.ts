@@ -1,9 +1,6 @@
-import encode from './encode.js'
-
-export * as CONST from './const.js'
-export * as key   from './key.js'
-export * as parse from './parse.js'
-export * as tree  from './tree.js'
-export * as tweak from './tweak.js'
-
-export { encode }
+export * from './const.js'
+export * from './encode.js'
+export * from './key.js'
+export * from './parse.js'
+export * from './tree.js'
+export * from './tweak.js'

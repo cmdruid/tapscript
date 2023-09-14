@@ -1,10 +1,9 @@
-import { Buff } from '@cmdcode/buff'
-
+import { Buff }          from '@cmdcode/buff'
+import { buffer_asm }    from '../script/parse.js'
 import { LEAF_VERSIONS } from './const.js'
 import { is_hex }        from '../util.js'
 
 import * as assert from '../assert.js'
-import * as Script from '../script/index.js'
 
 import {
   ScriptData,
@@ -62,7 +61,7 @@ function parse_script (
       const item = data.at(-1)
       assert.ok(item !== undefined)
       data.pop()
-      return Script.to_bytes(item)
+      return buffer_asm(item)
     } catch (err) {
       return null
     }

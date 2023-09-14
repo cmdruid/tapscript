@@ -8,7 +8,7 @@ import {
   AddressData,
   Network,
   ScriptData,
-  Word
+  ScriptWord
 } from '../../types/index.js'
 
 import { Bech32m } from './encoder.js'
@@ -62,7 +62,7 @@ function create_address (
 
 export function create_script (
   keydata : Bytes
-) : Word[] {
+) : ScriptWord[] {
   const bytes = Buff.bytes(keydata)
   assert.size(bytes, 32)
   return [ 'OP_1', bytes.hex ]

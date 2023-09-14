@@ -1,10 +1,9 @@
 import { Buff } from '@cmdcode/buff'
 
-import { parse_tx }      from '../../tx/index.js'
-import { encode_script } from '../../script/encode.js'
-
-import * as ENC    from '../../tx/encode.js'
-import * as Script from '../../script/index.js'
+import { parse_tx }         from '../../tx/index.js'
+import { encode_script }    from '../../script/encode.js'
+import { encode_tapscript } from '../../tap/encode.js'
+import { parse_txinput }    from '../utils.js'
 
 import {
   SigHashOptions,
@@ -15,8 +14,8 @@ import {
   TxOutput
 } from '../../../types/index.js'
 
+import * as ENC    from '../../tx/encode.js'
 import * as assert from '../../assert.js'
-import { parse_txinput } from '../utils.js'
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
@@ -26,7 +25,7 @@ export function hash_tx (
 ) : Buff {
   // Unpack configuration.
   const {
-    extension,
+    script,
     txindex,
     sigflag       = 0x00,
     extflag       = 0x00,
@@ -50,6 +49,13 @@ export function hash_tx (
     // If the extflag is out of range, throw error.
     throw new Error('Extention flag out of range: ' + String(extflag))
   }
+
+  let { extension } = config
+
+  if (script !== undefined) {
+    extension = encode_tapscript(script)
+  }
+
   // Define the parameters of the transaction.
   const is_anypay = (sigflag & 0x80) === 0x80
   const annex     = get_annex_data(witness)
@@ -97,7 +103,7 @@ export function hash_tx (
       ENC.encode_txid(txid),              // Commit to the input txid.
       ENC.encode_idx(vout),               // Commit to the input vout index.
       ENC.encode_value(value),            // Commit to the input's prevout value.
-      Script.encode(scriptPubKey, true),  // Commit to the input's prevout script.
+      encode_script(scriptPubKey, true),  // Commit to the input's prevout script.
       ENC.encode_sequence(sequence)       // Commit to the input's sequence value.
     )
   } else {
@@ -185,7 +191,7 @@ export function hash_outputs (
   const stack = []
   for (const { value, scriptPubKey } of vout) {
     stack.push(ENC.encode_value(value))
-    stack.push(Script.encode(scriptPubKey, true))
+    stack.push(encode_script(scriptPubKey, true))
   }
   return Buff.join(stack).digest
 }
@@ -195,7 +201,7 @@ export function hash_output (
 ) : Buff {
   return Buff.join([
     ENC.encode_value(vout.value),
-    Script.encode(vout.scriptPubKey, true)
+    encode_script(vout.scriptPubKey, true)
   ]).digest
 }
 

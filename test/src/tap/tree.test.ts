@@ -1,8 +1,15 @@
 import { Test } from 'tape'
 import { Buff } from '@cmdcode/buff'
-import { Tap }  from '../../../src/index.js'
 
-import { encode_script } from '../../../src/lib/script/encode.js'
+import {
+  get_taptweak,
+  get_taproot,
+  tweak_pubkey,
+  encode_tapleaf,
+  tap_pubkey
+} from '@cmdcode/tapscript/tapkey'
+
+import { encode_script } from '@cmdcode/tapscript/script'
 
 import tree_vectors from './tree.vectors.json' assert { type: 'json' }
 
@@ -40,18 +47,18 @@ export default function (t : Test) {
       if (scripts.length === 0) {
         t.test('Testing empty key tweak.', t => {
           t.plan(1)
-          const taptweak = Tap.tweak.get_tweak(internalPubkey)
-          const tapkey = Tap.tweak.tweak_pubkey(internalPubkey, taptweak).slice(1)
+          const taptweak = get_taptweak(internalPubkey)
+          const tapkey   = tweak_pubkey(internalPubkey, taptweak).slice(1)
           t.equal(tapkey.hex, tweakedPubkey, 'Tweaked pubs should match.')
         })
       } else {
         t.test('Testing key: ' + tweakedPubkey, t => {
           t.plan(3)
-          const root = Tap.tree.get_root(leafHashes)
+          const root = get_taproot(leafHashes)
           t.equal(Buff.raw(root).hex, merkleRoot, 'Root hash should match.')
-          const taptweak = Tap.tweak.get_tweak(internalPubkey, merkleRoot as string)
+          const taptweak = get_taptweak(internalPubkey, merkleRoot as string)
           t.equal(taptweak.hex, tweak, 'Tweak hash should match.')
-          const tapkey = Tap.tweak.tweak_pubkey(internalPubkey, taptweak).slice(1)
+          const tapkey = tweak_pubkey(internalPubkey, taptweak).slice(1)
           t.equal(tapkey.hex, tweakedPubkey, 'Tweaked pubs should match.')
         })
 
@@ -62,10 +69,10 @@ export default function (t : Test) {
             t.plan(2)
             const cbyte   = Buff.hex(cblocks[i]).slice(0, 1).num
             const version = cbyte & 0xfe
-            const sbytes  = encode_script(scripts[i]).hex
-            const target = Tap.encode.leaf(sbytes, version)
-            t.equal(target, leaves[i], 'Leaf hash should match.')
-            const { cblock } = Tap.key.from_pubkey(internalPubkey, { tree: leafHashes, target,  version })
+            const data    = encode_script(scripts[i]).hex
+            const tapleaf = encode_tapleaf(data, version)
+            t.equal(tapleaf, leaves[i], 'Leaf hash should match.')
+            const { cblock } = tap_pubkey(internalPubkey, { taptree: leafHashes, tapleaf,  version })
             t.equal(cblock, cblocks[i], 'Control blocks should be equal.')
           })
         }

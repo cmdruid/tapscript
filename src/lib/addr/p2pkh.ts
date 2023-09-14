@@ -8,7 +8,7 @@ import {
   AddressData,
   Network,
   ScriptData,
-  Word
+  ScriptWord
 } from '../../types/index.js'
 
 function check_address (
@@ -62,7 +62,7 @@ function create_address (
 
 function create_script (
   keydata : Bytes
-) : Word[] {
+) : ScriptWord[] {
   /* Create a p2pkh script template. */
   const bytes = Buff.bytes(keydata)
   assert.size(bytes, 20)

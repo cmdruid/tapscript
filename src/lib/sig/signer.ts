@@ -9,6 +9,7 @@ import {
   TxBytes,
   TxData
 } from '../../types/index.js'
+import { SignOptions } from '@cmdcode/crypto-tools'
 
 export function hash_tx (
   txdata  : TxBytes | TxData,
@@ -25,13 +26,14 @@ export function hash_tx (
 }
 
 export function sign_tx (
-  seckey  : Bytes,
-  txdata  : TxBytes | TxData,
-  config ?: SigHashOptions
+  seckey   : Bytes,
+  txdata   : TxBytes | TxData,
+  config  ?: SigHashOptions,
+  options ?: SignOptions
 ) : Buff {
   const { type } = parse_vin_meta(txdata, config)
   if (type === 'p2tr') {
-    return taproot.sign_tx(seckey, txdata, config)
+    return taproot.sign_tx(seckey, txdata, config, options)
   } else if (type.startsWith('p2w')) {
     return segwit.sign_tx(seckey, txdata, config)
   } else {

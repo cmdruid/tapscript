@@ -1,12 +1,12 @@
 import { Buff } from '@cmdcode/buff'
-import { encode_branch } from './encode.js'
+import { encode_tapbranch } from './encode.js'
 
 import {
   TapTree,
   TapProof
 } from '../../types/index.js'
 
-export function get_root (
+export function get_taproot (
   leaves : TapTree
 ) : Buff {
   // Merkelize the leaves into a root hash.
@@ -55,7 +55,7 @@ export function merkleize (
   // Sort through the leaves (two at a time).
   for (let i = 0; i < leaves.length - 1; i += 2) {
     // Compute two leaves into a branch.
-    const branch = encode_branch(leaves[i], leaves[i + 1])
+    const branch = encode_tapbranch(leaves[i], leaves[i + 1])
     // Push our branch to the tree.
     tree.push(branch)
     // Check if a proof target is specified.

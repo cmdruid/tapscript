@@ -1,7 +1,6 @@
-import { ADDR_TYPES } from './const.js'
-import { ADDR_TOOLS } from './tool.js'
-
-import { parse_scriptkey } from '../script/parse.js'
+import { ADDR_TYPES }   from './const.js'
+import { ADDR_TOOLS }   from './tool.js'
+import { parse_script } from '../script/parse.js'
 
 import {
   AddressData,
@@ -9,7 +8,7 @@ import {
   ScriptData
 } from '../../types/index.js'
 
-export function parse_address (address : string) : AddressData {
+export function parse_addr (address : string) : AddressData {
   for (const row of ADDR_TYPES) {
     const [ type, prefix, network, size ] = row
     if (address.startsWith(prefix)) {
@@ -23,11 +22,11 @@ export function parse_address (address : string) : AddressData {
   throw new Error('Unable to parse address: ' + address)
 }
 
-export function from_script (
+export function create_addr (
   script   : ScriptData,
   network ?: Network
 ) : string {
-  const { type, key, hex } = parse_scriptkey(script)
+  const { type, key, hex } = parse_script(script)
   if (type !== 'raw') {
     const tool = ADDR_TOOLS[type]
     return tool.encode(key, network)

@@ -1,17 +1,12 @@
-import { hash } from '@cmdcode/crypto-tools'
-
-import * as Address from '../lib/address/index.js'
-import * as Script  from '../lib/script/index.js'
-import * as Tap     from '../lib/tap/index.js'
+import { create_addr }  from '../lib/addr/parse.js'
+import { parse_script } from '../lib/script/parse.js'
 
 import {
   ScriptData,
   ScriptEnum,
   ScriptMeta,
-  Word
+  ScriptWord
 } from '../types/index.js'
-
-const { hash160, hash256 } = hash
 
 export class ScriptKey {
   readonly _data : ScriptMeta
@@ -19,28 +14,15 @@ export class ScriptKey {
   constructor(
     script : ScriptData,
   ) {
-    this._data = Script.parse_scriptkey(script)
+    this._data = parse_script(script)
   }
 
   get address () : string {
-    return Address.from_script(this.asm)
+    return create_addr(this.asm)
   }
 
-  get asm () : Word[] {
+  get asm () : ScriptWord[] {
     return this._data.asm
-  }
-
-  get hash () : string {
-    switch (this.type) {
-      case 'p2sh':
-        return hash160(this.hex).hex
-      case 'p2w-sh':
-        return hash256(this.hex).hex
-      case 'p2tr':
-        return Tap.encode.leaf(this.hex)
-      default:
-        throw new Error('Unrecognized script format: ' + this.type)
-    }
   }
 
   get hex () : string {
@@ -51,7 +33,7 @@ export class ScriptKey {
     return this._data.type
   }
 
-  toJSON() : Word[] {
+  toJSON() : ScriptWord[] {
     return this.asm
   }
 }

@@ -11,15 +11,15 @@ export interface ScriptTyped {
   type : ScriptEnum
   key  : Buff
   hex  : string
-  asm  : Word[]
+  asm  : ScriptWord[]
 }
 
 export interface ScriptRaw {
   type : 'raw'
   hex  : string
-  asm  : Word[]
+  asm  : ScriptWord[]
   key ?: Buff
 }
 
-export type ScriptData = Word   | Word[]
-export type Word       = string | number | Uint8Array
+export type ScriptData = ScriptWord | ScriptWord[]
+export type ScriptWord = string | number | Uint8Array

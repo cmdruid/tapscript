@@ -1,30 +1,31 @@
 import { Bytes }      from '@cmdcode/buff'
 import { ScriptData } from './script.js'
 
-export interface TapKey extends CtrlBlock {
-  tapkey   : string
-  cblock   : string
-  target  ?: string
-  taptweak : string
+export interface TapContext extends CtrlBlock {
+  data      ?: Bytes
+  tapkey     : string
+  cblock     : string
+  extension ?: string
+  script    ?: ScriptData
+  taproot   ?: string
+  taptree    : TapTree
+  taptweak   : string
 }
 
 export interface TapConfig {
   data      ?: Bytes
-  is_secret ?: boolean
   script    ?: ScriptData
   tapleaf   ?: Bytes
-  target    ?: Bytes
+  taptree   ?: TapTree
   throws    ?: boolean
-  tree      ?: TapTree
   version   ?: number
 }
 
 export interface CtrlBlock {
-  version : number
-  parity  : number
-  int_pub : string
-  path    : string[]
-  target ?: string
+  int_pub  : string
+  parity   : number
+  path     : string[]
+  version  : number
 }
 
 export type TapTree = Array<string | string[]>

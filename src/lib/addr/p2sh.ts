@@ -1,15 +1,15 @@
 import { Buff, Bytes } from '@cmdcode/buff'
+import { buffer_asm }  from '../script/parse.js'
 import { hash160sh }   from './hash.js'
 import { lookup }      from './const.js'
 
 import * as assert from '../assert.js'
-import * as Script from '../script/index.js'
 
 import {
   AddressData,
   Network,
   ScriptData,
-  Word
+  ScriptWord
 } from '../../types/index.js'
 
 export function check_address (
@@ -53,14 +53,14 @@ function create_address (
   input    : ScriptData,
   network ?: Network
 ) : string {
-  const bytes = Script.to_bytes(input, false)
+  const bytes = buffer_asm(input, false)
   const hash  = hash160sh(bytes)
   return encode_keydata(hash, network)
 }
 
 export function create_script (
   keydata : Bytes
-) : Word[] {
+) : ScriptWord[] {
   const bytes = Buff.bytes(keydata)
   assert.size(bytes, 20)
   return [ 'OP_HASH160', bytes.hex, 'OP_EQUAL' ]

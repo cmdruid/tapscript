@@ -1,109 +1,93 @@
 import { Buff, Bytes } from '@cmdcode/buff'
-import { keys }        from '@cmdcode/crypto-tools'
+import { convert_32b } from '@cmdcode/crypto-tools/keys'
 
-import * as assert from '../assert.js'
-
-import { merkleize }       from './tree.js'
-import { encode_branch }   from './encode.js'
+import { merkleize }        from './tree.js'
+import { encode_tapbranch } from './encode.js'
+import { DEFAULT_VERSION }  from './const.js'
+import { config_tapleaf }   from './util.js'
 
 import {
-  get_tweak,
-  tweak_pubkey,
-  tweak_seckey
+  get_taptweak,
+  tweak_pubkey
 } from './tweak.js'
 
 import {
   parse_cblock,
-  parse_parity_bit
+  parse_parity
 } from './parse.js'
 
 import {
   TapConfig,
-  TapKey
+  TapContext
 } from '../../types/index.js'
 
-const DEFAULT_VERSION = 0xc0
+import * as assert from '../assert.js'
 
-export function from_seckey (
-  seckey  : Bytes,
-  config ?: TapConfig
-) : TapKey {
-  return get_tapkey(seckey, { ...config, is_secret: true })
-}
-
-export function from_pubkey (
-  pubkey  : Bytes,
-  config ?: TapConfig
-) : TapKey {
-  return get_tapkey(pubkey, { ...config, is_secret: false })
-}
-
-function get_tapkey (
-  int_key : Bytes,
-  config  : TapConfig = {}
-) : TapKey {
+export function tap_pubkey (
+  pubkey : Bytes,
+  config : TapConfig = {}
+) : TapContext {
   const {
-    is_secret = false,
-    tree      = [],
-    version   = DEFAULT_VERSION
+    taptree = [],
+    version = DEFAULT_VERSION
   } = config
 
-  const int_pub = (is_secret)
-    ? keys.get_pubkey(int_key, true)
-    : keys.convert_32b(int_key)
+  let path    : string[] = [],
+      taproot : string | undefined
 
-  let { target } = config
+  const int_pub = Buff.bytes(pubkey)
 
-  let taptweak : Buff,
-      ctrlpath : string[] = []
+  const { data, extension, script } = config_tapleaf(config)
 
-  if (target !== undefined) {
-    target = Buff.bytes(target).hex
-    if (tree.length > 0) {
+  assert.size(int_pub, 32)
+
+  if (extension !== null) {
+    if (taptree.length > 0) {
       // Merkelize the leaves into a root hash (with proof).
-      const [ root, _t, path ] = merkleize(tree, target)
+      const [ root, _, proofs ] = merkleize(taptree, extension)
       // Get the control path from the merkelized output.
-      ctrlpath = path
+      path    = proofs
       // Get the tapped key from the internal key.
-      taptweak = get_tweak(int_pub, root)
+      taproot = root
        // Get the tapped key from the single tapleaf.
     } else {
-      taptweak = get_tweak(int_pub, target)
+      taproot = extension
     }
-  } else {
-    // Get the tapped key from an empty tweak.
-    taptweak = get_tweak(int_pub, new Uint8Array())
   }
-  const fullkey = (is_secret)
-    ? tweak_seckey(int_key, taptweak)
-    : tweak_pubkey(int_pub, taptweak)
-  const parity = parse_parity_bit(fullkey[0])
-  const tapkey = keys.convert_32b(fullkey).hex
+
+  const taptweak = get_taptweak(int_pub, taproot)
+  const twk_key  = tweak_pubkey(int_pub, taptweak)
+  const parity   = parse_parity(twk_key)
+  const tapkey   = convert_32b(twk_key)
   // Get the block version / parity bit.
   const cbit = Buff.num(version + parity)
   // Create the control block, starting with
   // the control bit and the (x-only) pubkey.
-  const block = [ cbit, int_key ]
+  const block = [ cbit, int_pub.hex ]
   // If there is more than one path, add to block.
-  if (ctrlpath.length > 0) {
-    ctrlpath.forEach(e => block.push(Buff.hex(e)))
+  if (path.length > 0) {
+    path.forEach(e => block.push(Buff.hex(e)))
   }
   // Merge the data together into one array.
   const cblock = Buff.join(block)
 
   return {
+    data,
+    extension,
     parity,
-    tapkey,
-    target,
+    path,
+    script,
+    taproot,
+    taptree,
     version,
     cblock   : cblock.hex,
     int_pub  : int_pub.hex,
-    path     : ctrlpath,
+    tapkey   : tapkey.hex,
     taptweak : taptweak.hex
   }
 }
 
-export function check_proof (
+export function verify_cblock (
   tapkey : Bytes,
   target : Bytes,
   cblock : Bytes
@@ -116,10 +100,10 @@ export function check_proof (
   let branch = Buff.bytes(target).hex
 
   for (const leaf of path) {
-    branch = encode_branch(branch, leaf)
+    branch = encode_tapbranch(branch, leaf)
   }
 
-  const twk = get_tweak(int_pub, branch)
+  const twk = get_taptweak(int_pub, branch)
   const key = tweak_pubkey(int_pub, twk)
 
   // console.log('branch:', branch)

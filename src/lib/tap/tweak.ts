@@ -5,7 +5,7 @@ import { convert_32b }  from '@cmdcode/crypto-tools/keys'
 
 import * as assert from '../assert.js'
 
-export function get_tweak (
+export function get_taptweak (
   pubkey : Bytes,
   data  ?: Bytes
 ) : Buff {

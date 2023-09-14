@@ -5,8 +5,11 @@ import { parse_tx }  from './parse.js'
 import {
   SizeData,
   TxBytes,
-  TxData
+  TxData,
+  TxOutput
 } from '../../types/index.js'
+
+import { create_addr } from '../addr/parse.js'
 
 export function parse_txid (
   txdata : TxData | TxBytes
@@ -26,4 +29,19 @@ export function parse_txsize (
   const remain = (weight % 4 > 0) ? 1 : 0
   const vsize  = Math.floor(weight / 4) + remain
   return { size: fsize, bsize, vsize, weight }
+}
+
+export function search_vin (
+  vout   : TxOutput,
+  txdata : TxData
+) {
+  const { value, scriptPubKey } = vout
+  const address = create_addr(scriptPubKey)
+  const txindex = txdata.vin.findIndex(e => {
+    if (e.prevout === undefined) return false
+    const prev_val  = e.prevout.value
+    const prev_addr = create_addr(e.prevout.scriptPubKey)
+    return (value === prev_val && address === prev_addr)
+  })
+  return { txindex, txinput: txdata.vin[txindex] }
 }

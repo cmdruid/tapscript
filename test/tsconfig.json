@@ -1,13 +1,17 @@
 {
   "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@cmdcode/tapscript"         : [ "src/index.js" ],
+      "@cmdcode/tapscript/address" : [ "src/lib/addr/index.js" ],
+      "@cmdcode/tapscript/script"  : [ "src/lib/script/index.js" ],
+      "@cmdcode/tapscript/sighash" : [ "src/lib/sig/index.js" ],
+      "@cmdcode/tapscript/tapkey"  : [ "src/lib/tap/index.js" ],
+      "@cmdcode/tapscript/tx"      : [ "src/lib/tx/index.js" ]
+    },
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
     "target": "ESNext",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+    "moduleResolution": "NodeNext",
     "importHelpers": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -27,11 +31,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "exclude": [
-    "node_modules",
-    "test"
-  ],
-  "include": [
-    "src/**/*.ts"
-  ]
+  "exclude": [ "node_modules" ],
+  "include": [ "**/*.ts" ]
 }

@@ -1,5 +1,6 @@
-import { ScriptKey } from './ScriptKey.js'
-import { TxOutput }  from '../types/index.js'
+import { ScriptKey }   from './ScriptKey.js'
+import { TxOutput }    from '../types/index.js'
+import { create_vout } from '../lib/tx/parse.js'
 
 export class TxOut {
   readonly _data : TxOutput
@@ -9,7 +10,7 @@ export class TxOut {
     txout : TxOutput,
     idx  ?: number
   ) {
-    this._data = txout
+    this._data = create_vout(txout)
     this._idx  = idx
   }
 
@@ -17,7 +18,7 @@ export class TxOut {
     return this._data
   }
 
-    get idx () : number | undefined {
+  get idx () : number | undefined {
     return this._idx
   }
 

@@ -1,28 +1,31 @@
-import { Bytes }   from '@cmdcode/buff'
-import { hash340 } from '@cmdcode/crypto-tools/hash'
-
-import * as Script from '../script/index.js'
+import { Bytes }      from '@cmdcode/buff'
+import { hash340 }    from '@cmdcode/crypto-tools/hash'
+import { buffer_asm } from '../script/parse.js'
 
 import { ScriptData } from '../../types/index.js'
 
 const DEFAULT_VERSION = 0xc0
 
-export function encode_leaf (
+export function encode_tapleaf (
   data : Bytes,
   version = DEFAULT_VERSION
 ) : string {
-  return hash340('TapLeaf', encode_version(version), data).hex
+  return hash340(
+    'TapLeaf',
+    encode_leaf_version(version),
+    data
+  ).hex
 }
 
-export function encode_script (
+export function encode_tapscript (
   script   : ScriptData,
   version ?: number
 ) : string {
-  const bytes = Script.to_bytes(script)
-  return encode_leaf(bytes, version)
+  const bytes = buffer_asm(script)
+  return encode_tapleaf(bytes, version)
 }
 
-export function encode_branch (
+export function encode_tapbranch (
   leaf_a : string,
   leaf_b : string
 ) : string {
@@ -35,13 +38,13 @@ export function encode_branch (
   return hash340('TapBranch', leaf_a, leaf_b).hex
 }
 
-export function encode_version (version = 0xc0) : number {
+export function encode_leaf_version (version = 0xc0) : number {
   return version & 0xfe
 }
 
 export default {
-  branch  : encode_branch,
-  leaf    : encode_leaf,
-  script  : encode_script,
-  version : encode_version
+  branch  : encode_tapbranch,
+  leaf    : encode_tapleaf,
+  script  : encode_tapscript,
+  version : encode_leaf_version
 }

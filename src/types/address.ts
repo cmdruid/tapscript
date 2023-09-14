@@ -1,6 +1,6 @@
 import { Buff, Bytes } from '@cmdcode/buff'
 
-import { Network, ScriptData, Word } from './index.js'
+import { Network, ScriptData, ScriptWord } from './index.js'
 
 export type AddrEnum = 'p2pkh' | 'p2sh' | 'p2w-pkh' | 'p2w-sh' | 'p2tr'
 
@@ -36,7 +36,7 @@ export interface AddressData {
   type    : AddrEnum
   key     : Buff
   network : Network
-  script  : Word[]
+  script  : ScriptWord[]
 }
 
 export interface AddressTool {

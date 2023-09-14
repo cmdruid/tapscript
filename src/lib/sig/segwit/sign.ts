@@ -9,13 +9,13 @@ import {
 } from '../../../types/index.js'
 
 export function sign_tx (
-  seckey  : Bytes,
-  txdata  : TxBytes | TxData,
-  options : SigHashOptions = {}
+  seckey   : Bytes,
+  txdata   : TxBytes | TxData,
+  config   : SigHashOptions = {}
 ) : Buff {
-  const { sigflag = 0x01 } = options
+  const { sigflag = 0x01 } = config
   const sec  = Buff.bytes(seckey)
-  const hash = hash_tx(txdata, options)
+  const hash = hash_tx(txdata, config)
   const sig  = noble.secp.sign(hash, sec).toDERRawBytes(true)
   return Buff.join([ sig, sigflag ])
 }

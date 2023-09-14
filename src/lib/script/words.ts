@@ -1,4 +1,4 @@
-import { OPCODE_MAP } from '../../opcodes.js'
+import { OPCODE_MAP } from './opcodes.js'
 
 export function get_op_code (num : number) : string {
   if (num > 186 && num < 255) {

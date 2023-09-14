@@ -4,8 +4,8 @@ import { Sequence } from './Sequence.js'
 import { TxOut }    from './TxOut.js'
 import { Witness }  from './Witness.js'
 
-import { segwit, taproot }     from '../lib/sig/index.js'
-import { parse_vin, parse_tx } from '../lib/tx/index.js'
+import { segwit, taproot }      from '../lib/sig/index.js'
+import { create_vin, parse_tx } from '../lib/tx/index.js'
 
 import * as assert from '../lib/assert.js'
 
@@ -27,7 +27,7 @@ export class TxIn {
     txinput : VinTemplate | TxInput,
     idx    ?: number
   ) {
-    this._data = parse_vin(txinput)
+    this._data = create_vin(txinput)
     this._idx  = idx
   }
 

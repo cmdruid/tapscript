@@ -1,9 +1,18 @@
-import { Test }          from 'tape'
-import { Buff }          from '@cmdcode/buff'
-import test_vectors      from './unit.vectors.json' assert { type: 'json' }
-import { encode_script } from '../../../src/lib/script/encode.js'
+import { Test } from 'tape'
+import { Buff } from '@cmdcode/buff'
+import { P2TR } from '@cmdcode/tapscript/address'
 
-import { Tap, Script, Address } from '../../../src/index.js'
+import { encode_script } from '@cmdcode/tapscript/script'
+
+import {
+  get_taptweak,
+  encode_tapleaf,
+  tap_pubkey,
+  encode_tapbranch,
+  verify_cblock
+} from '@cmdcode/tapscript/tapkey'
+
+import test_vectors from './unit.vectors.json' assert { type: 'json' }
 
 export default function (t : Test) {
   t.test('Testing tapleaf creation:', t => {
@@ -11,7 +20,7 @@ export default function (t : Test) {
     t.plan(vectors.length)
     for (const [ src, ans ] of vectors) {
       const s = encode_script(src)
-      const leaf = Tap.encode.leaf(s, 0xc0)
+      const leaf = encode_tapleaf(s, 0xc0)
       t.equal(leaf, ans, 'Tapleaf should match')
     }
   })
@@ -19,7 +28,7 @@ export default function (t : Test) {
     const vectors = test_vectors.tapbranch
     t.plan(vectors.length)
     for (const [ src1, src2, ans ] of vectors) {
-      const branch = Tap.encode.branch(src1, src2)
+      const branch = encode_tapbranch(src1, src2)
       t.equal(branch, ans, 'Tapbranch should match')
     }
   })
@@ -27,7 +36,7 @@ export default function (t : Test) {
     const vectors = test_vectors.taproot
     t.plan(vectors.length)
     for (const [ pub, root, ans ] of vectors) {
-      const key = Tap.tweak.get_tweak(Buff.hex(pub), Buff.hex(root))
+      const key = get_taptweak(Buff.hex(pub), Buff.hex(root))
       t.equal(Buff.raw(key).hex, ans, 'Taptweak should match')
     }
   }),
@@ -35,11 +44,11 @@ export default function (t : Test) {
     const vectors = test_vectors.ctrlblock
     t.plan(vectors.length)
     for (const { scripts, index, pubkey, cblock } of vectors) {
-      const data   = scripts.map(e => Script.encode(e))
-      const leaves = data.map(e => Tap.encode.leaf(e, 0xc0))
-      const script = Buff.raw(data[index]).hex
-      const target = Tap.encode.leaf(script)
-      const { cblock : block } = Tap.key.from_pubkey(pubkey, { tree: leaves, target })
+      const data    = scripts.map(e => encode_script(e))
+      const leaves  = data.map(e => encode_tapleaf(e, 0xc0))
+      const script  = Buff.raw(data[index]).hex
+      const tapleaf = encode_tapleaf(script)
+      const { cblock : block } = tap_pubkey(pubkey, { taptree: leaves, tapleaf })
       t.equal(block, cblock, 'Control block should match')
     }
   }),
@@ -47,10 +56,10 @@ export default function (t : Test) {
     const vectors = test_vectors.ctrlblock
     t.plan(vectors.length)
     for (const { address, scripts, index, cblock } of vectors) {
-      const decoded  = Address.P2TR.decode(address)
-      const script  = Script.encode(scripts[index])
-      const target  = Tap.encode.leaf(script)
-      const isValid = Tap.key.check_proof(decoded.key, target, cblock)
+      const decoded = P2TR.decode(address)
+      const script  = encode_script(scripts[index])
+      const target  = encode_tapleaf(script)
+      const isValid = verify_cblock(decoded.key, target, cblock)
       t.true(isValid, 'Control block should be valid.')
     }
   })

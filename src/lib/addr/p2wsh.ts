@@ -1,17 +1,17 @@
 import { Buff, Bytes } from '@cmdcode/buff'
 import { sha256sh }    from './hash.js'
 import { Bech32 }      from './encoder.js'
+import { buffer_asm }  from '../script/index.js'
 
 import { BECH32_PREFIXES, lookup } from './const.js'
 
 import * as assert from '../assert.js'
-import * as Script from '../script/index.js'
 
 import {
   AddressData,
   Network,
   ScriptData,
-  Word
+  ScriptWord
 } from '../../types/index.js'
 
 const VALID_PREFIXES = [ 'bc1q', 'tb1q', 'bcrt1q' ]
@@ -56,14 +56,14 @@ function create_address (
   input    : ScriptData,
   network ?: Network
 ) : string {
-  const bytes = Script.to_bytes(input, false)
+  const bytes = buffer_asm(input, false)
   const hash  = sha256sh(bytes)
   return encode_keydata(hash, network)
 }
 
 export function create_script (
   keydata : Bytes
-) : Word[] {
+) : ScriptWord[] {
   const bytes = Buff.bytes(keydata)
   assert.size(bytes, 32)
   return [ 'OP_0', bytes.hex ]

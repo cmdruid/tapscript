@@ -1,7 +1,7 @@
-import { Buff }    from '@cmdcode/buff'
+import { Buff }          from '@cmdcode/buff'
+import { decode_script } from '../lib/script/decode.js'
 
-import * as Script from '../lib/script/index.js'
-import * as Tx     from '../lib/tx/index.js'
+import * as Tx from '../lib/tx/index.js'
 
 import {
   ScriptData,
@@ -42,7 +42,7 @@ export class Witness {
   get script () : ScriptData | undefined {
     const script = this._meta.script
     return (script !== null)
-      ? Script.decode(script)
+      ? decode_script(script)
       : undefined
   }
 
