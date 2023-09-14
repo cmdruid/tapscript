@@ -1,6 +1,6 @@
 {
   "name": "@scrow/tapscript",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "A development build of tapscript. Built for escrow.",
   "type": "module",
   "main": "./dist/main.cjs",
@@ -50,7 +50,7 @@
   },
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin typescript",
-    "clean": "rm -rf dist/* coverage .nyc_output",
+    "clean": "rm -rf dist/*",
     "scratch": "tsx test/scratch.ts",
     "lint": "eslint . --ext .ts",
     "test": "tsx --tsconfig test/tsconfig.json test/tape.ts | tap-spec",
@@ -79,10 +79,12 @@
     "dist",
     "src"
   ],
-  "devDependencies": {
+  "dependencies": {
     "@cmdcode/buff": "^2.0.2",
-    "@cmdcode/core-cmd": "^1.0.2",
     "@cmdcode/crypto-tools": "^2.4.10",
+    "zod": "^3.20.6"
+  },
+  "devDependencies": {
     "@noble/curves": "^0.9.1",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
@@ -97,12 +99,10 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-promise": "^6.1.1",
-    "nyc": "^15.1.0",
     "rollup": "^3.2.3",
     "tap-spec": "^5.0.0",
     "tape": "^5.6.1",
     "tsx": "^3.12.7",
-    "typescript": "^5.1.6",
-    "zod": "^3.20.6"
+    "typescript": "^5.1.6"
   }
 }
