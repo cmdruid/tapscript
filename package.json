@@ -1,6 +1,6 @@
 {
   "name": "@scrow/tapscript",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "A development build of tapscript. Built for escrow.",
   "type": "module",
   "main": "./dist/main.cjs",
@@ -16,6 +16,36 @@
         "types": "./dist/types/index.d.ts",
         "default": "./dist/main.cjs"
       }
+    },
+    "./address": {
+      "import": "./dist/address.js",
+      "types": "./dist/address.d.ts",
+      "default": "./dist/address.js"
+    },
+    "./keys": {
+      "import": "./dist/keys.js",
+      "types": "./dist/keys.d.ts",
+      "default": "./dist/keys.js"
+    },
+    "./script": {
+      "import": "./dist/script.js",
+      "types": "./dist/script.d.ts",
+      "default": "./dist/script.js"
+    },
+    "./sighash": {
+      "import": "./dist/sig.js",
+      "types": "./dist/sig.d.ts",
+      "default": "./dist/sig.js"
+    },
+    "./tapkey": {
+      "import": "./dist/tap.js",
+      "types": "./dist/tap.d.ts",
+      "default": "./dist/tap.js"
+    },
+    "./tx": {
+      "import": "./dist/tx.js",
+      "types": "./dist/tx.d.ts",
+      "default": "./dist/tx.js"
     }
   },
   "scripts": {
@@ -23,18 +53,15 @@
     "clean": "rm -rf dist/* coverage .nyc_output",
     "scratch": "tsx test/scratch.ts",
     "lint": "eslint . --ext .ts",
-    "test": "nyc --reporter=lcov tsx test/tape.ts | tap-spec; nyc report ---reporter=text",
+    "test": "tsx --tsconfig test/tsconfig.json test/tape.ts | tap-spec",
     "types": "tsc",
     "release": "yarn test && yarn clean && yarn types && yarn lint && yarn build"
   },
   "keywords": [
     "bitcoin",
     "transaction",
-    "psbt",
-    "serialize",
-    "encode",
-    "decode",
-    "validate"
+    "segwit",
+    "taproot"
   ],
   "author": "Christopher Scott",
   "license": "CC-BY-1.0",
@@ -54,7 +81,8 @@
   ],
   "devDependencies": {
     "@cmdcode/buff": "^2.0.2",
-    "@cmdcode/crypto-tools": "^2.4.9",
+    "@cmdcode/core-cmd": "^1.0.2",
+    "@cmdcode/crypto-tools": "^2.4.10",
     "@noble/curves": "^0.9.1",
     "@rollup/plugin-commonjs": "^23.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
