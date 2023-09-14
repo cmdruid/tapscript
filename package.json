@@ -1,6 +1,6 @@
 {
   "name": "@scrow/tapscript",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "A development build of tapscript. Built for escrow.",
   "type": "module",
   "main": "./dist/main.cjs",
@@ -18,34 +18,34 @@
       }
     },
     "./address": {
-      "import": "./dist/address.js",
-      "types": "./dist/address.d.ts",
-      "default": "./dist/address.js"
+      "import": "./dist/address/index.js",
+      "types": "./dist/address/index.d.ts",
+      "default": "./dist/address/index.js"
     },
     "./keys": {
-      "import": "./dist/keys.js",
-      "types": "./dist/keys.d.ts",
-      "default": "./dist/keys.js"
+      "import": "./dist/keys/index.js",
+      "types": "./dist/keys/index.d.ts",
+      "default": "./dist/keys/index.js"
     },
     "./script": {
-      "import": "./dist/script.js",
-      "types": "./dist/script.d.ts",
-      "default": "./dist/script.js"
+      "import": "./dist/script/index.js",
+      "types": "./dist/script/index.d.ts",
+      "default": "./dist/script/index.js"
     },
     "./sighash": {
-      "import": "./dist/sig.js",
-      "types": "./dist/sig.d.ts",
-      "default": "./dist/sig.js"
+      "import": "./dist/sig/index.js",
+      "types": "./dist/sig/index.d.ts",
+      "default": "./dist/sig/index.js"
     },
     "./tapkey": {
-      "import": "./dist/tap.js",
-      "types": "./dist/tap.d.ts",
-      "default": "./dist/tap.js"
+      "import": "./dist/tap/index.js",
+      "types": "./dist/tap/index.d.ts",
+      "default": "./dist/tap/index.js"
     },
     "./tx": {
-      "import": "./dist/tx.js",
-      "types": "./dist/tx.d.ts",
-      "default": "./dist/tx.js"
+      "import": "./dist/tx/index.js",
+      "types": "./dist/tx/index.d.ts",
+      "default": "./dist/tx/index.js"
     }
   },
   "scripts": {
