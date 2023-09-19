@@ -53,11 +53,6 @@ rules:
   "@typescript-eslint/explicit-function-return-type": off
 
 ignorePatterns:
-  - build
-  - contrib
-  - coverage
   - dist
   - test
   - rollup.config.ts
-  - src/class
-  - src/escrow

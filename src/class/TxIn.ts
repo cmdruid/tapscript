@@ -74,7 +74,7 @@ export class TxIn {
 
   sign (
     seckey  : Bytes,
-    txdata  : TxBytes | TxData, 
+    txdata  : TxBytes | TxData,
     config ?: SigHashOptions
   ) {
     const { txindex = this.idx } = config ?? {}

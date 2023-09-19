@@ -12,7 +12,7 @@ export class Witness {
   readonly _data : ScriptData[]
   readonly _meta : WitnessData
 
-  constructor (witness : ScriptData[],) {
+  constructor (witness : ScriptData[]) {
     this._data = witness
     this._meta = Tx.parse_witness(witness)
   }

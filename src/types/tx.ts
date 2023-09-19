@@ -1,10 +1,9 @@
 import { Buff }       from '@cmdcode/buff'
 import { ScriptData } from './script.js'
 
-export type SequenceField = string | number
-export type ValueField    = bigint | number
-export type TxBytes       = string | Uint8Array
-
+export type SequenceField   = string | number
+export type ValueField      = bigint | number
+export type TxBytes         = string | Uint8Array
 export type TransactionData = TxData & SizeData & TxInfo
 
 export interface TxData {
@@ -27,6 +26,10 @@ export interface TxInput {
   sequence  : number
   scriptSig : ScriptData
   witness   : ScriptData[]
+}
+
+export interface TxFullInput extends TxInput {
+  prevout : TxOutput
 }
 
 export interface TxOutput {

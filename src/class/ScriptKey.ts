@@ -11,9 +11,7 @@ import {
 export class ScriptKey {
   readonly _data : ScriptMeta
 
-  constructor(
-    script : ScriptData,
-  ) {
+  constructor (script : ScriptData) {
     this._data = parse_script(script)
   }
 
@@ -33,7 +31,7 @@ export class ScriptKey {
     return this._data.type
   }
 
-  toJSON() : ScriptWord[] {
+  toJSON () : ScriptWord[] {
     return this.asm
   }
 }

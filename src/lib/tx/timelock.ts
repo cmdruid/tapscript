@@ -31,6 +31,20 @@ export function parse_sequence (
   return { value, height, stamp, lock_type, enabled }
 }
 
+export function create_sequence (
+  type  : 'block' | 'timestamp',
+  value : number
+) {
+  let seq = LOCK_MASK
+  if (type === 'timestamp') {
+    seq &= value >>> TIME_SHIFT
+    seq |= LOCK_TYPE
+  } else {
+    seq &= value
+  }
+  return seq
+}
+
 export function validate_sequence (
   sequence : TimelockData
 ) : void {
