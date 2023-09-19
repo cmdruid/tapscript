@@ -12,7 +12,7 @@ import * as assert from '../lib/assert.js'
 import {
   SigHashOptions,
   TxInput,
-  VinTemplate,
+  TxInTemplate,
   ScriptData,
   ScriptEnum,
   TxBytes,
@@ -24,7 +24,7 @@ export class TxIn {
   readonly _idx ?: number
 
   constructor (
-    txinput : VinTemplate | TxInput,
+    txinput : TxInTemplate | TxInput,
     idx    ?: number
   ) {
     this._data = create_vin(txinput)

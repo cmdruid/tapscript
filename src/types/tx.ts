@@ -28,7 +28,7 @@ export interface TxInput {
   witness   : ScriptData[]
 }
 
-export interface TxFullInput extends TxInput {
+export interface TxPrevout extends TxInput {
   prevout : TxOutput
 }
 
@@ -59,23 +59,23 @@ export interface WitnessData {
   params : Buff[]
 }
 
-export interface VinTemplate {
+export interface TxInTemplate {
   txid : string
   vout : number
   scriptSig ?: ScriptData
   sequence  ?: number | string
   witness   ?: ScriptData[]
-  prevout   ?: VoutTemplate
+  prevout   ?: TxOutTemplate
 }
 
-export interface VoutTemplate {
+export interface TxOutTemplate {
   value ?: string | number | bigint
   scriptPubKey ?: ScriptData
 }
 
 export interface TxTemplate {
   version  ?: number
-  vin      ?: VinTemplate[]
-  vout     ?: VoutTemplate[]
+  vin      ?: TxInTemplate[]
+  vout     ?: TxOutTemplate[]
   locktime ?: number | string
 }

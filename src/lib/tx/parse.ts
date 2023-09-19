@@ -1,23 +1,23 @@
-import { Buff }       from '@cmdcode/buff'
-import { hash256 }    from '@cmdcode/crypto-tools/hash'
-import { is_bytes }   from '../util.js'
-import { encode_tx }  from './encode.js'
-import { decode_tx }  from './decode.js'
+import { Buff }        from '@cmdcode/buff'
+import { hash256 }     from '@cmdcode/crypto-tools/hash'
+import { is_bytes }    from '../util.js'
+import { encode_tx }   from './encode.js'
+import { decode_tx }   from './decode.js'
+import { create_addr } from '../addr/parse.js'
 
 import {
   SizeData,
   TxInput,
-  VinTemplate,
+  TxInTemplate,
+  TxPrevout,
   TxBytes,
   TxData,
   TxTemplate,
-  VoutTemplate,
-  TxOutput,
-  TxFullInput
+  TxOutTemplate,
+  TxOutput
 } from '../../types/index.js'
 
 import * as schema from '../../schema/index.js'
-import { create_addr } from '../addr/parse.js'
 
 const DEFAULT_TX = {
   version  : 2,
@@ -58,7 +58,7 @@ export function parse_txsize (
 }
 
 export function create_vin (
-  vin : VinTemplate | TxInput
+  vin : TxInTemplate | TxInput
 ) : TxInput {
   const sequence = (typeof vin.sequence === 'string')
     ? Buff.hex(vin.sequence).num
@@ -69,17 +69,17 @@ export function create_vin (
   return { ...DEFAULT_VIN, ...vin, prevout, sequence }
 }
 
-export function create_full_vin (
-  vin : VinTemplate | TxInput
-) : TxFullInput {
+export function create_prevout (
+  vin : TxInTemplate | TxInput
+) : TxPrevout {
   if (vin.prevout === undefined) {
     throw new Error('Prevout is undefined!')
   }
-  return create_vin(vin) as TxFullInput
+  return create_vin(vin) as TxPrevout
 }
 
 export function create_vout (
-  vout : VoutTemplate | TxOutput
+  vout : TxOutTemplate | TxOutput
 ) : TxOutput {
   let value : bigint
   if (typeof vout.value === 'number') {
@@ -106,18 +106,18 @@ export function create_tx (
   return schema.tx.txdata.parse(tx)
 }
 
-export function parse_vin (
-  address : string,
-  txdata  : TxData,
-  templ  ?: TxTemplate
-) : TxFullInput | null {
+export function parse_prevout (
+  address   : string,
+  txdata    : TxData,
+  template ?: TxTemplate
+) : TxPrevout | null {
   const vout = txdata.vout.findIndex(txout => {
     return address === create_addr(txout.scriptPubKey)
   })
   if (vout !== -1) {
     const txid    = parse_txid(txdata)
     const prevout = txdata.vout[vout]
-    return create_full_vin({ ...templ, txid, vout, prevout })
+    return create_prevout({ ...template, txid, vout, prevout })
   } else {
     return null
   }
