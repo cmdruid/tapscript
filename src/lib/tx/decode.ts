@@ -122,7 +122,7 @@ function read_script (
   varint ?: boolean
 ) : string | string[] {
   const data = read_data(stream, varint)
-  return (data !== null) ? data : []
+  return  data ?? []
 }
 
 function read_locktime (stream : Stream) : number {

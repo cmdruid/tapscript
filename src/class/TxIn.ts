@@ -1,4 +1,3 @@
-
 import { Bytes }    from '@cmdcode/buff'
 import { Sequence } from './Sequence.js'
 import { TxOut }    from './TxOut.js'

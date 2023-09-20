@@ -10,11 +10,7 @@
     ".": {
       "import": {
         "types": "./dist/types/index.d.ts",
-        "default": "./dist/module.mjs"
-      },
-      "require": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/main.cjs"
+        "default": "./dist/index.js"
       }
     },
     "./address": {
@@ -81,7 +77,7 @@
   ],
   "dependencies": {
     "@cmdcode/buff": "^2.0.3",
-    "@cmdcode/crypto-tools": "^2.4.11",
+    "@cmdcode/crypto-tools": "^2.5.0",
     "zod": "^3.22.2"
   },
   "devDependencies": {

@@ -42,6 +42,8 @@ rules:
   "@typescript-eslint/no-invalid-void-type":
     - "error"
     - allowInGenericTypeArguments: true
+  "@typescript-eslint/key-spacing": off
+  "@typescript-eslint/consistent-type-imports": off
   "@typescript-eslint/type-annotation-spacing":
     - "error"
     - before        : true
