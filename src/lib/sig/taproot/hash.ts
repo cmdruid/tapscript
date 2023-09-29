@@ -4,6 +4,7 @@ import { parse_tx }         from '../../tx/index.js'
 import { encode_script }    from '../../script/encode.js'
 import { encode_tapscript } from '../../tap/encode.js'
 import { parse_txinput }    from '../utils.js'
+import TxEncoder            from '../../tx/encode.js'
 
 import {
   SigHashOptions,
@@ -14,8 +15,16 @@ import {
   TxOutput
 } from '../../../types/index.js'
 
-import * as ENC    from '../../tx/encode.js'
 import * as assert from '../../assert.js'
+
+const {
+  encode_idx,
+  encode_locktime,
+  encode_sequence,
+  encode_txid,
+  encode_value,
+  encode_version
+} = TxEncoder
 
 const VALID_HASH_TYPES = [ 0x00, 0x01, 0x02, 0x03, 0x81, 0x82, 0x83 ]
 
@@ -66,12 +75,12 @@ export function hash_tx (
 
   // Begin building our preimage.
   const preimage = [
-    hashtag,                       // Buffer input with
-    hashtag,                       // 2x hashed strings.
-    Buff.num(0x00, 1),             // Add zero-byte.
-    Buff.num(sigflag, 1),          // Commit to signature flag.
-    ENC.encode_version(version),   // Commit to tx version.
-    ENC.encode_locktime(locktime)  // Commit to tx locktime.
+    hashtag,                             // Buffer input with
+    hashtag,                             // 2x hashed strings.
+    Buff.num(0x00, 1),                   // Add zero-byte.
+    Buff.num(sigflag, 1),                // Commit to signature flag.
+    encode_version(version),   // Commit to tx version.
+    encode_locktime(locktime)  // Commit to tx locktime.
   ]
 
   if (!is_anypay) {
@@ -100,11 +109,11 @@ export function hash_tx (
     // provide a commitment to the input being signed.
     const { value, scriptPubKey } = get_prevout(txinput)
     preimage.push(
-      ENC.encode_txid(txid),              // Commit to the input txid.
-      ENC.encode_idx(vout),               // Commit to the input vout index.
-      ENC.encode_value(value),            // Commit to the input's prevout value.
+      encode_txid(txid),                  // Commit to the input txid.
+      encode_idx(vout),                   // Commit to the input vout index.
+      encode_value(value),                // Commit to the input's prevout value.
       encode_script(scriptPubKey, true),  // Commit to the input's prevout script.
-      ENC.encode_sequence(sequence)       // Commit to the input's sequence value.
+      encode_sequence(sequence)           // Commit to the input's sequence value.
     )
   } else {
     // Otherwise, we must have already included a commitment
@@ -149,8 +158,8 @@ export function hash_outpoints (
 ) : Buff {
   const stack = []
   for (const { txid, vout } of vin) {
-    stack.push(ENC.encode_txid(txid))
-    stack.push(ENC.encode_idx(vout))
+    stack.push(encode_txid(txid))
+    stack.push(encode_idx(vout))
   }
   return Buff.join(stack).digest
 }
@@ -160,7 +169,7 @@ export function hash_sequence (
 ) : Buff {
   const stack = []
   for (const { sequence } of vin) {
-    stack.push(ENC.encode_sequence(sequence))
+    stack.push(encode_sequence(sequence))
   }
   return Buff.join(stack).digest
 }
@@ -170,7 +179,7 @@ export function hash_amounts (
 ) : Buff {
   const stack = []
   for (const { value } of prevouts) {
-    stack.push(ENC.encode_value(value))
+    stack.push(encode_value(value))
   }
   return Buff.join(stack).digest
 }
@@ -190,7 +199,7 @@ export function hash_outputs (
 ) : Buff {
   const stack = []
   for (const { value, scriptPubKey } of vout) {
-    stack.push(ENC.encode_value(value))
+    stack.push(encode_value(value))
     stack.push(encode_script(scriptPubKey, true))
   }
   return Buff.join(stack).digest
@@ -200,7 +209,7 @@ export function hash_output (
   vout : TxOutput
 ) : Buff {
   return Buff.join([
-    ENC.encode_value(vout.value),
+    encode_value(vout.value),
     encode_script(vout.scriptPubKey, true)
   ]).digest
 }

@@ -63,12 +63,12 @@ function read_inputs (stream : Stream) : TxInput[] {
   const inputs = []
   const vinCount = stream.read_varint()
   for (let i = 0; i < vinCount; i++) {
-    inputs.push(decode_vin(stream))
+    inputs.push(read_vin(stream))
   }
   return inputs
 }
 
-export function decode_vin (stream : Stream) : TxInput {
+function read_vin (stream : Stream) : TxInput {
   return {
     txid      : stream.read(32).reverse().hex,
     vout      : stream.read(4).reverse().num,
@@ -82,13 +82,13 @@ function read_outputs (stream : Stream) : TxOutput[] {
   const outputs = []
   const vcount  = stream.read_varint()
   for (let i = 0; i < vcount; i++) {
-    const vout = decode_vout(stream)
+    const vout = read_vout(stream)
     outputs.push(vout)
   }
   return outputs
 }
 
-export function decode_vout (stream : Stream) : TxOutput {
+function read_vout (stream : Stream) : TxOutput {
   return {
     value        : stream.read(8).reverse().big,
     scriptPubKey : read_script(stream, true)
@@ -127,4 +127,13 @@ function read_script (
 
 function read_locktime (stream : Stream) : number {
   return stream.read(4).reverse().to_num()
+}
+
+export default {
+  read_vin,
+  read_vout,
+  read_locktime,
+  read_version,
+  read_script,
+  read_witness
 }

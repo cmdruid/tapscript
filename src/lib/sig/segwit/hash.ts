@@ -1,5 +1,6 @@
-import { Buff } from '@cmdcode/buff'
-import { hash } from '@cmdcode/crypto-tools'
+import { Buff }  from '@cmdcode/buff'
+import { hash }  from '@cmdcode/crypto-tools'
+import TxEncoder from '../../tx/encode.js'
 
 import {
   parse_asm,
@@ -9,7 +10,6 @@ import {
 import { parse_tx } from '../../tx/index.js'
 
 import * as assert from '../../../lib/assert.js'
-import * as ENC    from '../../tx/encode.js'
 import * as util   from '../utils.js'
 
 import {
@@ -21,6 +21,15 @@ import {
 } from '../../../types/index.js'
 
 const { hash160, hash256 } = hash
+
+const {
+  encode_idx,
+  encode_locktime,
+  encode_sequence,
+  encode_txid,
+  encode_value,
+  encode_version
+} = TxEncoder
 
 const VALID_HASH_TYPES = [ 0x01, 0x02, 0x03 ]
 
@@ -72,16 +81,16 @@ export function hash_tx (
   }
 
   const sighash = [
-    ENC.encode_version(version),
+    encode_version(version),
     hash_prevouts(vin, is_anypay),
     hash_sequence(vin, flag, is_anypay),
-    ENC.encode_txid(txid),
-    ENC.encode_idx(prevIdx),
+    encode_txid(txid),
+    encode_idx(prevIdx),
     encode_script(script, true),
-    ENC.encode_value(value),
-    ENC.encode_sequence(sequence),
+    encode_value(value),
+    encode_sequence(sequence),
     hash_outputs(vout, flag, txindex),
-    ENC.encode_locktime(locktime),
+    encode_locktime(locktime),
     Buff.num(sigflag, 4).reverse()
   ]
 
@@ -101,8 +110,8 @@ function hash_prevouts (
   const stack = []
 
   for (const { txid, vout } of vin) {
-    stack.push(ENC.encode_txid(txid))
-    stack.push(ENC.encode_idx(vout))
+    stack.push(encode_txid(txid))
+    stack.push(encode_idx(vout))
   }
 
   return hash256(Buff.join(stack))
@@ -120,7 +129,7 @@ function hash_sequence (
   const stack = []
 
   for (const { sequence } of vin) {
-    stack.push(ENC.encode_sequence(sequence))
+    stack.push(encode_sequence(sequence))
   }
   return hash256(Buff.join(stack))
 }
@@ -134,7 +143,7 @@ function hash_outputs (
 
   if (sigflag === 0x01) {
     for (const { value, scriptPubKey } of vout) {
-      stack.push(ENC.encode_value(value))
+      stack.push(encode_value(value))
       stack.push(encode_script(scriptPubKey, true))
     }
     return hash256(Buff.join(stack))
@@ -144,7 +153,7 @@ function hash_outputs (
     assert.ok(idx !== undefined)
     if (idx < vout.length) {
       const { value, scriptPubKey } = vout[idx]
-      stack.push(ENC.encode_value(value))
+      stack.push(encode_value(value))
       stack.push(encode_script(scriptPubKey, true))
       return hash256(Buff.join(stack))
     }

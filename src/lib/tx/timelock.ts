@@ -8,13 +8,14 @@ const LOCK_MASK  = 0x0000FFFF
 const TIME_SHIFT = 9
 const MAX_BLOCKS = LOCK_MASK - 1
 const MAX_STAMP  = (LOCK_MASK << TIME_SHIFT) - 1
+const LOCK_THOLD = 500_000_000
 
 export function parse_locktime (
   locktime : Bytes
 ) : TimelockData {
   const value     = Buff.bytes(locktime, 4).num
   const enabled   = value < 1
-  const lock_type = (value < 5_000_000) ? 'stamp' : 'block'
+  const lock_type = (value < LOCK_THOLD) ? 'stamp' : 'block'
   const height = (lock_type === 'block') ? value : null
   const stamp  = (lock_type === 'stamp') ? value : null
   return { value, height, stamp, lock_type, enabled }

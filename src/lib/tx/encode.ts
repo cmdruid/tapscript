@@ -48,19 +48,19 @@ function check_witness (vin : TxInput[]) : boolean {
   return false
 }
 
-export function encode_version (num : number) : Buff {
+function encode_version (num : number) : Buff {
   return Buff.num(num, 4).reverse()
 }
 
-export function encode_txid (txid : string) : Buff {
+function encode_txid (txid : string) : Buff {
   return Buff.hex(txid, 32).reverse()
 }
 
-export function encode_idx (vout : number) : Buff {
+function encode_idx (vout : number) : Buff {
   return Buff.num(vout, 4).reverse()
 }
 
-export function encode_sequence (
+function encode_sequence (
   sequence : number
 ) : Buff {
   return Buff.num(sequence, 4).reverse()
@@ -72,7 +72,7 @@ function encode_inputs (arr : TxInput[]) : Buff {
   return Buff.join(raw)
 }
 
-export function encode_vin (vin : TxInput) : Buff {
+function encode_vin (vin : TxInput) : Buff {
   const { txid, vout, scriptSig, sequence } = vin
   return Buff.join([
     encode_txid(txid),
@@ -82,7 +82,7 @@ export function encode_vin (vin : TxInput) : Buff {
   ])
 }
 
-export function encode_value (
+function encode_value (
   value : bigint
 ) : Buff {
   return Buff.big(value, 8).reverse()
@@ -124,6 +124,18 @@ function encode_data (data : ScriptData) : Buff {
     : new Buff(0)
 }
 
-export function encode_locktime (locktime : number) : Buff {
+function encode_locktime (locktime : number) : Buff {
   return Buff.num(locktime, 4).reverse()
+}
+
+export default {
+  encode_vin,
+  encode_vout,
+  encode_version,
+  encode_idx,
+  encode_txid,
+  encode_sequence,
+  encode_locktime,
+  encode_value,
+  encode_witness
 }
