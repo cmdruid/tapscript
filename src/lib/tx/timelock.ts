@@ -1,9 +1,13 @@
-import { Buff, Bytes }  from '@cmdcode/buff'
-import { TimelockData } from '../../types/index.js'
+import { Buff } from '@cmdcode/buff'
+
+import {
+  LockType,
+  TimelockData
+} from '../../types/index.js'
 
 const MAX_VAL    = 0xFFFFFFFF
 const NO_LOCK    = (1 << 31)
-const LOCK_TYPE  = (1 << 22)
+const TIME_LOCK  = (1 << 22)
 const LOCK_MASK  = 0x0000FFFF
 const TIME_SHIFT = 9
 const MAX_BLOCKS = LOCK_MASK - 1
@@ -11,35 +15,47 @@ const MAX_STAMP  = (LOCK_MASK << TIME_SHIFT) - 1
 const LOCK_THOLD = 500_000_000
 
 export function parse_locktime (
-  locktime : Bytes
+  locktime : string | number
 ) : TimelockData {
-  const value     = Buff.bytes(locktime, 4).num
-  const enabled   = value < 1
-  const lock_type = (value < LOCK_THOLD) ? 'stamp' : 'block'
-  const height = (lock_type === 'block') ? value : null
-  const stamp  = (lock_type === 'stamp') ? value : null
-  return { value, height, stamp, lock_type, enabled }
+  const value = parse_value(locktime)
+  const enabled = (value > 0)
+    let type : LockType = null
+  if (enabled) {
+    type = (value > LOCK_THOLD) ? 'stamp' : 'block'
+  }
+  const blocks  = (type === 'block') ? value : null
+  const stamp   = (type === 'stamp') ? value : null
+  return { value, blocks, stamp, type, enabled }
 }
 
 export function parse_sequence (
-  sequence : Bytes
+  sequence : string | number
 ) : TimelockData {
-  const value     = Buff.bytes(sequence, 4).num
-  const enabled   = value < MAX_VAL && (value & NO_LOCK) !== 1
-  const lock_type = ((value & LOCK_TYPE) === 1) ? 'stamp' : 'block'
-  const height = (lock_type === 'block') ? (value & LOCK_MASK) - 1 : null
-  const stamp  = (lock_type === 'stamp') ? ((value & LOCK_MASK) << TIME_SHIFT) - 1 : null
-  return { value, height, stamp, lock_type, enabled }
+  const value = parse_value(sequence)
+  const enabled = value !== MAX_VAL && (value & NO_LOCK) !== NO_LOCK
+  console.log(value !== MAX_VAL)
+  console.log((value & NO_LOCK) !== NO_LOCK)
+    let type : LockType = null
+  if (enabled) {
+    type = ((value & TIME_LOCK) === TIME_LOCK) ? 'stamp' : 'block'
+  }
+  const blocks = (type === 'block')
+    ? (value & LOCK_MASK)
+    : null
+  const stamp = (type === 'stamp')
+    ? ((value & LOCK_MASK) << TIME_SHIFT)
+    : null
+  return { value, blocks, stamp, type, enabled }
 }
 
 export function create_sequence (
-  type  : 'block' | 'timestamp',
+  type  : 'block' | 'stamp',
   value : number
 ) {
   let seq = LOCK_MASK
-  if (type === 'timestamp') {
+  if (type === 'stamp') {
     seq &= value >>> TIME_SHIFT
-    seq |= LOCK_TYPE
+    seq |= TIME_LOCK
   } else {
     seq &= value
   }
@@ -49,16 +65,22 @@ export function create_sequence (
 export function validate_sequence (
   sequence : TimelockData
 ) : void {
-  const { enabled, height, stamp, value } = sequence
+  const { enabled, blocks, stamp, value } = sequence
   if (enabled) {
     if (value > MAX_VAL) {
       throw new Error('Sequence value exceeds maximum:' + String(value))
     }
-    if (height !== null && height > MAX_BLOCKS) {
-      throw new Error('Sequence block height exceeds maximum: ' + String(height))
+    if (blocks !== null && blocks > MAX_BLOCKS) {
+      throw new Error('Sequence block height exceeds maximum: ' + String(blocks))
     }
     if (stamp !== null && stamp > MAX_STAMP) {
       throw new Error('Sequence time value exceeds maximum: ' + String(stamp))
     }
   }
+}
+
+function parse_value (input : string | number) {
+  return (typeof input === 'string')
+  ? Buff.hex(input).reverse().num
+  : input
 }

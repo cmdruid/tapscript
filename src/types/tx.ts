@@ -1,6 +1,7 @@
 import { Buff }       from '@cmdcode/buff'
 import { ScriptData } from './script.js'
 
+export type LockType        = 'block' | 'stamp' | null
 export type SequenceField   = string | number
 export type ValueField      = bigint | number
 export type TxBytes         = string | Uint8Array
@@ -38,11 +39,11 @@ export interface TxOutput {
 }
 
 export interface TimelockData {
-  enabled   : boolean
-  height    : number  | null
-  lock_type : 'block' | 'stamp'
-  stamp     : number  | null
-  value     : number
+  enabled : boolean
+  blocks  : number  | null
+  type    : LockType
+  stamp   : number  | null
+  value   : number
 }
 
 export interface SizeData {

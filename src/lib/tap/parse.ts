@@ -1,7 +1,53 @@
-import { Buff, Bytes, Stream } from '@cmdcode/buff'
+import { convert_33b }   from '@cmdcode/crypto-tools/keys'
+import { parse_witness } from '../tx/witness.js'
+import { decode_script } from '../script/decode.js'
 
-import { CtrlBlock } from '../../types/index.js'
-import { convert_33b } from '@cmdcode/crypto-tools/keys'
+import {
+  Buff,
+  Bytes,
+  Stream
+} from '@cmdcode/buff'
+
+import {
+  encode_tapbranch,
+  encode_tapleaf
+} from './encode.js'
+
+import {
+  get_taptweak,
+  tweak_pubkey
+} from './tweak.js'
+
+import {
+  CtrlBlock,
+  ScriptData
+} from '../../types/index.js'
+
+import * as assert from '../assert.js'
+
+export function parse_proof (witness : ScriptData[]) {
+  const { cblock, params, script } = parse_witness(witness)
+
+  assert.ok(cblock !== null)
+  assert.ok(script !== null)
+
+  const cblk   = parse_cblock(cblock)
+  const asm    = decode_script(script, true)
+  const target = encode_tapleaf(script, cblk.version)
+
+  let branch = Buff.bytes(target).hex
+
+  for (const leaf of cblk.path) {
+    branch = encode_tapbranch(branch, leaf)
+  }
+
+  const tweak  = get_taptweak(cblk.int_pub, branch)
+  const tapkey = tweak_pubkey(cblk.int_pub, tweak).slice(1)
+
+  params.map(e => Buff.bytes(e).hex)
+
+  return { cblock: cblk, params, script: asm, tapkey: tapkey.hex, tweak: tweak.hex }
+}
 
 export function parse_cblock (cblock : Bytes) : CtrlBlock {
   const buffer  = new Stream(Buff.bytes(cblock))

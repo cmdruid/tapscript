@@ -3,7 +3,7 @@ import { encode_tapbranch } from './encode.js'
 
 import {
   TapTree,
-  TapProof
+  MerkleProof
 } from '../../types/index.js'
 
 export function get_taproot (
@@ -17,7 +17,7 @@ export function merkleize (
   taptree  : TapTree,
   target  ?: string,
   path     : string[] = []
-) : TapProof {
+) : MerkleProof {
   const leaves : string[] = []
   const tree   : string[] = []
 

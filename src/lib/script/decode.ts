@@ -14,7 +14,7 @@ export function decode_script (
   if (varint) {
     const stream = buff.stream
     const len = stream.read_varint('le')
-    if (buff.length !== len) {
+    if (stream.size !== len) {
       throw new Error(`Varint does not match stream size: ${String(len)} !== ${buff.length}`)
     }
     buff = buff.slice(1)
