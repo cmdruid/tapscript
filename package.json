@@ -1,6 +1,6 @@
 {
   "name": "@scrow/tapscript",
-  "version": "2.0.23",
+  "version": "2.0.24",
   "description": "A development build of tapscript. Built for escrow.",
   "type": "module",
   "main": "./dist/main.cjs",
@@ -76,8 +76,8 @@
     "src"
   ],
   "dependencies": {
-    "@cmdcode/buff": "^2.0.3",
-    "@cmdcode/crypto-tools": "^2.5.0",
+    "@cmdcode/buff": "^2.0.4",
+    "@cmdcode/crypto-tools": "^2.5.1",
     "zod": "^3.22.2"
   },
   "devDependencies": {
