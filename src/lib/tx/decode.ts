@@ -8,7 +8,8 @@ import {
 } from '../../types/index.js'
 
 export function decode_tx (
-  bytes : TxBytes
+  bytes  : TxBytes,
+  segwit = true
 ) : TxData {
   /** Decode a raw bitcoin transaction. */
 
@@ -22,7 +23,9 @@ export function decode_tx (
   const version = read_version(stream)
 
   // Check and enable any flags that are set.
-  const has_witness = check_witness_flag(stream)
+  const has_witness = (segwit)
+    ? check_witness_flag(stream)
+    : false
 
   // Parse our inputs and outputs.
   const vin  = read_inputs(stream)

@@ -17,34 +17,29 @@ const LOCK_THOLD = 500_000_000
 export function parse_locktime (
   locktime : string | number
 ) : TimelockData {
-  const value = parse_value(locktime)
+  const value   = parse_value(locktime)
   const enabled = (value > 0)
     let type : LockType = null
   if (enabled) {
     type = (value > LOCK_THOLD) ? 'stamp' : 'block'
   }
-  const blocks  = (type === 'block') ? value : null
-  const stamp   = (type === 'stamp') ? value : null
+  const blocks = (type === 'block') ? value : null
+  const stamp  = (type === 'stamp') ? value : null
   return { value, blocks, stamp, type, enabled }
 }
 
 export function parse_sequence (
   sequence : string | number
 ) : TimelockData {
-  const value = parse_value(sequence)
+  const value   = parse_value(sequence)
   const enabled = value !== MAX_VAL && (value & NO_LOCK) !== NO_LOCK
-  console.log(value !== MAX_VAL)
-  console.log((value & NO_LOCK) !== NO_LOCK)
     let type : LockType = null
   if (enabled) {
     type = ((value & TIME_LOCK) === TIME_LOCK) ? 'stamp' : 'block'
   }
-  const blocks = (type === 'block')
-    ? (value & LOCK_MASK)
-    : null
-  const stamp = (type === 'stamp')
-    ? ((value & LOCK_MASK) << TIME_SHIFT)
-    : null
+  const masked = (value & LOCK_MASK)
+  const blocks = (type === 'block') ? masked : null
+  const stamp  = (type === 'stamp') ? masked << TIME_SHIFT : null
   return { value, blocks, stamp, type, enabled }
 }
 
