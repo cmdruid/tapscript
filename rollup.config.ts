@@ -10,7 +10,16 @@ const treeshake = {
 	tryCatchDeoptimization  : false
 }
 
-const onwarn = warning => { throw new Error(warning) }
+const onwarn = warning => {
+  if (
+    warning.code === 'INVALID_ANNOTATION' && 
+    warning.message.includes('@__PURE__')
+  ) {
+    return
+  }
+
+  throw new Error(warning)
+}
 
 export default {
   input: 'src/index.ts',

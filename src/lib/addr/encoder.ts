@@ -1,4 +1,9 @@
-import { Buff, Bytes, Encoder } from '@cmdcode/buff'
+import {
+  Buff,
+  Bytes,
+  Bech32  as B32,
+  Bech32m as B32m
+} from '@cmdcode/buff'
 
 import { DecodedData } from '../../types/index.js'
 
@@ -7,7 +12,7 @@ function bech32_encode (
   data    : Bytes,
   version : number = 0
 ) : string {
-  const { encode, to_words } = Encoder.bech32
+  const { encode, to_words } = B32
   const bytes = Buff.bytes(data)
   const words = [ version, ...to_words(bytes) ]
   return encode(prefix, words)
@@ -16,7 +21,7 @@ function bech32_encode (
 function bech32_decode (
   str : string
 ) : DecodedData {
-  const { decode, to_bytes } = Encoder.bech32
+  const { decode, to_bytes } = B32
   const { prefix, words } = decode(str)
   const [ version, ...rest ] = words
   const data = Buff.raw(to_bytes(rest))
@@ -28,7 +33,7 @@ function bech32m_encode (
   data    : Bytes,
   version : number = 1
 ) : string {
-  const { encode, to_words } = Encoder.bech32m
+  const { encode, to_words } = B32m
   const bytes = Buff.bytes(data)
   const words = [ version, ...to_words(bytes) ]
   return encode(prefix, words)
@@ -37,7 +42,7 @@ function bech32m_encode (
 function bech32m_decode (
   str : string
 ) : DecodedData {
-  const { decode, to_bytes } = Encoder.bech32m
+  const { decode, to_bytes } = B32m
   const { prefix, words } = decode(str)
   const [ version, ...rest ] = words
   const data = Buff.raw(to_bytes(rest))
