@@ -45,13 +45,11 @@
     }
   },
   "scripts": {
-    "build": "rollup -c rollup.config.ts --configPlugin typescript",
-    "clean": "rm -rf dist/*",
+    "build": "./build.sh",
     "scratch": "tsx test/scratch.ts",
     "lint": "eslint . --ext .ts",
     "test": "tsx --tsconfig test/tsconfig.json test/tape.ts | tap-spec",
-    "types": "tsc",
-    "release": "yarn test && yarn clean && yarn types && yarn lint && yarn build"
+    "release": "yarn test && yarn lint && yarn build"
   },
   "keywords": [
     "bitcoin",
@@ -76,8 +74,8 @@
     "src"
   ],
   "dependencies": {
-    "@cmdcode/buff": "^2.1.1",
-    "@cmdcode/crypto-tools": "^2.5.2",
+    "@cmdcode/buff": "^2.2.1",
+    "@cmdcode/crypto-tools": "^2.6.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

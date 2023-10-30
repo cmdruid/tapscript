@@ -1,4 +1,4 @@
-import { Tx } from '../src/index.js'
+import { Tx } from '../../dist/index.js'
 
 const txdata = Tx.create_tx({
   vin: [

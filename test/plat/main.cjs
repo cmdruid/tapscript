@@ -1,4 +1,4 @@
-import { Tx } from '../src/index.js'
+const { Tx } = require('../../dist/main.cjs')
 
 const txdata = Tx.create_tx({
   vin: [

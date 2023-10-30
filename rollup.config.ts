@@ -16,6 +16,11 @@ const onwarn = warning => {
     warning.message.includes('@__PURE__')
   ) {
     return
+  } else if (
+    warning.code === 'MISSING_NODE_BUILTINS' &&
+    warning.ids.toString() === [ 'crypto' ].toString()
+  ) {
+    return
   }
 
   throw new Error(warning)
@@ -41,7 +46,10 @@ export default {
       format: 'iife',
       name: 'tapscript',
       plugins: [terser()],
-      sourcemap: true
+      sourcemap: true,
+      globals: {
+        crypto : 'crypto',
+      }
     }
   ],
   plugins: [ typescript(), nodeResolve(), commonjs() ],
