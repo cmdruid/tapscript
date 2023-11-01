@@ -62,7 +62,7 @@ export async function key_spend (t : Test) : Promise<void> {
         // We are leaving behind 1000 sats as a fee to the miners.
         value: 99_000,
         // This is the new script that we are locking our funds to.
-        scriptPubKey: parse_addr('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y').script
+        scriptPubKey: parse_addr('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y').asm
       }]
     })
 

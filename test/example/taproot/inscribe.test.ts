@@ -75,7 +75,7 @@ export async function inscription (t : Test) : Promise<void> {
         // We are leaving behind 1000 sats as a fee to the miners.
         value: 99_000,
         // Replace with a new address to send your funds to.
-        scriptPubKey: parse_addr('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y').script
+        scriptPubKey: parse_addr('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y').asm
       }]
     })
 
