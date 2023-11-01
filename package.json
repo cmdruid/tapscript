@@ -1,6 +1,6 @@
 {
   "name": "@cmdcode/tapscript",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A basic library for working with Tapscript, signatures and Bitcoin transactions.",
   "type": "module",
   "main": "./dist/main.cjs",
@@ -23,12 +23,10 @@
     "clean": "rm -rf dist/* coverage .nyc_output",
     "start": "node --trace-deprecation --no-warnings --loader ts-node/esm",
     "scratch": "yarn start test/scratch.ts",
-    "lint": "eslint . --ext .ts",
-    "fix": "eslint --fix . --ext .ts",
     "tape": "yarn start test/tape.ts",
-    "test": "nyc --reporter=lcov --require ts-node/register yarn tape | tap-spec; nyc report ---reporter=text",
+    "test": "yarn tape | tap-spec",
     "types": "tsc",
-    "release": "yarn test && yarn clean && yarn types && yarn lint && yarn build"
+    "release": "yarn test && yarn clean && yarn types && yarn build"
   },
   "keywords": [
     "bitcoin",
@@ -65,18 +63,11 @@
     "@rollup/plugin-typescript": "^9.0.2",
     "@types/node": "^18.14.0",
     "@types/tape": "^4.13.2",
-    "@typescript-eslint/eslint-plugin": "^5.48.0",
-    "@typescript-eslint/parser": "^5.59.9",
-    "eslint": "^8.31.0",
-    "eslint-config-standard-with-typescript": "^26.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.6.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "nyc": "^15.1.0",
     "rollup": "^3.2.3",
     "tap-spec": "^5.0.0",
     "tape": "^5.6.1",
     "ts-node": "^10.9.1",
+    "tslib": "^2.6.2",
     "typescript": "^5.1.6",
     "zod": "^3.20.6"
   }
