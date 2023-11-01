@@ -12,6 +12,7 @@ import {
   TxData,
   WitnessData
 } from '../../schema/types.js'
+
 import { hash256 } from '@cmdcode/crypto-utils'
 
 interface TxSizeData {
@@ -102,11 +103,13 @@ function parseParams (
 ) : Bytes[] {
   const params : Bytes[] = []
   for (const d of data) {
-    if (
-      isHex(d) ||
-      d instanceof Uint8Array
-    ) {
-      params.push(d)
+    if (isHex(d)            ||
+    d instanceof Uint8Array || 
+    typeof d === 'number'
+  ) {
+      params.push(Buff.bytes(d))
+    } else {
+      throw new Error('unrecognized value: ' + String(d))
     }
   }
   return params
