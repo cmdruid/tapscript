@@ -1,11 +1,16 @@
 import { Buff, Bytes } from '@cmdcode/buff'
 import { sha256sh }    from './hash.js'
 import { Bech32 }      from './encoder.js'
-import { buffer_asm }  from '../script/index.js'
 
-import { BECH32_PREFIXES, lookup } from './const.js'
+import {
+  buffer_asm,
+  encode_script
+} from '../script/index.js'
 
-import * as assert from '../assert.js'
+import {
+  BECH32_PREFIXES,
+  lookup
+} from './const.js'
 
 import {
   AddressData,
@@ -13,6 +18,8 @@ import {
   ScriptData,
   ScriptWord
 } from '../../types/index.js'
+
+import * as assert from '../assert.js'
 
 const VALID_PREFIXES = [ 'bc1q', 'tb1q', 'bcrt1q' ]
 
@@ -47,9 +54,11 @@ export function decode_address (
     throw new TypeError('Invalid segwit address!')
   }
   const { data, version } = Bech32.decode(address)
-  const script = create_script(data)
+  const asm = create_script(data)
+  const hex = encode_script(asm, false).hex
+  const key = data.hex
   assert.ok(version === 0)
-  return { type, key: data, network, script }
+  return { asm, hex, key, network, type }
 }
 
 function create_address (

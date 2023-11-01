@@ -1,6 +1,7 @@
-import { Buff, Bytes } from '@cmdcode/buff'
-import { hash160pkh }  from './hash.js'
-import { lookup }      from './const.js'
+import { Buff, Bytes }   from '@cmdcode/buff'
+import { hash160pkh }    from './hash.js'
+import { lookup }        from './const.js'
+import { encode_script } from '../script/encode.js'
 
 import * as assert from '../assert.js'
 
@@ -45,9 +46,11 @@ function decode_address (
   if (!check_address(address, network)) {
     throw new TypeError('Invalid p2pkh address:' + address)
   }
-  const key    = Buff.b58chk(address).slice(1)
-  const script = create_script(key)
-  return { type, key, network, script }
+  const dat = Buff.b58chk(address).slice(1)
+  const asm = create_script(dat)
+  const hex = encode_script(asm, false).hex
+  const key = dat.hex
+  return { asm, hex, key, network, type }
 }
 
 function create_address (

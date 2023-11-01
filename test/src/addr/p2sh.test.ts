@@ -1,6 +1,5 @@
 
 import { Test } from 'tape'
-import { Buff } from '@cmdcode/buff'
 
 import {
   create_addr,
@@ -13,7 +12,7 @@ export default function (t : Test) : void {
   const ref_address = '2NFbT9Fkp7yjp22dvu7tHgikd8Yfy87KnTc'
   const ref_hash    = 'f52611446bdfa1f67da1fb7805dbee74c6d92a54'
   const ref_script  = [ 'OP_HASH160', ref_hash, 'OP_EQUAL' ]
-  const ref_object  = { type: 'p2sh', network: 'testnet', key: Buff.hex(ref_hash) , script: ref_script }
+  const ref_object  = { type: 'p2sh', network: 'testnet', key: ref_hash , asm: ref_script }
 
   t.test('P2SH unit test', t => {
     t.plan(4)

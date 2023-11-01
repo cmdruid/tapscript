@@ -11,7 +11,7 @@ export function fail (
 export function is_hex (
   input : any
 ) : input is string {
-  const regex = /[^a-fA-f0-9]/
+  const regex = /[^a-fA-F0-9]/
   if (
     typeof input === 'string' &&
     input.length % 2 === 0    &&

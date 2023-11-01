@@ -14,7 +14,7 @@ export function parse_addr (address : string) : AddressData {
     if (address.startsWith(prefix)) {
       const tool = ADDR_TOOLS[type]
       const addr = tool.decode(address, network)
-      if (addr.key.length === size) {
+      if (addr.key.length / 2 === size) {
         return addr
       }
     }

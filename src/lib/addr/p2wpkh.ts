@@ -13,6 +13,7 @@ import {
 } from '../../types/index.js'
 
 import { Bech32 } from './encoder.js'
+import { encode_script } from '../script/encode.js'
 
 const VALID_PREFIXES = [ 'bc1q', 'tb1q', 'bcrt1q' ]
 
@@ -47,9 +48,11 @@ export function decode_address (
     throw new TypeError('Invalid segwit address!')
   }
   const { data, version } = Bech32.decode(address)
-  const script = create_script(data)
+  const asm = create_script(data)
+  const hex = encode_script(asm, false).hex
+  const key = data.hex
   assert.ok(version === 0)
-  return { type, key: data, network, script }
+  return { asm, hex, key, network, type }
 }
 
 function create_address (

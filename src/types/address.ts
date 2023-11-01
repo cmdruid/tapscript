@@ -33,10 +33,11 @@ export interface AddressMeta {
 }
 
 export interface AddressData {
-  type    : AddrEnum
-  key     : Buff
+  hex     : string
+  key     : string
   network : Network
-  script  : ScriptWord[]
+  asm     : ScriptWord[]
+  type    : AddrEnum
 }
 
 export interface AddressTool {

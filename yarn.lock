@@ -7,20 +7,20 @@
   resolved "https://registry.yarnpkg.com/@aashutoshrathi/word-wrap/-/word-wrap-1.2.6.tgz#bd9154aec9983f77b3a034ecaa015c2e4201f6cf"
   integrity sha512-1Yjs2SvM8TflER/OD3cOjhWWOZb58A2t7wpE2S9XfBYTiIl+XFhQG2bjy4Pu1I+EAlCNUzRDYDdFwFYUKvXcIA==
 
-"@cmdcode/buff@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@cmdcode/buff/-/buff-2.2.1.tgz#56710cb13f34d26d10d7a8d369a7c60a90249138"
-  integrity sha512-LQ8vPU9v2IouyYWMYvwmB1iastyKAkiwRorfZ9ZDqO++H5gLYUfd2UMzGexJdLla/wNHh2+CQ+w8HesQp69omw==
+"@cmdcode/buff@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@cmdcode/buff/-/buff-2.2.2.tgz#e1de8e8cd566ace5b50764960c50e89d2ea65b06"
+  integrity sha512-J8ZWfgDSFCy1SOcDQPd+nCbEXMHZ1ek2/0XXsyFJsU/bx+OwZZwflwC0rDINss1/R847dzWuVCE3N3mzlcdGHg==
   dependencies:
     "@noble/hashes" "^1.3.0"
     "@scure/base" "^1.1.3"
 
-"@cmdcode/crypto-tools@^2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-tools/-/crypto-tools-2.6.0.tgz#ff618dd9d84807e3c57a3c5348f38d711265ce76"
-  integrity sha512-aM5d4AUf1X42m531NH+FD24F7meYo33LhfodvIamiyvYSIl7Maumh8NQAePLvk+YekmzWU1NcsYOJsae4JhWSA==
+"@cmdcode/crypto-tools@^2.6.1":
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/@cmdcode/crypto-tools/-/crypto-tools-2.6.1.tgz#aab6202f8cfcc4527afe1b84193a3827de6e8841"
+  integrity sha512-UaBodL+fOalmD+6t+fpjSnonFe1yDPoj7/i09pE+dUjaUXixGn2SrB+MGrhuqDfyFwI2DEa2DxX/lOMy50FkJQ==
   dependencies:
-    "@cmdcode/buff" "^2.2.1"
+    "@cmdcode/buff" "^2.2.2"
     "@noble/curves" "^1.1.0"
     "@noble/hashes" "^1.3.0"
 

@@ -46,7 +46,7 @@
   },
   "scripts": {
     "build": "./build.sh",
-    "scratch": "tsx test/scratch.ts",
+    "scratch": "tsx --tsconfig test/tsconfig.json test/scratch.ts",
     "lint": "eslint . --ext .ts",
     "test": "tsx --tsconfig test/tsconfig.json test/tape.ts | tap-spec",
     "release": "yarn test && yarn lint && yarn build"
@@ -74,8 +74,8 @@
     "src"
   ],
   "dependencies": {
-    "@cmdcode/buff": "^2.2.1",
-    "@cmdcode/crypto-tools": "^2.6.0",
+    "@cmdcode/buff": "^2.2.2",
+    "@cmdcode/crypto-tools": "^2.6.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {

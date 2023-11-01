@@ -74,8 +74,15 @@ function parse_params (
 ) : Buff[] {
   const params : Buff[] = []
   for (const d of data) {
-    if (is_hex(d) || d instanceof Uint8Array) {
+    console.log('d:', d)
+    if (
+      is_hex(d)               ||
+      d instanceof Uint8Array ||
+      typeof d === 'number'
+    ) {
       params.push(Buff.bytes(d))
+    } else {
+      throw new Error('unrecognized param:' + String(d))
     }
   }
   return params
