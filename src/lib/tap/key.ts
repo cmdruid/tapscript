@@ -21,7 +21,7 @@ import {
   TapContext
 } from '../../types/index.js'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 export function tap_pubkey (
   pubkey : Bytes,

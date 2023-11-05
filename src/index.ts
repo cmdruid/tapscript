@@ -5,7 +5,7 @@ export * as SigHash from './lib/sig/index.js'
 export * as Tap     from './lib/tap/index.js'
 export * as Tx      from './lib/tx/index.js'
 
-export * as assert  from './lib/assert.js'
+export * as assert  from './assert.js'
 export * as schema  from './schema/index.js'
 export * as util    from './lib/util.js'
 

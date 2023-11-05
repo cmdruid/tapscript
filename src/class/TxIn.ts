@@ -6,7 +6,7 @@ import { Witness }  from './Witness.js'
 import { segwit, taproot }      from '../lib/sig/index.js'
 import { create_vin, parse_tx } from '../lib/tx/index.js'
 
-import * as assert from '../lib/assert.js'
+import * as assert from '../assert.js'
 
 import {
   SigHashOptions,

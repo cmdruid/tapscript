@@ -1,6 +1,6 @@
 import { keys } from '@cmdcode/crypto-tools'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 import { parse_tx }     from '../tx/parse.js'
 import { parse_script } from '../script/parse.js'

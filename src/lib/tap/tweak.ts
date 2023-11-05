@@ -3,7 +3,7 @@ import { Field, Point } from '@cmdcode/crypto-tools'
 import { hash340 }      from '@cmdcode/crypto-tools/hash'
 import { convert_32b }  from '@cmdcode/crypto-tools/keys'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 export function get_taptweak (
   pubkey : Bytes,

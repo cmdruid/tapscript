@@ -7,7 +7,7 @@ import {
   sha256
 } from '@cmdcode/crypto-tools/hash'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 export function hash160pkh (pubkey : Bytes) : Buff {
   const bytes = Buff.bytes(pubkey)

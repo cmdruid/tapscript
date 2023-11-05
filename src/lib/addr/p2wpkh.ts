@@ -3,7 +3,7 @@ import { hash160pkh }  from './hash.js'
 
 import { BECH32_PREFIXES, lookup } from './const.js'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 import {
   AddressData,

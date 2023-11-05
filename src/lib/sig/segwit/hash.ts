@@ -9,7 +9,7 @@ import {
 
 import { parse_tx } from '../../tx/index.js'
 
-import * as assert from '../../../lib/assert.js'
+import * as assert from '../../../assert.js'
 import * as util   from '../utils.js'
 
 import {

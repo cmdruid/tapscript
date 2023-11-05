@@ -4,7 +4,7 @@ import { lookup }        from './const.js'
 import { buffer_asm }    from '../script/parse.js'
 import { encode_script } from '../script/encode.js'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 import {
   AddressData,

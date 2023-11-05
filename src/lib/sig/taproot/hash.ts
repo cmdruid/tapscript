@@ -15,7 +15,7 @@ import {
   TxOutput
 } from '../../../types/index.js'
 
-import * as assert from '../../assert.js'
+import * as assert from '../../../assert.js'
 
 const {
   encode_idx,

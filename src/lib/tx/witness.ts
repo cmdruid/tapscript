@@ -3,7 +3,7 @@ import { buffer_asm }    from '../script/parse.js'
 import { LEAF_VERSIONS } from './const.js'
 import { is_hex }        from '../util.js'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 import {
   ScriptData,
@@ -74,7 +74,6 @@ function parse_params (
 ) : Buff[] {
   const params : Buff[] = []
   for (const d of data) {
-    console.log('d:', d)
     if (
       is_hex(d)               ||
       d instanceof Uint8Array ||

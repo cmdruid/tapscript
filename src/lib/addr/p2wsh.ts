@@ -19,7 +19,7 @@ import {
   ScriptWord
 } from '../../types/index.js'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 const VALID_PREFIXES = [ 'bc1q', 'tb1q', 'bcrt1q' ]
 

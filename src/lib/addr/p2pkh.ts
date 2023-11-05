@@ -3,7 +3,7 @@ import { hash160pkh }    from './hash.js'
 import { lookup }        from './const.js'
 import { encode_script } from '../script/encode.js'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 import {
   AddressData,

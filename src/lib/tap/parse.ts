@@ -23,7 +23,7 @@ import {
   ScriptData
 } from '../../types/index.js'
 
-import * as assert from '../assert.js'
+import * as assert from '../../assert.js'
 
 export function parse_proof (witness : ScriptData[]) {
   const { cblock, params, script } = parse_witness(witness)
