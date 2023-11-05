@@ -35,3 +35,5 @@ node_modules/
 
 # Distributions
 dist
+
+test/data
