@@ -1,6 +1,6 @@
 {
   "name": "@cmdcode/tapscript",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "A basic library for working with Tapscript, signatures and Bitcoin transactions.",
   "type": "module",
   "main": "./dist/main.cjs",
