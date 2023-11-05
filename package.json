@@ -1,6 +1,6 @@
 {
   "name": "@scrow/tapscript",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "A development build of tapscript. Built for escrow.",
   "type": "module",
   "main": "./dist/main.cjs",
@@ -78,6 +78,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@cmdcode/core-cmd": "^1.3.21",
     "@noble/curves": "^1.2.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
