@@ -10,6 +10,9 @@ export function decode_script (
   script : Bytes,
   varint = false
 ) : string[] {
+  /**
+   * Decode a hex-encoded script.
+   */
   let buff = Buff.bytes(script)
   if (varint) {
     const stream = buff.stream
@@ -25,6 +28,7 @@ export function decode_script (
 export function decode_words (
   words : Uint8Array
 ) : string[] {
+
   const stream = new Stream(words)
 
   const stack : string[] = []

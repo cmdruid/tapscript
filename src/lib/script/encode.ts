@@ -78,7 +78,13 @@ export function format_word (
   }
 
   if (buff.length > MAX_WORD_SIZE) {
-    const words = split_word(buff).map(e => prefix_word(e))
+    // Initialize variable.
+    let words : Buff[]
+    // Split bytes into chunks, based on max word size.
+    words = split_word(buff)
+    // Prefix a varint length byte for each chunk.
+    words = words.map(e => prefix_word(e))
+    // Concatenate the chunks
     return Buff.join(words)
   } else {
     return prefix_word(buff)
