@@ -84,7 +84,7 @@ export function encodeSequence (
 }
 
 function encodeInputs (arr : InputData[]) : Uint8Array {
-  const raw : Uint8Array[] = [ Buff.varInt(arr.length) ]
+  const raw : Uint8Array[] = [ Buff.varInt(arr.length, 'le') ]
   for (const vin of arr) {
     const { txid, vout, scriptSig, sequence } = vin
     raw.push(encodeTxid(txid))
@@ -108,7 +108,7 @@ export function encodeValue (
 }
 
 function encodeOutputs (arr : OutputData[]) : Uint8Array {
-  const raw : Uint8Array[] = [ Buff.varInt(arr.length) ]
+  const raw : Uint8Array[] = [ Buff.varInt(arr.length, 'le') ]
   for (const vout of arr) {
     raw.push(encodeOutput(vout))
   }
