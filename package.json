@@ -1,6 +1,6 @@
 {
   "name": "@scrow/tapscript",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A development build of tapscript. Built for escrow.",
   "type": "module",
   "main": "./dist/main.cjs",
@@ -73,24 +73,24 @@
     "src"
   ],
   "dependencies": {
-    "@cmdcode/buff": "^2.2.2",
-    "@cmdcode/crypto-tools": "^2.6.1",
+    "@cmdcode/buff": "^2.2.4",
+    "@cmdcode/crypto-tools": "^2.6.10",
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@cmdcode/core-cmd": "^1.3.21",
+    "@cmdcode/core-cmd": "^1.3.26",
     "@noble/curves": "^1.2.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
-    "@types/node": "^20.8.6",
-    "@types/tape": "^5.6.1",
-    "rollup": "^4.1.4",
+    "@types/node": "^20.10.4",
+    "@types/tape": "^5.6.4",
+    "rollup": "^4.7.0",
     "tap-spec": "^5.0.0",
-    "tape": "^5.7.1",
+    "tape": "^5.7.2",
     "tslib": "^2.6.2",
-    "tsx": "^3.13.0",
-    "typescript": "^5.2.2"
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3"
   }
 }
