@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { OPCODE_MAP } from '../lib/script/opcodes.js'
+import { OPCODE_MAP } from '../lib/script/const.js'
 
 const keys = Object.keys(OPCODE_MAP) as [string]
 
