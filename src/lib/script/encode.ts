@@ -9,6 +9,9 @@ import {
 
 const MAX_WORD_SIZE = 520
 
+/**
+ * Encode script asm instructions into bytes.
+ */
 export function encode_script (
   script : ScriptData = [],
   varint = true
@@ -34,6 +37,10 @@ export function encode_script (
   return buff
 }
 
+
+/**
+ * Encode asm words into bytes.
+ */
 export function encode_words (
   words : ScriptWord[]
 ) : Uint8Array {
@@ -46,12 +53,12 @@ export function encode_words (
     : new Uint8Array()
 }
 
+/** Check if the word is a valid opcode,
+ *  and return its integer value.
+ */
 export function format_word (
   word : ScriptWord
 ) : Uint8Array {
-  /** Check if the word is a valid opcode,
-   *  and return its integer value.
-   */
   let buff = new Uint8Array()
 
   if (typeof (word) === 'string') {
@@ -71,42 +78,30 @@ export function format_word (
     buff = Buff.bytes(word)
   }
 
+  // Format and return the word based on its size.
   if (buff.length === 1 && buff[0] <= 16) {
     // Number values 0-16 must be treated as opcodes.
     if (buff[0] !== 0) buff[0] += 0x50
-    return buff
-  }
-
-  if (buff.length > MAX_WORD_SIZE) {
-    // Initialize variable.
+  } else if (buff.length > MAX_WORD_SIZE) {
+    // Number values larger than max size must be split into chunks.
     let words : Buff[]
     // Split bytes into chunks, based on max word size.
     words = split_word(buff)
     // Prefix a varint length byte for each chunk.
     words = words.map(e => prefix_word(e))
     // Concatenate the chunks
-    return Buff.join(words)
+    buff = Buff.join(words)
   } else {
-    return prefix_word(buff)
+    // Else, return the word with a varint prefix.
+    buff = prefix_word(buff)
   }
+  // Return the final result.
+  return buff
 }
 
-export function encode_size (size : number) : Uint8Array {
-  const OP_PUSHDATA1 = Buff.num(0x4c, 1)
-  const OP_PUSHDATA2 = Buff.num(0x4d, 1)
-
-  switch (true) {
-    case (size <= 0x4b):
-      return Buff.num(size)
-    case (size > 0x4b && size < 0x100):
-      return Buff.join([ OP_PUSHDATA1, Buff.num(size, 1, 'le') ])
-    case (size >= 0x100 && size <= MAX_WORD_SIZE):
-      return Buff.join([ OP_PUSHDATA2, Buff.num(size, 2, 'le') ])
-    default:
-      throw new Error('Invalid word size:' + size.toString())
-  }
-}
-
+/**
+ * Split a word into smaller chunks.
+ */
 export function split_word (
   word : Uint8Array
 ) : Buff[] {
@@ -121,9 +116,30 @@ export function split_word (
   return words
 }
 
+/**
+ * Prefix a word with its size, encoded as a varint.
+ */
 export function prefix_word (
   word : Uint8Array
 ) {
   const varint = encode_size(word.length)
   return Buff.join([ varint, word ])
+}
+
+/**
+ * Return a varint that encodes a size value.
+ */
+export function encode_size (size : number) : Uint8Array {
+  const OP_PUSHDATA1 = Buff.num(0x4c, 1)
+  const OP_PUSHDATA2 = Buff.num(0x4d, 1)
+  switch (true) {
+    case (size <= 0x4b):
+      return Buff.num(size)
+    case (size > 0x4b && size < 0x100):
+      return Buff.join([ OP_PUSHDATA1, Buff.num(size, 1, 'le') ])
+    case (size >= 0x100 && size <= MAX_WORD_SIZE):
+      return Buff.join([ OP_PUSHDATA2, Buff.num(size, 2, 'le') ])
+    default:
+      throw new Error('Invalid word size:' + size.toString())
+  }
 }

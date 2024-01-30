@@ -145,6 +145,7 @@ Address = {
   parse : (address : string) => AddressData,
   // Convert a scriptPubKey output into an address.
   from_script : (address : string, network ?: Network) => string
+  from_pubkey : (pubkey : Bytes, type : AddrType, network ?: Network) => string
 }
 
 interface AddressTool {

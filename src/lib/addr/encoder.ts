@@ -7,6 +7,9 @@ import {
 
 import { DecodedData } from '../../types/index.js'
 
+/**
+ * Encode data as a bech32 string.
+ */
 function bech32_encode (
   prefix  : string,
   data    : Bytes,
@@ -18,6 +21,9 @@ function bech32_encode (
   return encode(prefix, words)
 }
 
+/**
+ * Decode data as a bech32 string.
+ */
 function bech32_decode (
   str : string
 ) : DecodedData {
@@ -28,6 +34,9 @@ function bech32_decode (
   return { prefix, version, data }
 }
 
+/**
+ * Encode data as a bech32m string.
+ */
 function bech32m_encode (
   prefix  : string,
   data    : Bytes,
@@ -39,6 +48,9 @@ function bech32m_encode (
   return encode(prefix, words)
 }
 
+/**
+ * Decode data as a bech32m string.
+ */
 function bech32m_decode (
   str : string
 ) : DecodedData {
@@ -49,6 +61,9 @@ function bech32m_decode (
   return { prefix, version, data }
 }
 
+/**
+ * Decode a string based on the provided type.
+ */
 export function decode_data (
   str  : string,
   type : string

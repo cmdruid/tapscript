@@ -1,4 +1,5 @@
 import { Buff, Bytes }    from '@cmdcode/buff'
+import { SignOptions }    from '@cmdcode/crypto-tools'
 import { parse_vin_meta } from './utils.js'
 
 import * as segwit  from './segwit/index.js'
@@ -9,7 +10,6 @@ import {
   TxBytes,
   TxData
 } from '../../types/index.js'
-import { SignOptions } from '@cmdcode/crypto-tools'
 
 export function hash_tx (
   txdata  : TxBytes | TxData,

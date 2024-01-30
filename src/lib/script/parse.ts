@@ -15,6 +15,7 @@ import {
   ScriptWord
 } from '../../types/index.js'
 
+
 export function parse_script (
   script : ScriptData
 ) : ScriptMeta | ScriptRaw {

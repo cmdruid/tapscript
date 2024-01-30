@@ -11,14 +11,14 @@ import {
 
 export function encode_tx (
   txdata : TxData,
-  omitWitness ?: boolean
+  enable_segwit = true
 ) : Buff {
   /* Convert a JSON-based Bitcoin transaction
    * into hex-encoded bytes.
    * */
   const { version, vin, vout, locktime } = txdata
 
-  const useWitness = (omitWitness !== true && check_witness(vin))
+  const useWitness = (enable_segwit === true && check_witness(vin))
 
   const raw = [ encode_version(version) ]
 
@@ -61,9 +61,11 @@ function encode_idx (vout : number) : Buff {
 }
 
 function encode_sequence (
-  sequence : number
+  sequence : number | string
 ) : Buff {
-  return Buff.num(sequence, 4).reverse()
+  return (typeof sequence === 'string')
+    ? Buff.hex(sequence, 4)
+    : Buff.num(sequence, 4).reverse()
 }
 
 function encode_inputs (arr : TxInput[]) : Buff {
@@ -124,8 +126,10 @@ function encode_data (data : ScriptData) : Buff {
     : new Buff(0)
 }
 
-function encode_locktime (locktime : number) : Buff {
-  return Buff.num(locktime, 4).reverse()
+function encode_locktime (locktime : number | string) : Buff {
+  return (typeof locktime === 'string')
+    ? Buff.hex(locktime, 4)
+    : Buff.num(locktime, 4).reverse()
 }
 
 export default {

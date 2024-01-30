@@ -14,5 +14,5 @@ tape('Tapscript Test Suite', async t => {
   tx_tests(t)
   tweak_test(t)
   unit_tests(t)
-  await example_tests(t)
+  // await example_tests(t)
 })

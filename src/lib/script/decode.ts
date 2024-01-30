@@ -6,26 +6,31 @@ import {
   is_valid_op
 } from './words.js'
 
+/**
+ * Decode a bitcoin script into asm instructions.
+ */
 export function decode_script (
   script : Bytes,
   varint = false
 ) : string[] {
-  /**
-   * Decode a hex-encoded script.
-   */
-  let buff = Buff.bytes(script)
+
+  let bytes = Buff.bytes(script)
+
   if (varint) {
-    const stream = buff.stream
+    const stream = bytes.stream
     const len = stream.read_varint('le')
     if (stream.size !== len) {
-      throw new Error(`Varint does not match stream size: ${String(len)} !== ${buff.length}`)
+      throw new Error(`Varint does not match stream size: ${String(len)} !== ${bytes.length}`)
     }
-    buff = buff.slice(1)
+    bytes = bytes.slice(1)
   }
-  return decode_words(buff)
+  return decode_word_bytes(bytes)
 }
 
-export function decode_words (
+/*
+ * Decode word-bytes into asm strings.
+ */
+export function decode_word_bytes (
   words : Uint8Array
 ) : string[] {
 

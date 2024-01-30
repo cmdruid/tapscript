@@ -1,5 +1,9 @@
 import { OPCODE_MAP } from './const.js'
 
+/** 
+ * Get the sting-representation of an opcode
+ * based on its number value.
+ */
 export function get_op_code (num : number) : string {
   if (num > 186 && num < 255) {
     return 'OP_SUCCESS' + String(num)
@@ -10,6 +14,10 @@ export function get_op_code (num : number) : string {
   throw new Error('OPCODE not found:' + String(num))
 }
 
+/** 
+ * Get the number-representation of an opcode
+ * based on its asm string value.
+ */
 export function get_asm_code (string : string) : number {
   for (const [ k, v ] of Object.entries(OPCODE_MAP)) {
     if (k === string) return Number(v)
@@ -17,6 +25,9 @@ export function get_asm_code (string : string) : number {
   throw new Error('OPCODE not found:' + string)
 }
 
+/** 
+ * Get the type of word based on its number value.
+ */
 export function get_op_type (word : number) : string {
   switch (true) {
     case (word === 0):
@@ -36,10 +47,10 @@ export function get_op_type (word : number) : string {
   }
 }
 
+/** 
+ * Check if the provided value is a valid script opcode.
+ */
 export function is_valid_op (word : number) : boolean {
-  /** Check if the provided value
-   * is a valid script opcode.
-   * */
   const MIN_RANGE = 75
   const MAX_RANGE = 254
 
