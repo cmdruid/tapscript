@@ -58,7 +58,7 @@ function checkWitnessFlag (stream : Stream) : boolean {
 
 function readInputs (stream : Stream) : InputData[] {
   const inputs = []
-  const vinCount = stream.readSize()
+  const vinCount = stream.readSize('le')
   for (let i = 0; i < vinCount; i++) {
     inputs.push(readInput(stream))
   }
@@ -66,18 +66,19 @@ function readInputs (stream : Stream) : InputData[] {
 }
 
 function readInput (stream : Stream) : InputData {
-  return {
+  const txin = {
     txid      : stream.read(32).reverse().toHex(),
     vout      : stream.read(4).reverse().toNum(),
     scriptSig : readScript(stream, true),
     sequence  : stream.read(4).reverse().toHex(),
     witness   : []
   }
+  return txin
 }
 
 function readOutputs (stream : Stream) : OutputData[] {
   const outputs  = []
-  const outcount = stream.readSize()
+  const outcount = stream.readSize('le')
   for (let i = 0; i < outcount; i++) {
     outputs.push(readOutput(stream))
   }
@@ -85,10 +86,11 @@ function readOutputs (stream : Stream) : OutputData[] {
 }
 
 function readOutput (stream : Stream) : OutputData {
-  return {
+  const txout = {
     value        : stream.read(8).reverse().big,
     scriptPubKey : readScript(stream, true)
   }
+  return txout
 }
 
 function readWitness (stream : Stream) : string[] {
