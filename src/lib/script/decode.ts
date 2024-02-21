@@ -14,10 +14,10 @@ export function decodeScript (
   if (varint) {
     const stream = buff.stream
     const len = stream.readSize('le')
+    buff = buff.slice(1)
     if (buff.length !== len) {
       throw new Error(`Varint does not match stream size: ${len} !== ${buff.length}`)
     }
-    buff = buff.slice(1)
   }
   return decodeWords(buff)
 }
