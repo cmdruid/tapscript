@@ -2,7 +2,7 @@ import { Buff, Bytes } from '@cmdcode/buff'
 import { convert_32b } from '@cmdcode/crypto-tools/keys'
 
 import { merkleize }        from './tree.js'
-import { encode_tapbranch } from './encode.js'
+import { encode_tapbranch, encode_tapscript } from './encode.js'
 import { DEFAULT_VERSION }  from './const.js'
 import { config_tapleaf }   from './util.js'
 
@@ -17,11 +17,34 @@ import {
 } from './parse.js'
 
 import {
+  ScriptWord,
   TapConfig,
   TapContext
 } from '../../types/index.js'
 
 import * as assert from '../../assert.js'
+
+export function get_taproot_key (
+  internal_key : string,
+  scripts      : Array<ScriptWord[]>,
+  version     ?: number
+) {
+  const taptree = scripts.map(e => encode_tapscript(e, version))
+  const tapdata = tap_pubkey(internal_key, { taptree })
+  return tapdata.tapkey
+}
+
+export function get_ctrl_block (
+  internal_key : string,
+  scripts      : Array<ScriptWord[]> = [],
+  target       : ScriptWord[]        = [],
+  version     ?: number
+) {
+  const tapleaf = encode_tapscript(target, version)
+  const taptree = scripts.map(e => encode_tapscript(e, version))
+  const tapdata = tap_pubkey(internal_key, { tapleaf, taptree })
+  return tapdata.cblock
+}
 
 export function tap_pubkey (
   pubkey : Bytes,
