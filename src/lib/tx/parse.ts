@@ -38,10 +38,11 @@ const DEFAULT_VOUT = {
 }
 
 export function parse_txid (
-  txdata : TxData | TxBytes
+  txdata : TxData | TxBytes,
+  segwit = false
 ) : string {
   const json = parse_tx(txdata)
-  const data = encode_tx(json, true)
+  const data = encode_tx(json, segwit)
   return hash256(data).reverse().hex
 }
 
