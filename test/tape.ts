@@ -5,6 +5,7 @@ import sig_tests      from './src/sig/sig.test.js'
 import tx_tests       from './src/tx/tx.test.js'
 import { unit_tests } from './src/tap/unit.test.js'
 import { tweak_test } from './src/tap/tree.test.js'
+
 import example_tests  from './example/ex_test.js'
 
 tape('Tapscript Test Suite', async t => {

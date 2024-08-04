@@ -1,9 +1,13 @@
-import { Test } from 'tape'
-import { util } from '@cmdcode/crypto-utils'
+import { Test }       from 'tape'
+import { util }       from '@cmdcode/crypto-utils'
+import { CoreWallet } from '@cmdcode/core-cmd'
+
 import { Address, Script, Signer, Tap, Tx, } from '../../../src/index.js'
 
-export async function script_spend (t : Test) : Promise<void> {
+export async function script_spend (t : Test, wallet : CoreWallet) : Promise<void> {
   t.test('Basic spend using tapscript.', async t => {
+    t.plan(2)
+
     // Switch this to true to enable console output.
     const VERBOSE = false
 
@@ -27,24 +31,17 @@ export async function script_spend (t : Test) : Promise<void> {
     const address = Address.p2tr.fromPubKey(tpubkey, 'regtest')
     if (VERBOSE) console.log('Your address:', address)
 
-    /* NOTE: To continue with this example, send 100_000 sats to the above address.
-      You will also need to make a note of the txid and vout of that transaction,
-      so that you can include that information below in the redeem tx.
-    */ 
+    // Generate a utxo for testing (using a local core client).
+    const utxo = await wallet.create_utxo(100_000, address)
 
     const txdata = Tx.create({
       vin  : [{
         // Use the txid of the funding transaction used to send the sats.
-        txid: '181508e3be1107372f1ffcbd52de87b2c3e7c8b2495f1bc25f8cf42c0ae167c2',
+        txid    : utxo.txid,
         // Specify the index value of the output that you are going to spend from.
-        vout: 0,
+        vout    : utxo.vout,
         // Also include the value and script of that ouput.
-        prevout: {
-          // Feel free to change this if you sent a different amount.
-          value: 100_000,
-          // This is what our address looks like in script form.
-          scriptPubKey: [ 'OP_1', tpubkey ]
-        },
+        prevout : utxo.prevout
       }],
       vout : [{
         // We are leaving behind 1000 sats as a fee to the miners.
@@ -67,12 +64,19 @@ export async function script_spend (t : Test) : Promise<void> {
     // transaction is also valid (the merkle proof will be validated as well).
     const isValid = Signer.taproot.verify(txdata, 0, { pubkey })
 
+    t.equal(isValid, true, 'Transaction should pass validation.')
+
+    // Encode the final transaction as hex.
+    const txhex = Tx.encode(txdata)
+    
+    // Publish the transaction using a local bitcoin core client.
+    const txid  = await wallet.client.publish_tx(txhex, true)
+
+    t.pass('Transaction broadcast with txid: ' + txid)
+
     if (VERBOSE) {
       console.log('Your txhex:', Tx.encode(txdata).hex)
       console.dir(txdata, { depth: null })
     }
-    
-    t.plan(1)
-    t.equal(isValid, true, 'Transaction should pass validation.')
   })
 }

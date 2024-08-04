@@ -1,8 +1,10 @@
-import { Test } from 'tape'
-import { util } from '@cmdcode/crypto-utils'
+import { Test }       from 'tape'
+import { util }       from '@cmdcode/crypto-utils'
+import { CoreWallet } from '@cmdcode/core-cmd'
+
 import { Address, Signer, Tap, Tx, } from '../../../src/index.js'
 
-export async function tree_spend (t : Test) : Promise<void> {
+export async function tree_spend (t : Test, wallet : CoreWallet) : Promise<void> {
   t.test('Spend a script inside a tree.', async t => {
     // Switch this to true to enable console output.
     const VERBOSE = false
@@ -41,30 +43,24 @@ export async function tree_spend (t : Test) : Promise<void> {
 
     // A taproot address is simply the tweaked public key, encoded in bech32 format.
     const address = Address.p2tr.fromPubKey(tpubkey, 'regtest')
+
     if (VERBOSE) console.log('Your address:', address)
 
-    /* NOTE: To continue with this example, send 100_000 sats to the above address.
-      You will also need to make a note of the txid and vout of that transaction,
-      so that you can include that information below in the redeem tx.
-    */ 
+    // Generate a utxo for testing (using a local core client).
+    const utxo = await wallet.create_utxo(100_000, address)
 
     const txdata = Tx.create({
       vin  : [{
         // Use the txid of the funding transaction used to send the sats.
-        txid: 'e0b1b0aea95095bf7e113c37562a51cb8c3f50f5145c17952e766f7a84fcc5d7',
+        txid    : utxo.txid,
         // Specify the index value of the output that you are going to spend from.
-        vout: 0,
+        vout    : utxo.vout,
         // Also include the value and script of that ouput.
-        prevout: {
-          // Feel free to change this if you sent a different amount.
-          value: 100_000,
-          // This is what our address looks like in script form.
-          scriptPubKey: [ 'OP_1', tpubkey ]
-        },
+        prevout : utxo.prevout
       }],
       vout : [{
-        // We are leaving behind 1000 sats as a fee to the miners.
-        value: 99_000,
+        // We are leaving behind 10_000 sats as a fee to the miners.
+        value: 90_000,
         // This is the new script that we are locking our funds to.
         scriptPubKey: Address.toScriptPubKey('bcrt1q6zpf4gefu4ckuud3pjch563nm7x27u4ruahz3y')
       }]
@@ -83,12 +79,19 @@ export async function tree_spend (t : Test) : Promise<void> {
     // transaction is also valid (the merkle proof will be validated as well).
     const isValid = await Signer.taproot.verify(txdata, 0, { pubkey })
 
+    t.equal(isValid, true, 'Transaction should pass validation.')
+
+    // Encode the final transaction as hex.
+    const txhex = Tx.encode(txdata)
+    
+    // Publish the transaction using a local bitcoin core client.
+    const txid  = await wallet.client.publish_tx(txhex, true)
+
+    t.pass('Transaction broadcast with txid: ' + txid)
+
     if (VERBOSE) {
       console.log('Your txhex:', Tx.encode(txdata).hex)
       console.dir(txdata, { depth: null })
     }
-
-    t.plan(1)
-    t.equal(isValid, true, 'Transaction should pass validation.')
   })
 }
