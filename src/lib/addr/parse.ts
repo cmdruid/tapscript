@@ -28,7 +28,6 @@ export function create_addr (
   script   : ScriptData,
   network ?: Network
 ) : string {
-  console.log('tools:', ADDR_TOOLS)
   const { type, key, hex } = parse_script(script)
   if (type !== 'raw') {
     const tool = tools[type]
