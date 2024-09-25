@@ -1,4 +1,4 @@
-import { Buff }         from '@cmdcode/buff-utils'
+import { Buff }         from '@cmdcode/buff'
 import * as ENC         from '../../tx/encode.js'
 import { Tx }           from '../../tx/index.js'
 import { Script }       from '../../script/index.js'
@@ -218,7 +218,7 @@ function getAnnexData (
     annex[0] === 0x50
   ) {
     // return a digest of the annex.
-    return Buff.raw(annex).prefixSize('be').digest
+    return Buff.raw(annex).add_varint('be').digest
   }
   // Else, return undefined.
   return undefined

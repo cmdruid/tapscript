@@ -1,20 +1,19 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "target": "ESNext",
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "baseUrl": "./src",
+    "baseUrl": "..",
     "paths": {
-      "@/*" : [ "./*" ]
+      "@/*"                : [ "src/*" ],
+      "@/test/*"           : [ "test/src/*" ],
+      "@cmdcode/tapscript" : [ "src/index.js" ]
     },
-    "declaration": true,
+    "module": "NodeNext",
+    "target": "ESNext",
+    "moduleResolution": "NodeNext",
     "importHelpers": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": false,
     "skipLibCheck": true,
@@ -25,9 +24,10 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "exclude": [ "dist", "node_modules", "script", "test" ],
-  "include": [ "src/**/*.ts" ]
+  "exclude": [ "node_modules" ],
+  "include": [ "**/*.ts" ]
 }

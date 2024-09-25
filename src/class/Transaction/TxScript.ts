@@ -1,9 +1,9 @@
-import { Buff }         from '@cmdcode/buff-utils'
+import { Buff }         from '@cmdcode/buff'
 import { encodeScript } from '../../lib/script/encode.js'
 import { decodeScript } from '../../lib/script/decode.js'
 import { ScriptData }   from '../../schema/types.js'
 import { TapTree }      from '../../lib/tap/index.js'
-import { hash160, hash256 } from '@cmdcode/crypto-utils'
+import { hash160, hash256 } from '@cmdcode/crypto-tools/hash'
 
 type ScriptFormat = 'p2sh' | 'p2w' | 'p2tr'
 

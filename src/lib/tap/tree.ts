@@ -1,4 +1,4 @@
-import { Buff }              from '@cmdcode/buff-utils'
+import { Buff }              from '@cmdcode/buff'
 import { TapTree, TapProof } from './types.js'
 import { Bytes, ScriptData } from '../../schema/types.js'
 import { Script } from '../script/index.js'

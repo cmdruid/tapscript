@@ -1,4 +1,4 @@
-import { Buff }        from '@cmdcode/buff-utils'
+import { Buff }        from '@cmdcode/buff'
 import { readWitness } from '../../lib/tx/parse.js'
 import { Script }      from '../../lib/script/index.js'
 import { Bytes, InputType, ScriptData, WitnessData } from '../../schema/types.js'

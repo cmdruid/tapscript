@@ -1,5 +1,5 @@
 
-import { Buff }      from '@cmdcode/buff-utils'
+import { Buff }      from '@cmdcode/buff'
 import { Script }    from '../script/index.js'
 import { P2PKH }     from './p2pkh.js'
 import { P2SH }      from './p2sh.js'

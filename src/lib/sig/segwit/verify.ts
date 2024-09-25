@@ -1,5 +1,5 @@
-import { Buff }       from '@cmdcode/buff-utils'
-import { noble }      from '@cmdcode/crypto-utils'
+import { Buff }       from '@cmdcode/buff'
+import { noble }      from '@cmdcode/crypto-tools'
 import { safeThrow }  from '../../utils.js'
 import { Tx }         from '../../tx/index.js'
 import { hashTx }     from './hash.js'

@@ -1,4 +1,4 @@
-import { Bytes } from '../schema/types'
+import { Bytes } from '@cmdcode/buff'
 
 export function isHex<T> (value : T) : value is Extract<T, string> {
   return (

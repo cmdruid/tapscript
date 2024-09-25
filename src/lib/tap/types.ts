@@ -1,4 +1,4 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 import { Bytes, ScriptData } from '../../schema/types.js'
 
 export type TapKey = [

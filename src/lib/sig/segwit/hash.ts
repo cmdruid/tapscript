@@ -1,4 +1,4 @@
-import { Buff }       from '@cmdcode/buff-utils'
+import { Buff }       from '@cmdcode/buff'
 import * as ENC       from '../../tx/encode.js'
 import { Script }     from '../../script/index.js'
 import { HashConfig } from '../types.js'
@@ -10,7 +10,7 @@ import {
   TxTemplate,
   Bytes
 } from '../../../schema/types.js'
-import { hash160, hash256 } from '@cmdcode/crypto-utils'
+import { hash160, hash256 } from '@cmdcode/crypto-tools/hash'
 
 const VALID_HASH_TYPES = [ 0x01, 0x02, 0x03 ]
 

@@ -1,5 +1,5 @@
 import { Test } from 'tape'
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 import { Tap }  from '../../../src/index.js'
 import tree_vectors     from './tree.vectors.json' assert { type: 'json' }
 import { encodeScript } from '../../../src/lib/script/encode.js'

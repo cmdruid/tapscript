@@ -1,4 +1,4 @@
-import { Buff }         from '@cmdcode/buff-utils'
+import { Buff }         from '@cmdcode/buff'
 import { encodeScript } from '../script/encode.js'
 import { createTx }     from './create.js'
 
@@ -84,7 +84,7 @@ export function encodeSequence (
 }
 
 function encodeInputs (arr : InputData[]) : Uint8Array {
-  const raw : Uint8Array[] = [ Buff.varInt(arr.length, 'le') ]
+  const raw : Uint8Array[] = [ Buff.calc_varint(arr.length, 'le') ]
   for (const vin of arr) {
     const { txid, vout, scriptSig, sequence } = vin
     raw.push(encodeTxid(txid))
@@ -108,7 +108,7 @@ export function encodeValue (
 }
 
 function encodeOutputs (arr : OutputData[]) : Uint8Array {
-  const raw : Uint8Array[] = [ Buff.varInt(arr.length, 'le') ]
+  const raw : Uint8Array[] = [ Buff.calc_varint(arr.length, 'le') ]
   for (const vout of arr) {
     raw.push(encodeOutput(vout))
   }
@@ -130,7 +130,7 @@ function encodeWitness (
 ) : Uint8Array {
   const buffer : Uint8Array[] = []
   if (Array.isArray(data)) {
-    const count = Buff.varInt(data.length)
+    const count = Buff.calc_varint(data.length)
     buffer.push(count)
     for (const entry of data) {
       buffer.push(encodeData(entry))

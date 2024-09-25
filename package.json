@@ -5,28 +5,20 @@
   "type": "module",
   "main": "./dist/main.cjs",
   "unpkg": "./dist/bundle.min.js",
-  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/module.mjs"
-      },
-      "require": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/main.cjs"
-      }
+      "import": "./dist/index.js",
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "rollup -c rollup.config.ts --configPlugin typescript",
-    "clean": "rm -rf dist/* coverage .nyc_output",
-    "start": "node --trace-deprecation --no-warnings --loader ts-node/esm",
-    "scratch": "yarn start test/scratch.ts",
-    "tape": "yarn start test/tape.ts",
-    "test": "yarn tape | tap-spec",
-    "types": "tsc",
-    "release": "yarn test && yarn clean && yarn types && yarn build"
+    "build": "./scripts/build.sh",
+    "lint": "eslint",
+    "load": "tsx --tsconfig ./test/tsconfig.json",
+    "release": "yarn lint && yarn test && yarn build",
+    "scratch": "yarn load test/scratch.ts",
+    "test": "yarn tsc && yarn load test/tape.ts | tap-spec"
   },
   "keywords": [
     "bitcoin",
@@ -53,23 +45,23 @@
     "dist"
   ],
   "devDependencies": {
-    "@cmdcode/buff-utils": "^1.9.7",
-    "@cmdcode/core-cmd": "^1.5.37",
-    "@cmdcode/crypto-utils": "^2.0.2",
-    "@cmdcode/keylink": "^1.4.3",
-    "@noble/curves": "^0.9.1",
-    "@rollup/plugin-commonjs": "^23.0.2",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-terser": "^0.4.0",
-    "@rollup/plugin-typescript": "^9.0.2",
-    "@types/node": "^18.14.0",
-    "@types/tape": "^4.13.2",
-    "rollup": "^3.2.3",
+    "@cmdcode/buff": "^2.2.5",
+    "@cmdcode/core-cmd": "^1.6.3",
+    "@cmdcode/crypto-tools": "^2.7.7",
+    "@noble/curves": "^1.6.0",
+    "@rollup/plugin-commonjs": "^28.0.0",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.0",
+    "@types/node": "^22.4.1",
+    "@types/tape": "^5.6.4",
+    "rollup": "^4.21.0",
     "tap-spec": "^5.0.0",
-    "tape": "^5.6.1",
-    "ts-node": "^10.9.1",
-    "tslib": "^2.6.2",
-    "typescript": "^5.1.6",
-    "zod": "^3.20.6"
+    "tape": "^5.7.5",
+    "tslib": "^2.7.0",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4",
+    "zod": "^3.23.8"
   }
 }

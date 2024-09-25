@@ -1,6 +1,6 @@
 
 import { Test }    from 'tape'
-import { Buff }    from '@cmdcode/buff-utils'
+import { Buff }    from '@cmdcode/buff'
 import { Address } from '../../../src/index.js'
 
 export function p2wpkh_test(t : Test) : void {

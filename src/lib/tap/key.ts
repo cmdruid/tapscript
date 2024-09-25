@@ -1,11 +1,11 @@
-import { Buff, Stream }      from '@cmdcode/buff-utils'
-import { util }              from '@cmdcode/crypto-utils'
+import { Buff, Stream }      from '@cmdcode/buff'
 import { getTweakedKey }     from './tweak.js'
 import { safeThrow }         from '../utils.js'
 import { xOnlyPub }          from './utils.js'
 import { getTapBranch, merkleize }      from './tree.js'
 import { CtrlBlock, TapConfig, TapKey } from './types.js'
 import { Bytes } from '../../schema/types.js'
+import { get_pubkey } from '@cmdcode/crypto-tools/keys'
 
 const DEFAULT_VERSION = 0xc0
 
@@ -34,7 +34,7 @@ function getTapKey (
   } = config
 
   const pubkey = (isPrivate)
-    ? util.getPublicKey(intkey, true)
+    ? get_pubkey(intkey, true)
     : xOnlyPub(intkey)
 
   let { target } = config
@@ -61,7 +61,7 @@ function getTapKey (
   }
   // Get the parity bit for the (public) tapkey.
   const parity : number = (isPrivate)
-    ? util.getPublicKey(tapkey)[0]
+    ? get_pubkey(tapkey)[0]
     : tapkey[0]
   // Get the block version / parity bit.
   const cbit = Buff.num(version + readParityBit(parity))
@@ -94,7 +94,7 @@ export function checkPath (
   const { parity, paths, intkey } = readCtrlBlock(cblock)
 
   const pub = (isPrivate)
-    ? util.getPublicKey(tapkey, true)
+    ? get_pubkey(tapkey, true)
     : xOnlyPub(tapkey)
 
   const extkey = Buff.join([ parity, pub ])

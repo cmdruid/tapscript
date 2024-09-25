@@ -1,5 +1,5 @@
-import { Buff } from '@cmdcode/buff-utils'
-import { InputData } from '../../../../src'
+import { Buff } from '@cmdcode/buff'
+import { InputData } from '../../../../src/index.js'
 
 type TestInput = [
   prev_hash : string,

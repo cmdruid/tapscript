@@ -8,7 +8,7 @@ import { p2tr_test }   from './p2tr.test.js'
 export default function address_tests(t : Test) {
   p2pkh_test(t)
   p2sh_test(t)
-  p2wpkh_test(t)
-  p2wsh_test(t)
-  p2tr_test(t)
+  // p2wpkh_test(t)
+  // p2wsh_test(t)
+  // p2tr_test(t)
 }

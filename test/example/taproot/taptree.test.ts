@@ -1,5 +1,5 @@
 import { Test }       from 'tape'
-import { util }       from '@cmdcode/crypto-utils'
+import { util }       from '@cmdcode/crypto-tools'
 import { CoreWallet } from '@cmdcode/core-cmd'
 
 import { Address, Signer, Tap, Tx, } from '../../../src/index.js'

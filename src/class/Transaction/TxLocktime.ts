@@ -1,4 +1,4 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 import { LockData }  from '../../schema/types.js'
 
 const LOCKTIME_THRESHOLD = 500000000

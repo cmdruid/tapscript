@@ -1,7 +1,7 @@
 import { Test }       from 'tape'
 import { CoreWallet } from '@cmdcode/core-cmd'
-import { Buff }       from '@cmdcode/buff-utils'
-import { util }       from '@cmdcode/crypto-utils'
+import { Buff }       from '@cmdcode/buff'
+import { util }       from '@cmdcode/crypto-tools'
 
 import { Address, Signer, Tap, Tx, } from '../../../src/index.js'
 

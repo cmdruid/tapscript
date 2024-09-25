@@ -1,4 +1,4 @@
-import { Buff }     from '@cmdcode/buff-utils'
+import { Buff }     from '@cmdcode/buff'
 import { isBytes }  from '../check.js'
 import { decodeTx } from './decode.js'
 import { encodeTx } from './encode.js'

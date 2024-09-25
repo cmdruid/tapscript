@@ -1,4 +1,4 @@
-import { Buff, Stream }  from '@cmdcode/buff-utils'
+import { Buff, Stream }  from '@cmdcode/buff'
 import { checkPath }     from '../../tap/key.js'
 import { verify }        from './sign.js'
 import { safeThrow }     from '../../utils.js'

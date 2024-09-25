@@ -1,4 +1,4 @@
-import { Buff }            from '@cmdcode/buff-utils'
+import { Buff }            from '@cmdcode/buff'
 import { Bytes, Networks } from '../../schema/types.js'
 import { checkSize }       from '../utils.js'
 import { hash160pkh }      from './hash.js'
@@ -23,7 +23,7 @@ export function encode (
   const bytes  = Buff.bytes(input)
   const prefix = (network === 'main') ? Buff.num(0x00) : Buff.num(0x6F)
   checkSize(input, 20)
-  return bytes.prepend(prefix).tob58chk()
+  return bytes.prepend(prefix).to_b58chk()
 }
 
 export function decode (

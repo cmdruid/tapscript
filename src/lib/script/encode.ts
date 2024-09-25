@@ -1,4 +1,4 @@
-import { Buff, Stream } from '@cmdcode/buff-utils'
+import { Buff, Stream } from '@cmdcode/buff'
 import { getOpCode }    from './words.js'
 import { isHex }        from '../check.js'
 import { ScriptData, Word } from '../../schema/types.js'
@@ -24,7 +24,7 @@ export function encodeScript (
   }
 
   if (varint) {
-    buff = buff.prefixSize('le')
+    buff = buff.add_varint('le')
   }
 
   return buff

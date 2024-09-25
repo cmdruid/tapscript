@@ -1,5 +1,5 @@
-import { Buff }     from '@cmdcode/buff-utils'
-import { hash256 }  from '@cmdcode/crypto-utils'
+import { Buff }     from '@cmdcode/buff'
+import { hash256 }  from '@cmdcode/crypto-tools/hash'
 import TxInput      from './TxInput.js'
 import TxOutput     from './TxOutput.js'
 import TxLocktime   from './TxLocktime.js'

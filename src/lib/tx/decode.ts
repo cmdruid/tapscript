@@ -1,4 +1,4 @@
-import { Buff, Stream } from '@cmdcode/buff-utils'
+import { Buff, Stream } from '@cmdcode/buff'
 
 import {
   TxData,
@@ -40,7 +40,7 @@ export function decodeTx (bytes : string | Uint8Array) : TxData {
 }
 
 function readVersion (stream : Stream) : number {
-  return stream.read(4).reverse().toNum()
+  return stream.read(4).reverse().num
 }
 
 function checkWitnessFlag (stream : Stream) : boolean {
@@ -58,7 +58,7 @@ function checkWitnessFlag (stream : Stream) : boolean {
 
 function readInputs (stream : Stream) : InputData[] {
   const inputs = []
-  const vinCount = stream.readSize('le')
+  const vinCount = stream.read_varint('le')
   for (let i = 0; i < vinCount; i++) {
     inputs.push(readInput(stream))
   }
@@ -67,10 +67,10 @@ function readInputs (stream : Stream) : InputData[] {
 
 function readInput (stream : Stream) : InputData {
   const txin = {
-    txid      : stream.read(32).reverse().toHex(),
-    vout      : stream.read(4).reverse().toNum(),
+    txid      : stream.read(32).reverse().hex,
+    vout      : stream.read(4).reverse().num,
     scriptSig : readScript(stream, true),
-    sequence  : stream.read(4).reverse().toHex(),
+    sequence  : stream.read(4).reverse().hex,
     witness   : []
   }
   return txin
@@ -78,7 +78,7 @@ function readInput (stream : Stream) : InputData {
 
 function readOutputs (stream : Stream) : OutputData[] {
   const outputs  = []
-  const outcount = stream.readSize('le')
+  const outcount = stream.read_varint('le')
   for (let i = 0; i < outcount; i++) {
     outputs.push(readOutput(stream))
   }
@@ -95,7 +95,7 @@ function readOutput (stream : Stream) : OutputData {
 
 function readWitness (stream : Stream) : string[] {
   const stack = []
-  const count = stream.readSize()
+  const count = stream.read_varint()
   for (let i = 0; i < count; i++) {
     const word = readData(stream, true)
     stack.push(word ?? '')
@@ -108,7 +108,7 @@ function readData (
   varint ?: boolean
 ) : string | null {
   const size = (varint === true)
-    ? stream.readSize('le')
+    ? stream.read_varint('le')
     : stream.size
   return size > 0
     ? stream.read(size).hex
@@ -124,5 +124,5 @@ function readScript (
 }
 
 function readLocktime (stream : Stream) : number {
-  return stream.read(4).reverse().toNum()
+  return stream.read(4).reverse().num
 }

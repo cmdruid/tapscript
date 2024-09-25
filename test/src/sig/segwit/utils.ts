@@ -1,5 +1,5 @@
-import { Buff } from '@cmdcode/buff-utils'
-import { InputData } from '../../../../src'
+import { Buff } from '@cmdcode/buff'
+import { InputData } from '../../../../src/index.js'
 
 type TestInput = [
   prev_hash : string,
@@ -21,7 +21,7 @@ interface TestVector {
 }
 
 export function parseVectors(vectors : any) : TestVector[] {
-  const test_vectors = vectors.filter(e => e.length > 1).map(e => {
+  const test_vectors = vectors.filter((e : any)  => e.length > 1).map((e : any) => {
     const [ inputs, txhex, flags ] = e as TestData
     const vin = inputs.map(e => {
       const [ prev_hash, prev_idx, prev_spk, prev_value ] = e as TestInput

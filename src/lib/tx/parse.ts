@@ -1,4 +1,4 @@
-import { Buff }     from '@cmdcode/buff-utils'
+import { Buff }     from '@cmdcode/buff'
 import { isHex }    from '../check.js'
 import { Script }   from '../script/index.js'
 import { encodeTx } from './encode.js'
@@ -13,7 +13,7 @@ import {
   WitnessData
 } from '../../schema/types.js'
 
-import { hash256 } from '@cmdcode/crypto-utils'
+import { hash256 } from '@cmdcode/crypto-tools/hash'
 
 interface TxSizeData {
   size   : number

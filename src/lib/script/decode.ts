@@ -1,4 +1,4 @@
-import { Buff, Stream } from '@cmdcode/buff-utils'
+import { Buff, Stream } from '@cmdcode/buff'
 
 import {
   getOpLabel,
@@ -13,7 +13,7 @@ export function decodeScript (
   let buff = Buff.bytes(script)
   if (varint) {
     const stream = buff.stream
-    const len = stream.readSize('le')
+    const len = stream.read_varint('le')
     buff = buff.slice(1)
     if (buff.length !== len) {
       throw new Error(`Varint does not match stream size: ${len} !== ${buff.length}`)

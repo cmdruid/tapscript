@@ -1,75 +1,55 @@
-// rollup.config.ts
-import typescript  from '@rollup/plugin-typescript'
-import nodeResolve from '@rollup/plugin-node-resolve'
 import commonjs    from '@rollup/plugin-commonjs'
+import nodeResolve from '@rollup/plugin-node-resolve'
 import terser      from '@rollup/plugin-terser'
-
-const libraryName = 'tapscript'
+import typescript  from '@rollup/plugin-typescript'
 
 const treeshake = {
-	moduleSideEffects: false,
-	propertyReadSideEffects: false,
-	tryCatchDeoptimization: false
+	moduleSideEffects       : false,
+	propertyReadSideEffects : false,
+	tryCatchDeoptimization  : false
 }
 
-const onwarn = warning => {
-	// eslint-disable-next-line no-console
-	console.error(
-		'Building Rollup produced warnings that need to be resolved. ' +
-			'Please keep in mind that the browser build may never have external dependencies!'
-	);
-	// eslint-disable-next-line unicorn/error-message
-	throw Object.assign(new Error(), warning);
-}
+const ignored_warnings = [
+//  { code: 'CIRCULAR_DEPENDENCY', message: 'node_modules/@scure/btc-signer' },
+  { code: 'INVALID_ANNOTATION',  message : '@__PURE__'      }
+]
 
-const tsConfig = { 
-  compilerOptions: {
-    declaration: false,
-    declarationDir: null,
-    declarationMap: false
+const onwarn = (warning, rollupWarn) => {
+  for (const { code, message } of ignored_warnings) {
+    if (warning.code !== code) return
+    if (
+      message !== undefined &&
+      warning.message.includes(message)
+    ) {
+      rollupWarn(warning)
+    }
   }
 }
 
-const nodeConfig = {
+export default {
   input: 'src/index.ts',
   onwarn,
   output: [
     {
-      file      : 'dist/main.cjs',
-      format    : 'cjs',
-      sourcemap : true,
+      file: 'dist/main.cjs',
+      format: 'cjs',
+      sourcemap: true,
     },
     {
-      file      : 'dist/module.mjs',
-      format    : 'es',
-      sourcemap : true,
+      file: 'dist/module.mjs',
+      format: 'es',
+      sourcemap: true,
       minifyInternalExports: false
     },
-  ],
-  plugins: [ typescript(tsConfig), nodeResolve(), commonjs() ],
-  strictDeprecations: true,
-  treeshake
-}
-
-const browserConfig = {
-  input: 'src/index.ts',
-  onwarn,
-  output: [
     {
-      file      : 'dist/bundle.min.js',
-      format    : 'iife',
-      name      : libraryName,
-      plugins   : [terser()],
-      sourcemap : true
-    },
+      file: 'dist/bundle.min.js',
+      format: 'iife',
+      name: 'tapscript',
+      plugins: [terser()],
+      sourcemap: true,
+    }
   ],
-  plugins: [ 
-    typescript(tsConfig), 
-    nodeResolve({ browser: true }), 
-    commonjs() 
-  ],
+  plugins: [ typescript(), nodeResolve(), commonjs() ],
   strictDeprecations: true,
   treeshake
 }
-
-export default [ nodeConfig, browserConfig ]

@@ -1,6 +1,6 @@
 import { Test }    from 'tape'
-import { Buff }    from '@cmdcode/buff-utils'
-import { util }    from '@cmdcode/crypto-utils'
+import { Buff }    from '@cmdcode/buff'
+import { util }    from '@cmdcode/crypto-tools'
 import { schnorr } from '@noble/curves/secp256k1'
 
 import { decodeTx }        from '../../../../src/lib/tx/decode.js'
@@ -9,6 +9,7 @@ import { TRSigner as SIG } from '../../../../src/lib/sig/taproot/index.js'
 import { sign, verify }    from '../../../../src/lib/sig/taproot/sign.js'
 import test_vectors        from './sig.vectors.json' assert { type: 'json' }
 import { Tap }             from '../../../../src/index.js'
+import { get_pubkey } from '@cmdcode/crypto-tools/keys'
 
 const { txhex, utxos, spends, precompute } = test_vectors
 
@@ -50,7 +51,7 @@ export async function test_signatures(t : Test) : Promise<void> {
       const actual_hash = SIG.hash(tx, txinIndex, { sigflag: hashType })
       t.equal(actual_hash.hex, sigHash, 'The signature hashes should match.')
       // Test our ability to sign the transaction.
-      const pubkey        = util.getPublicKey(tweakedPrivkey, true)
+      const pubkey        = get_pubkey(tweakedPrivkey, true)
       const tweakedpub    = Buff.raw(schnorr.getPublicKey(tweakedPrivkey))
       t.equal(pubkey.hex, tweakedpub.hex, 'The tweaked pubkeys should be equal.')
       const signature     = SIG.sign(tweakedPrivkey, tx, txinIndex, { sigflag: hashType, throws : true })

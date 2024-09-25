@@ -1,4 +1,4 @@
-import { Buff }            from '@cmdcode/buff-utils'
+import { Buff }            from '@cmdcode/buff'
 import { checkSize }       from '../utils.js'
 import { BECH32_PREFIXES } from './schema.js'
 import { sha256sh }        from './hash.js'
@@ -22,7 +22,7 @@ export function encode (
   const prefix = BECH32_PREFIXES[network]
   const bytes = Buff.bytes(input)
   checkSize(bytes, 32)
-  return bytes.toBech32(prefix, 0)
+  return bytes.to_bech32(prefix)
 }
 
 export function decode (address : string) : Buff {

@@ -1,4 +1,4 @@
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 import { Bytes, Networks } from '../../schema/types.js'
 import { xOnlyPub } from '../tap/utils.js'
 import { checkSize } from '../utils.js'
@@ -22,7 +22,7 @@ export function encode (
   const prefix = BECH32_PREFIXES[network]
   const bytes  = Buff.bytes(input)
   checkSize(bytes, 32)
-  return bytes.toBech32(prefix, 1)
+  return bytes.to_bech32m(prefix)
 }
 
 export function decode (address : string) : Buff {

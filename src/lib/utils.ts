@@ -1,4 +1,4 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
 
 export function checkSize (input : Bytes, size : number) : void {
   const bytes = Buff.bytes(input)

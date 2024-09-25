@@ -17,8 +17,8 @@ export function segwit_vector_test(t :Test) : void {
           throw 'Transaction failed to parse:'
         }
       } catch (err) {
-        console.log(err)
-        console.log('Error:', err.message)
+        const { message } = err as Error
+        console.log('Error:', message)
         console.log('Target:', txhex)
         console.log('Result:', newhex)
         throws += 1

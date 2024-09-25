@@ -1,5 +1,5 @@
-import { Buff }         from '@cmdcode/buff-utils'
-import { Field, Point } from '@cmdcode/crypto-utils'
+import { Buff }         from '@cmdcode/buff'
+import { Field, Point } from '@cmdcode/crypto-tools'
 import { getTapTag }    from './tree.js'
 import { xOnlyPub }     from './utils.js'
 import { Bytes }        from '../../schema/types.js'

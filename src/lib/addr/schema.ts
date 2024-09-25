@@ -1,6 +1,6 @@
 /* eslint-disable quote-props */
 
-import { Buff } from '@cmdcode/buff-utils'
+import { Buff } from '@cmdcode/buff'
 import { Bytes, Networks, OutputType, ScriptData } from '../../schema/types.js'
 
 export type AddressType = [

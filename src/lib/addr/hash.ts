@@ -1,8 +1,8 @@
-import { Buff, Bytes } from '@cmdcode/buff-utils'
+import { Buff, Bytes } from '@cmdcode/buff'
 import { Script }      from '../script/index.js'
 import { checkSize }   from '../utils.js'
 import { ScriptData }  from '../../schema/types.js'
-import { hash160, sha256 } from '@cmdcode/crypto-utils'
+import { hash160, sha256 } from '@cmdcode/crypto-tools/hash'
 
 export function hash160pkh (pubkey : Bytes) : Buff {
   const bytes = Buff.bytes(pubkey)
