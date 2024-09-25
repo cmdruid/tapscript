@@ -1,11 +1,10 @@
 import { Buff } from '@cmdcode/buff'
 
-export type Networks   = 'main' | 'testnet' | 'signet' | 'regtest'
-
 export type InputType  = 'p2pkh'   | 'p2sh'   | 'p2w-p2pkh' | 'p2w-p2sh' |
                          'p2w-pkh' | 'p2w-sh' | 'p2tr' | 'raw'
 
 export type OutputType = 'p2pkh'  | 'p2sh'  | 'p2w-pkh' | 'p2w-sh' | 'p2tr' | 'raw'
+
 
 export interface TxTemplate {
   version  ?: number
