@@ -1,17 +1,16 @@
 import { Buff }     from '@cmdcode/buff'
-import { isHex }    from '../check.js'
-import { Script }   from '../script/index.js'
+import { Script }   from '@/module/script/index.js'
 import { encodeTx } from './encode.js'
 import { TxFmt }    from './format.js'
 
-import {
+import type {
   Bytes,
   OutputType,
   ScriptData,
   ScriptPubKeyData,
   TxData,
   WitnessData
-} from '../../schema/types.js'
+} from '@/types/index.js'
 
 import { hash256 } from '@cmdcode/crypto-tools/hash'
 
@@ -21,23 +20,6 @@ interface TxSizeData {
   vsize  : number
   weight : number
 }
-
-const OUTPUT_TYPES : Array<[ string, RegExp ]> = [
-  [ 'p2pkh',   /^76a914(?<hash>\w{40})88ac$/ ],
-  [ 'p2sh',    /^a914(?<hash>\w{40})87$/     ],
-  [ 'p2w-pkh', /^0014(?<hash>\w{40})$/       ],
-  [ 'p2w-sh',  /^0020(?<hash>\w{64})$/       ],
-  [ 'p2tr',    /^5120(?<hash>\w{64})$/       ]
-]
-
-const LEAF_VERSIONS = [
-  0xc0, 0xc2, 0xc4, 0xc6, 0xc8, 0xca, 0xcc, 0xce,
-  0xd0, 0xd2, 0xd4, 0xd6, 0xd8, 0xda, 0xdc, 0xde,
-  0xe0, 0xe2, 0xe4, 0xe6, 0xe8, 0xea, 0xec, 0xee,
-  0xf0, 0xf2, 0xf4, 0xf6, 0xf8, 0xfa, 0xfc, 0xfe,
-  0x66, 0x7e, 0x80, 0x84, 0x96, 0x98, 0xba, 0xbc,
-  0xbe
-]
 
 function parseAnnex (
   data : ScriptData[]

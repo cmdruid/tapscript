@@ -1,6 +1,7 @@
 
 import { Buff }      from '@cmdcode/buff'
-import { Script }    from '@/module/script/index.js'import { Tx }        from '@/module/tx/index.js'
+import { Script }    from '@/module/script/index.js'
+import { Tx }        from '@/module/tx/index.js'
 import { P2PKH }     from './p2pkh.js'
 import { P2SH }      from './p2sh.js'
 import { P2WPKH }    from './p2w-pkh.js'

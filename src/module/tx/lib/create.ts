@@ -1,4 +1,4 @@
-import { TxData, TxTemplate } from '../../schema/types.js'
+import type { TxData, TxTemplate } from '@/types/index.js'
 
 const DEFAULT_TX = {
   version  : 2,

@@ -2,7 +2,8 @@ import { Buff }         from '@cmdcode/buff'
 import { check }        from '@/util/index.js'
 import { decodeScript } from './decode.js'
 import { encodeScript } from './encode.js'
-import { ScriptData }   from '../../../schema/types.js'
+
+import type { ScriptData } from '@/types/index.js'
 
 function toAsm (
   script ?: ScriptData,

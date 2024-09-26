@@ -1,3 +1,5 @@
+import { Bytes } from '@cmdcode/buff'
+
 export function exists <T> (
   value ?: T | null
 ) : value is NonNullable<T> {
@@ -26,6 +28,10 @@ export function is_hex (
     return true
   }
   return false
+}
+
+export function is_bytes (value : unknown) : value is string | Uint8Array {
+  return (is_hex(value) || value instanceof Uint8Array)
 }
 
 export function is_hash (value : unknown) : value is string {

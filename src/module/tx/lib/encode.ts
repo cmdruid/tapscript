@@ -1,5 +1,5 @@
 import { Buff }         from '@cmdcode/buff'
-import { encodeScript } from '../script/encode.js'
+import { encodeScript } from '@/module/script/lib/encode.js'
 import { createTx }     from './create.js'
 
 import {
@@ -11,7 +11,7 @@ import {
   LockData,
   ValueData,
   TxData
-} from '../../schema/types.js'
+} from '@/types/index.js'
 
 export function encodeTx (
   txdata : TxTemplate | TxData,

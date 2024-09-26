@@ -4,7 +4,7 @@ import {
   TxData,
   InputData,
   OutputData
-} from '../../schema/types.js'
+} from '@/types/index.js'
 
 export function decodeTx (bytes : string | Uint8Array) : TxData {
   /** Decode a raw bitcoin transaction. */

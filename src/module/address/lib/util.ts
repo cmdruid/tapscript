@@ -1,6 +1,7 @@
 import { Buff, Bytes }     from '@cmdcode/buff'
 import { hash160, sha256 } from '@cmdcode/crypto-tools/hash'
 import { assert }          from '@/util/index.js'
+import { Script }          from '@/module/script/index.js'
 
 import type { ScriptData } from '@/types/index.js'
 

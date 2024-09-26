@@ -1,5 +1,6 @@
-import { Buff } from '@cmdcode/buff'
-import { Bytes, Networks, OutputType, ScriptData } from '../../schema/types.js'
+import { Buff, Bytes } from '@cmdcode/buff'
+
+import type { Networks, OutputType, ScriptData } from '@/types/index.js'
 
 export type AddressType = [
   prefix  : string,

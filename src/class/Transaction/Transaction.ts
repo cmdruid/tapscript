@@ -4,7 +4,7 @@ import TxInput      from './TxInput.js'
 import TxOutput     from './TxOutput.js'
 import TxLocktime   from './TxLocktime.js'
 import { Tx }       from '../../lib/tx/index.js'
-import { Schema }   from '../../schema/check.js'
+import { Schema }   from '../../schema/index.js'
 
 import {
   TxData,

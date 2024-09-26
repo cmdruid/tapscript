@@ -1,15 +1,15 @@
-import { Buff }     from '@cmdcode/buff'
-import { isBytes }  from '../check.js'
-import { decodeTx } from './decode.js'
-import { encodeTx } from './encode.js'
-import { createTx } from './create.js'
+import { Buff, Bytes } from '@cmdcode/buff'
+import { check }       from '@/util/index.js'
+import { decodeTx }    from './decode.js'
+import { encodeTx }    from './encode.js'
+import { createTx }    from './create.js'
 
-import { Bytes, TxData, TxTemplate } from '../../schema/types.js'
+import type { TxData, TxTemplate } from '@/types/index.js'
 
 export function toJson (
   txdata ?: Bytes | TxData | TxTemplate
 ) : TxData {
-  if (isBytes(txdata)) {
+  if (check.is_bytes(txdata)) {
     return decodeTx(txdata)
   }
   if (
@@ -25,7 +25,7 @@ export function toJson (
 export function toBytes (
   txdata ?: Bytes | TxData | TxTemplate
 ) : Buff {
-  if (isBytes(txdata)) {
+  if (check.is_bytes(txdata)) {
     decodeTx(txdata)
     return Buff.bytes(txdata)
   }
