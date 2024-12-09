@@ -66,19 +66,31 @@ export function encodeWord (
   } else {
     // If not a string, encode as bytes.
     buff = Buff.bytes(word)
+  }
 
-    if (buff.length === 1 && buff[0] <= 16) {
-    // Number values 0-16 must be treated as opcodes.
-      if (buff[0] !== 0) buff[0] += 0x50
-      return buff
+  // If the buffer contains a single value:
+  if (buff.length === 1) {
+    // If value is between 1-16:
+    if (buff[0] !== 0 && buff[0] <= 16) {
+      // Number values 1-16 must be treated as opcodes.
+      buff[0] += 0x50
+    // If the value is between 129-256:
+    } else if (buff[0] > 128 && buff[0] <= 256) {
+      // Number values 129-256 must have a padding byte.
+      buff = new Uint8Array([ buff[0], 0 ])
     }
-  }
-
-  if (buff.length > MAX_WORD_SIZE) {
+    return buff
+  // If the buffer is greater than the max size:
+  } else if (buff.length > MAX_WORD_SIZE) {
+    // Split the buffer into chunks.
     const words = splitWord(buff)
+    // Run data chunks through the encoder.
     return encodeWords(words)
+  // Else:
+  } else {
+    // Return the current buffer with a prefixed varint.
+    return Buff.join([ encodeSize(buff.length), buff ])
   }
-  return Buff.join([ encodeSize(buff.length), buff ])
 }
 
 function encodeSize (size : number) : Uint8Array {
