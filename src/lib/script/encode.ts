@@ -72,14 +72,16 @@ export function encodeWord (
   if (buff.length === 1) {
     // If value is between 1-16:
     if (buff[0] !== 0 && buff[0] <= 16) {
-      // Number values 1-16 must be treated as opcodes.
+      // Convert values 1-16 into opcode values.
       buff[0] += 0x50
+      // Return buffered code without varint.
+      return buff
     // If the value is between 129-255:
     } else if (buff[0] > 128 && buff[0] <= 255) {
       // Value must be padded with a zero byte.
       buff = new Uint8Array([ buff[0], 0 ])
     }
-    return buff
+    return Buff.join([ encodeSize(buff.length), buff ])
   // If the buffer is greater than the max size:
   } else if (buff.length > MAX_WORD_SIZE) {
     // Split the buffer into chunks.
