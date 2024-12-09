@@ -78,10 +78,18 @@ export function format_word (
     buff = Buff.bytes(word)
   }
 
-  // Format and return the word based on its size.
-  if (buff.length === 1 && buff[0] <= 16) {
-    // Number values 0-16 must be treated as opcodes.
-    if (buff[0] !== 0) buff[0] += 0x50
+  // If the buffer contains a single value:
+  if (buff.length === 1) {
+    // If value is between 1-16:
+    if (buff[0] !== 0 && buff[0] <= 16) {
+      // Number values 1-16 must be treated as opcodes.
+      buff[0] += 0x50
+    // If the value is between 129-256:
+    } else if (buff[0] > 128 && buff[0] <= 256) {
+      // Number values 129-256 must have a padding byte.
+      buff = new Uint8Array([ buff[0], 0 ])
+    }
+  // If the buffer is larger than the max word size:
   } else if (buff.length > MAX_WORD_SIZE) {
     // Number values larger than max size must be split into chunks.
     let words : Buff[]
