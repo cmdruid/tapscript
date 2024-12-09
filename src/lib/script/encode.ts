@@ -74,9 +74,9 @@ export function encodeWord (
     if (buff[0] !== 0 && buff[0] <= 16) {
       // Number values 1-16 must be treated as opcodes.
       buff[0] += 0x50
-    // If the value is between 129-256:
-    } else if (buff[0] > 128 && buff[0] <= 256) {
-      // Number values 129-256 must have a padding byte.
+    // If the value is between 129-255:
+    } else if (buff[0] > 128 && buff[0] <= 255) {
+      // Value must be padded with a zero byte.
       buff = new Uint8Array([ buff[0], 0 ])
     }
     return buff
