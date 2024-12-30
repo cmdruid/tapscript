@@ -21,12 +21,11 @@
   "scripts": {
     "build": "rollup -c rollup.config.ts --configPlugin typescript",
     "clean": "rm -rf dist/* coverage .nyc_output",
-    "start": "node --trace-deprecation --no-warnings --loader ts-node/esm",
-    "scratch": "yarn start test/scratch.ts",
-    "tape": "yarn start test/tape.ts",
-    "test": "yarn tape | tap-spec",
     "types": "tsc",
-    "release": "yarn test && yarn clean && yarn types && yarn build"
+    "load": "NODE_OPTIONS='--no-warnings' tsx --tsconfig ./test/tsconfig.json",
+    "release": "yarn test && yarn clean && yarn build",
+    "scratch": "yarn load test/scratch.ts",
+    "test": "tsx --tsconfig ./test/tsconfig.json ./test/tape.ts | tap-spec"
   },
   "keywords": [
     "bitcoin",
@@ -67,8 +66,8 @@
     "rollup": "^3.2.3",
     "tap-spec": "^5.0.0",
     "tape": "^5.6.1",
-    "ts-node": "^10.9.1",
     "tslib": "^2.6.2",
+    "tsx": "^4.19.2",
     "typescript": "^5.1.6",
     "zod": "^3.20.6"
   }
