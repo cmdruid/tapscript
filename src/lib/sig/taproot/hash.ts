@@ -127,7 +127,7 @@ export function hashTx (
     preimage.push(
       Buff.bytes(extension),      // Extention data (in bytes).
       Buff.num(key_version),      // Key version (reserved for future upgrades).
-      Buff.num(separator_pos, 4)  // If OP_CODESEPARATOR is used, this must be set.
+      Buff.num(separator_pos, 4, 'le')  // If OP_CODESEPARATOR is used, this must be set.
     )
   }
 
