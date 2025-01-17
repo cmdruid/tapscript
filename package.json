@@ -1,19 +1,19 @@
 {
   "name": "@cmdcode/tapscript",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "A basic library for working with Tapscript, signatures and Bitcoin transactions.",
   "type": "module",
   "main": "./dist/main.cjs",
   "unpkg": "./dist/bundle.min.js",
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/types/index.d.ts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/module.mjs"
       },
       "require": {
-        "types": "./dist/types/index.d.ts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/main.cjs"
       }
     }
@@ -23,7 +23,7 @@
     "clean": "rm -rf dist/* coverage .nyc_output",
     "types": "tsc",
     "load": "NODE_OPTIONS='--no-warnings' tsx --tsconfig ./test/tsconfig.json",
-    "release": "yarn test && yarn clean && yarn build",
+    "release": "yarn test && yarn clean && yarn types && yarn build",
     "scratch": "yarn load test/scratch.ts",
     "test": "tsx --tsconfig ./test/tsconfig.json ./test/tape.ts | tap-spec"
   },
